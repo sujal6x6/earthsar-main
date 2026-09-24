@@ -26,19 +26,42 @@ const intId = v => {
 /* ---------- Session ---------- */
 
 const loginLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  limit: 10,
+  windowMs: 60 * 1000, // 1 minute window
+  limit: 50,
   standardHeaders: "draft-8",
   legacyHeaders: false,
   skipSuccessfulRequests: true,
-  message: { error: "Too many sign-in attempts. Wait 15 minutes and try again." }
+  message: { error: "Too many sign-in attempts. Wait 1 minute and try again." }
+});
+
+// Diagnostic & Initialization endpoint: https://earthsar.in/api/admin/init
+router.get("/init", async (req, res) => {
+  try {
+    const { migrate } = require("../db");
+    await migrate();
+    await auth.bootstrapAdmin();
+    const { rows } = await query("SELECT id, email, name, created_at FROM admins");
+    res.json({
+      ok: true,
+      message: "Database tables migrated and admin initialized successfully.",
+      adminsCount: rows.length,
+      admins: rows.map(a => ({ email: a.email, name: a.name }))
+    });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message, stack: err.code || err.errno });
+  }
 });
 
 router.post("/login", loginLimiter, async (req, res) => {
-  const admin = await auth.verifyLogin(req.body && req.body.email, req.body && req.body.password);
-  if (!admin) return res.status(401).json({ error: "That email and password do not match." });
-  auth.issue(res, admin);
-  res.json({ admin: { email: admin.email, name: admin.name } });
+  try {
+    const admin = await auth.verifyLogin(req.body && req.body.email, req.body && req.body.password);
+    if (!admin) return res.status(401).json({ error: "That email and password do not match." });
+    auth.issue(res, admin);
+    res.json({ admin: { email: admin.email, name: admin.name } });
+  } catch (err) {
+    console.error("Login database error:", err.message);
+    res.status(500).json({ error: "Database error: " + err.message });
+  }
 });
 
 router.post("/logout", (req, res) => {
