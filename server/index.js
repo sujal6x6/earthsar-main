@@ -61,16 +61,21 @@ function absoluteUrl(value, origin) {
 }
 
 async function readPublicSettings() {
-  const { rows } = await query("SELECT setting_value FROM site_settings WHERE setting_key = 'site'");
-  let saved = {};
-  if (rows[0]) {
-    try {
-      saved = typeof rows[0].setting_value === "string" ? JSON.parse(rows[0].setting_value) : rows[0].setting_value;
-    } catch {
-      saved = {};
+  try {
+    const { rows } = await query("SELECT setting_value FROM site_settings WHERE setting_key = 'site'");
+    let saved = {};
+    if (rows && rows[0]) {
+      try {
+        saved = typeof rows[0].setting_value === "string" ? JSON.parse(rows[0].setting_value) : rows[0].setting_value;
+      } catch {
+        saved = {};
+      }
     }
+    return sanitizeSiteSettings(saved);
+  } catch (err) {
+    console.warn("Could not read site settings from DB, using defaults:", err.message);
+    return sanitizeSiteSettings({});
   }
-  return sanitizeSiteSettings(saved);
 }
 
 function upsertMeta(html, selector, value) {

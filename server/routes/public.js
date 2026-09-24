@@ -30,19 +30,29 @@ function publicReview(r) {
 }
 
 router.get("/reviews", async (req, res) => {
-  const { rows } = await query("SELECT * FROM reviews WHERE status = 'approved' ORDER BY created_at DESC LIMIT 500");
-  const distribution = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
-  let total = 0;
-  for (const r of rows) {
-    distribution[r.rating]++;
-    total += r.rating;
+  try {
+    const { rows } = await query("SELECT * FROM reviews WHERE status = 'approved' ORDER BY created_at DESC LIMIT 500");
+    const distribution = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+    let total = 0;
+    for (const r of rows) {
+      distribution[r.rating]++;
+      total += r.rating;
+    }
+    res.set("Cache-Control", "no-cache");
+    res.json({
+      summary: { count: rows.length, average: rows.length ? +(total / rows.length).toFixed(2) : 0, distribution },
+      limits: { photoMb: config.limits.reviewPhotoMb, videoMb: config.limits.reviewVideoMb },
+      reviews: rows.map(publicReview)
+    });
+  } catch (err) {
+    console.warn("Could not fetch reviews:", err.message);
+    res.set("Cache-Control", "no-cache");
+    res.json({
+      summary: { count: 0, average: 0, distribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 } },
+      limits: { photoMb: config.limits.reviewPhotoMb, videoMb: config.limits.reviewVideoMb },
+      reviews: []
+    });
   }
-  res.set("Cache-Control", "no-cache");
-  res.json({
-    summary: { count: rows.length, average: rows.length ? +(total / rows.length).toFixed(2) : 0, distribution },
-    limits: { photoMb: config.limits.reviewPhotoMb, videoMb: config.limits.reviewVideoMb },
-    reviews: rows.map(publicReview)
-  });
 });
 
 const skipInTests = () => process.env.NODE_ENV === "test";
@@ -125,27 +135,39 @@ router.post("/reviews", reviewLimiter, reviewUpload, async (req, res) => {
 /* ---------- Gallery ---------- */
 
 router.get("/gallery", async (req, res) => {
-  const { rows } = await query("SELECT * FROM gallery_items WHERE published = 1 ORDER BY sort_order ASC, created_at DESC LIMIT 300");
-  res.set("Cache-Control", "no-cache");
-  res.json({
-    items: rows.map(g => ({ id: g.id, title: g.title, caption: g.caption, ...media.present({ type: g.type, url: g.url }) }))
-  });
+  try {
+    const { rows } = await query("SELECT * FROM gallery_items WHERE published = 1 ORDER BY sort_order ASC, created_at DESC LIMIT 300");
+    res.set("Cache-Control", "no-cache");
+    res.json({
+      items: rows.map(g => ({ id: g.id, title: g.title, caption: g.caption, ...media.present({ type: g.type, url: g.url }) }))
+    });
+  } catch (err) {
+    console.warn("Could not fetch gallery:", err.message);
+    res.set("Cache-Control", "no-cache");
+    res.json({ items: [] });
+  }
 });
 
 /* ---------- Website settings ---------- */
 
 router.get("/settings", async (req, res) => {
-  const { rows } = await query("SELECT setting_value FROM site_settings WHERE setting_key = 'site'");
-  let saved = {};
-  if (rows[0]) {
-    try {
-      saved = typeof rows[0].setting_value === "string" ? JSON.parse(rows[0].setting_value) : rows[0].setting_value;
-    } catch {
-      saved = {};
+  try {
+    const { rows } = await query("SELECT setting_value FROM site_settings WHERE setting_key = 'site'");
+    let saved = {};
+    if (rows && rows[0]) {
+      try {
+        saved = typeof rows[0].setting_value === "string" ? JSON.parse(rows[0].setting_value) : rows[0].setting_value;
+      } catch {
+        saved = {};
+      }
     }
+    res.set("Cache-Control", "no-cache");
+    res.json({ settings: sanitizeSiteSettings(saved) });
+  } catch (err) {
+    console.warn("Could not fetch settings from DB, using defaults:", err.message);
+    res.set("Cache-Control", "no-cache");
+    res.json({ settings: sanitizeSiteSettings({}) });
   }
-  res.set("Cache-Control", "no-cache");
-  res.json({ settings: sanitizeSiteSettings(saved) });
 });
 
 /* ---------- Enquiries ---------- */
