@@ -189,15 +189,12 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: "Something went wrong on the server. Try again in a moment." });
 });
 
-async function start() {
-  const server = await new Promise(resolve => {
-    const s = app.listen(config.port, () => {
-      console.log(`earthsar running on http://localhost:${config.port} (admin: /admin)`);
-      resolve(s);
-    });
-  });
+const server = app.listen(config.port, () => {
+  console.log(`earthsar running on http://localhost:${config.port} (admin: /admin)`);
+});
 
-  if (config.databaseUrl) {
+if (config.databaseUrl) {
+  (async () => {
     try {
       await migrate();
       await bootstrapAdmin();
@@ -205,17 +202,9 @@ async function start() {
     } catch (err) {
       console.error("Database initialization warning:", err.message);
     }
-  } else {
-    console.warn("DATABASE_URL is not set. Site running in read-only / static mode.");
-  }
-
-  return server;
+  })();
+} else {
+  console.warn("DATABASE_URL is not set. Site running in read-only / static mode.");
 }
 
-if (require.main === module) {
-  start().catch(err => {
-    console.error("Could not start:", err.message);
-  });
-}
-
-module.exports = { app, start };
+module.exports = { app, server };
