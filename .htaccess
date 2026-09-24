@@ -1,0 +1,26 @@
+RewriteEngine On
+
+# 1. Route API requests to PHP router
+RewriteRule ^api(/.*)?$ api/router.php [L,QSA]
+
+# 2. Dynamic SEO files
+RewriteRule ^robots\.txt$ api/seo.php?type=robots [L,QSA]
+RewriteRule ^sitemap\.xml$ api/seo.php?type=sitemap [L,QSA]
+
+# 3. Admin panel
+RewriteRule ^admin/?$ public/admin/index.html [L]
+
+# 4. If request is a real file/dir at root, serve it
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# 5. If file exists inside public/, serve it directly (styles.css, main.js, assets/, uploads/, etc.)
+RewriteCond %{DOCUMENT_ROOT}/public/$1 -f
+RewriteRule ^(.*)$ public/$1 [L]
+
+RewriteCond public/$1 -f
+RewriteRule ^(.*)$ public/$1 [L]
+
+# 6. SPA / Homepage catch-all -> index.php (injects dynamic SEO meta tags)
+RewriteRule ^ index.php [L]
