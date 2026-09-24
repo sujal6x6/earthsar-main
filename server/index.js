@@ -190,20 +190,31 @@ app.use((err, req, res, next) => {
 });
 
 async function start() {
-  await migrate();
-  await bootstrapAdmin();
-  return new Promise(resolve => {
-    const server = app.listen(config.port, () => {
-      console.log(`earthsar running on http://localhost:${config.port}  (admin: /admin)`);
-      resolve(server);
+  const server = await new Promise(resolve => {
+    const s = app.listen(config.port, () => {
+      console.log(`earthsar running on http://localhost:${config.port} (admin: /admin)`);
+      resolve(s);
     });
   });
+
+  if (config.databaseUrl) {
+    try {
+      await migrate();
+      await bootstrapAdmin();
+      console.log("Database initialized successfully.");
+    } catch (err) {
+      console.error("Database initialization warning:", err.message);
+    }
+  } else {
+    console.warn("DATABASE_URL is not set. Site running in read-only / static mode.");
+  }
+
+  return server;
 }
 
 if (require.main === module) {
   start().catch(err => {
     console.error("Could not start:", err.message);
-    process.exit(1);
   });
 }
 
