@@ -510,9 +510,9 @@ function advisorEditor(member, i) {
 
 function drawSettingsForm() {
   const s = state.settings || {}, c = s.contact || {}, st = s.stats || {}, h = s.hero || {}, seo = s.seo || {}, team = s.team || [];
-  const phone = c.phone || c.whatsapp || "+91 890 176 0000";
-  const whatsapp = c.whatsapp || c.phone || "+91 890 176 0000";
-  const email = c.email || "earthzgroup@gmail.com";
+  const phone = c.phone || c.whatsapp || "+91 79820 08930";
+  const whatsapp = c.whatsapp || c.phone || "+91 79820 08930";
+  const email = c.email || "info@earthsar.in";
   $("#settingsBox").innerHTML = `<form class="panel settings-form" id="settingsForm" data-settings-version="edit-v2" novalidate>
     <section>
       <h2>Contact Details</h2>
@@ -582,7 +582,7 @@ function normalizeContactDefaults() {
   const email = $('[data-key="contact.email"]', form);
   if (phone && !phone.value.trim() && whatsapp && whatsapp.value.trim()) phone.value = whatsapp.value.trim();
   if (whatsapp && !whatsapp.value.trim() && phone && phone.value.trim()) whatsapp.value = phone.value.trim();
-  if (email && !email.value.trim()) email.value = "earthzgroup@gmail.com";
+  if (email && !email.value.trim()) email.value = "info@earthsar.in";
 }
 
 function settingsValue(form, name) {
@@ -597,9 +597,9 @@ async function saveSettingsForm(e) {
   normalizeContactDefaults();
   const settings = {
     contact: {
-      phone: settingsValue(form, "contact.phone") || settingsValue(form, "contact.whatsapp") || "+91 890 176 0000",
-      whatsapp: settingsValue(form, "contact.whatsapp") || settingsValue(form, "contact.phone") || "+91 890 176 0000",
-      email: settingsValue(form, "contact.email") || "earthzgroup@gmail.com",
+      phone: settingsValue(form, "contact.phone") || settingsValue(form, "contact.whatsapp") || "+91 79820 08930",
+      whatsapp: settingsValue(form, "contact.whatsapp") || settingsValue(form, "contact.phone") || "+91 79820 08930",
+      email: settingsValue(form, "contact.email") || "info@earthsar.in",
       hours: settingsValue(form, "contact.hours"),
       address: settingsValue(form, "contact.address")
     },

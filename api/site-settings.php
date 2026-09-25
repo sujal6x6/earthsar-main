@@ -10,22 +10,22 @@ $DEFAULT_SITE_SETTINGS = [
         'secondary_cta' => 'Our Services'
     ],
     'contact' => [
-        'phone' => '+1 (555) 123-4567',
-        'email' => 'info@earthsar.com',
-        'address' => '123 Survey Way, Topo City, ST 12345',
+        'phone' => '+91 79820 08930',
+        'email' => 'info@earthsar.in',
+        'address' => 'DLF Corporate Greens, Sector - 74A, Gurugram, Haryana',
         'facebook' => '',
         'twitter' => '',
         'instagram' => '',
         'linkedin' => ''
     ],
     'stats' => [
-        ['label' => 'Years Experience', 'value' => '14+'],
+        ['label' => 'Years Experience', 'value' => '15+'],
         ['label' => 'Projects Completed', 'value' => '1000+'],
         ['label' => 'Expert Surveyors', 'value' => '10+'],
         ['label' => 'Satisfied Clients', 'value' => '500+']
     ],
     'seo' => [
-        'title' => 'EarthSAR | Professional Land Surveying',
+        'title' => 'earthsar | Real Estate Advisory',
         'description' => 'Professional land surveying services including boundary, topographic, and construction surveys.',
         'keywords' => 'land surveyor, boundary survey, topographic survey, construction staking'
     ],

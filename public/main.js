@@ -135,16 +135,16 @@ function heroSVG(){
   };
   return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Abstract modern architecture rising into a clear sky">
   <defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#EAF2FF"/><stop offset="1" stop-color="#F7FAFF"/></linearGradient>
-  <linearGradient id="rf" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0A57C2"/><stop offset="1" stop-color="#003A88"/></linearGradient>
+  <linearGradient id="rf" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0A58C4"/><stop offset="1" stop-color="#003C8C"/></linearGradient>
   <linearGradient id="lf" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#DCE8FA"/></linearGradient></defs>
   <rect width="${W}" height="${H}" fill="url(#sky)"/>
-  <circle cx="96" cy="120" r="150" fill="#004AAD" opacity=".06"/>
-  <circle cx="92" cy="118" r="30" fill="#F1770A"/>
-  ${face(-60,70,"#C9DBF5","#004AAD",.25,250)}
-  ${face(70,250,"url(#lf)","#004AAD",.28,-20)}
+  <circle cx="96" cy="120" r="150" fill="#004BAF" opacity=".06"/>
+  <circle cx="92" cy="118" r="30" fill="#F0780A"/>
+  ${face(-60,70,"#C9DBF5","#004BAF",.25,250)}
+  ${face(70,250,"url(#lf)","#004BAF",.28,-20)}
   ${face(250,470,"url(#rf)","#FFFFFF",.22,-20)}
   <line x1="${at(250,B)}" y1="${B}" x2="${at(250,-20)}" y2="-20" stroke="#fff" stroke-width="1.5" opacity=".7"/>
-  <line x1="0" y1="452" x2="${W}" y2="452" stroke="#F1770A" stroke-width="3"/>
+  <line x1="0" y1="452" x2="${W}" y2="452" stroke="#F0780A" stroke-width="3"/>
   </svg>`;
 }
 function renderHero(){
