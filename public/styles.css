@@ -46,6 +46,7 @@ html{scroll-behavior:smooth;scroll-padding-top:calc(env(safe-area-inset-top,0px)
 html,body{max-width:100%;overflow-x:hidden}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16.5px;line-height:1.65;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 img,svg,video{max-width:100%;display:block}
+section,.wrap,.card,.member,.rev,.form-card{min-width:0}
 a{color:var(--heading);text-decoration:none}
 button,input,select,textarea{font:inherit;color:inherit}
 h1,h2,h3,h4{font-family:var(--f-head);color:var(--heading);margin:0;line-height:1.15;letter-spacing:-.01em;font-weight:600}
@@ -305,7 +306,7 @@ p{margin:0}
 .member.ph{box-shadow:none;border-style:dashed;background:transparent}
 .member.ph h3,.member.ph .role{color:var(--faint)}
 @media (max-width:1120px){.team-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media (max-width:700px){.team-grid{grid-template-columns:1fr;gap:20px}.member p{-webkit-line-clamp:6}}
+@media (max-width:700px){.team-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.member p{-webkit-line-clamp:6}}
 .modal-box.advisor-profile{width:min(900px,100%);max-height:min(760px,calc(100vh - 40px))}
 .advisor-modal{display:grid;grid-template-columns:170px minmax(0,1fr);gap:26px;align-items:start}
 .advisor-modal-photo{aspect-ratio:4/5;border-radius:var(--r);overflow:hidden;background:var(--soft-blue)}
@@ -563,15 +564,15 @@ p{margin:0}
   .h2{font-size:30px;max-width:18ch}
   .lede{font-size:16px;margin-top:12px}
   .eyebrow{font-size:12px;margin-bottom:12px;letter-spacing:.12em}
-  .hdr-in{height:72px;gap:12px}
+  .hdr-in{height:72px;gap:6px}
   .hdr-in{justify-content:space-between}
   .hdr .brand-logo{width:160px}
   .theme-toggle{margin-left:auto}
-  .menu-btn{width:42px;height:42px}
+  .menu-btn{width:42px;height:42px;margin-left:0}
   .hero{padding:30px 0 54px}
   .hero::before{width:360px;height:360px;right:-190px;top:64px;opacity:.65}
   .hero-grid{gap:28px;justify-items:start}
-  .hero-grid>div:first-child,.hero p.lead,.hero-ctas,.trust-list,.hero-art{width:100%;max-width:330px}
+  .hero-grid>div:first-child,.hero p.lead,.hero-ctas,.trust-list,.hero-art{width:100%;max-width:none}
   .hero h1{font-size:37px;line-height:1.06}
   .hero-rule{margin:20px 0 18px}
   .hero p.lead{font-size:16.5px;line-height:1.58;max-width:none}
@@ -606,13 +607,15 @@ p{margin:0}
   .logo-tile{width:150px;height:122px;padding:14px}
   .logo-tile img{max-height:76px}
   .logo-tile .nm{font-size:12px}
-  .member-photo{aspect-ratio:16/11}
-  .member-body{padding:18px}
-  .member h3{font-size:20px}
-  .member .role{font-size:14.5px}
-  .member .div{margin:11px 0}
-  .member .xp{font-size:12.8px}
-  .member-read{min-height:42px}
+  .team-grid{gap:12px}
+  .member{border-radius:12px}
+  .member-photo{aspect-ratio:1/1}
+  .member-body{padding:13px 12px 14px}
+  .member h3{font-size:17px;line-height:1.18}
+  .member .role{font-size:12.8px;line-height:1.35}
+  .member .div{margin:9px 0;width:34px}
+  .member .xp{font-size:11.5px;line-height:1.25;padding:4px 7px;border-radius:8px}
+  .member-read{min-height:38px;margin-top:14px;padding:9px 10px;font-size:13.5px}
   .summary{padding:24px 20px}
   .summary .big{font-size:52px}
   .rev{padding:22px 20px}
@@ -627,17 +630,35 @@ p{margin:0}
   .final p{font-size:16px;margin-top:16px}
   .final .ctas{display:grid;grid-template-columns:1fr;gap:10px;margin-top:26px}
   .final .ctas .btn{width:100%;white-space:normal}
+  #contact.sec{padding-top:42px;padding-bottom:44px}
+  .contact-grid{gap:22px}
   .cinfo{gap:14px;margin-top:22px}
   .cinfo li{grid-template-columns:42px 1fr;gap:12px}
   .cinfo .ic{width:42px;height:42px}
-  .form-card{padding:22px 18px}
-  .fld textarea{min-height:104px}
+  .form-card{padding:12px;border-radius:12px}
+  .form-grid{gap:8px}
+  .fld label{font-size:12.5px;margin-bottom:4px}
+  .fld input,.fld select,.fld textarea{border-radius:8px;padding:7px 10px;font-size:14px}
+  .fld textarea{min-height:70px}
+  .fld .emsg{font-size:12px;margin-top:4px}
+  .check{font-size:12.5px;gap:7px}
+  .check input{width:16px;height:16px;margin-top:2px}
+  .form-foot{margin-top:12px;gap:8px}
   .form-foot .btn{width:100%}
-  .ftr{padding-top:50px}
-  .ftr-top{grid-template-columns:1fr;gap:28px}
-  .ftr .plate .brand-logo{width:190px}
-  .ftr .plate .brand-logo>span{font-size:42px}
-  .ftr-bot{margin-top:36px}
+  .ftr{padding-top:26px;padding-bottom:18px;font-size:12.5px;line-height:1.45}
+  .ftr-top{grid-template-columns:1fr 1fr;gap:14px}
+  .ftr-brand{grid-column:1/-1}
+  .ftr .plate{border-radius:10px;padding:8px 10px}
+  .ftr .plate .brand-logo{width:150px}
+  .ftr .plate .brand-logo>span{font-size:34px}
+  .ftr .plate .brand-logo small{font-size:9.5px}
+  .ftr .tagl{display:none}
+  .ftr h4{margin-bottom:7px;font-size:12.5px;gap:6px}
+  .ftr h4::after{width:18px}
+  .ftr ul{gap:5px}
+  .ftr li{line-height:1.35}
+  #fContact li:nth-child(n+4){display:none}
+  .ftr-bot{margin-top:18px;padding-top:12px;font-size:12px}
   .modal{padding:10px}
   .modal-h{padding:22px 20px 8px}
   .modal-h h3{font-size:22px}
