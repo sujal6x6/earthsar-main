@@ -13,9 +13,9 @@ const DEFAULT_SITE_SETTINGS = {
   },
   hero: {
     eyebrow: "Real estate advisory",
-    title: "Right Property.\nRight Time.\nRight Return.",
+    title: "Honesty |\nTransparency |\nTrust",
     lead: "We don't just show properties. We help you understand them with smart advice, honest conversations and long-term relationships.",
-    trust: ["Honesty", "Transparency", "Trust"],
+    trust: ["Right Property", "Right Time", "Right Return"],
     cardTitle: "The 3R value",
     cardText: "Right property, right time, right return.",
     image: "assets/hero-property.jpg",
