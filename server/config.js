@@ -27,7 +27,7 @@ const config = {
     name: process.env.ADMIN_NAME || "Admin"
   },
   limits: {
-    reviewPhotoMb: num(process.env.REVIEW_PHOTO_MAX_MB, 5),
+    reviewPhotoMb: num(process.env.REVIEW_PHOTO_MAX_MB, 20),
     reviewVideoMb: num(process.env.REVIEW_VIDEO_MAX_MB, 50),
     adminUploadMb: num(process.env.ADMIN_UPLOAD_MAX_MB, 100)
   }

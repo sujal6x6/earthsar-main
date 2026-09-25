@@ -469,7 +469,7 @@ function api(req, res, pathname) {
     return json(res, 200, {
       reviews: approved.map(publicReview),
       summary: reviewSummary(approved),
-      limits: { photoMb: 5, videoMb: 50 }
+      limits: { photoMb: 20, videoMb: 50 }
     });
   }
 

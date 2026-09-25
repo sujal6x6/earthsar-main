@@ -42,7 +42,7 @@ $config = [
     'ADMIN_PASSWORD' => $_ENV['ADMIN_PASSWORD'] ?? 'admin123',
     'ADMIN_NAME' => $_ENV['ADMIN_NAME'] ?? 'Admin',
     
-    'REVIEW_PHOTO_MAX_MB' => isset($_ENV['REVIEW_PHOTO_MAX_MB']) ? (float)$_ENV['REVIEW_PHOTO_MAX_MB'] : 5,
+    'REVIEW_PHOTO_MAX_MB' => isset($_ENV['REVIEW_PHOTO_MAX_MB']) ? (float)$_ENV['REVIEW_PHOTO_MAX_MB'] : 20,
     'REVIEW_VIDEO_MAX_MB' => isset($_ENV['REVIEW_VIDEO_MAX_MB']) ? (float)$_ENV['REVIEW_VIDEO_MAX_MB'] : 50,
     'ADMIN_UPLOAD_MAX_MB' => isset($_ENV['ADMIN_UPLOAD_MAX_MB']) ? (float)$_ENV['ADMIN_UPLOAD_MAX_MB'] : 100,
     
