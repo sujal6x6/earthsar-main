@@ -69,12 +69,10 @@ function applySEO(seo){
 }
 
 /* ================= THEME ================= */
-const themeMedia=matchMedia("(prefers-color-scheme: dark)");
-function storedTheme(){try{return localStorage.getItem("earthsar-theme")||""}catch(e){return ""}}
 function currentTheme(){
   const forced=document.documentElement.dataset.theme;
   if(forced==="dark"||forced==="light")return forced;
-  return themeMedia.matches?"dark":"light";
+  return "light";
 }
 function setTheme(theme){
   if(theme==="dark"||theme==="light"){
@@ -98,7 +96,6 @@ document.addEventListener("click",e=>{
   if(!btn)return;
   setTheme(currentTheme()==="dark"?"light":"dark");
 });
-themeMedia.addEventListener("change",()=>{if(!storedTheme())paintThemeToggle()});
 paintThemeToggle();
 initCursorRing();
 
