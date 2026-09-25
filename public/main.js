@@ -516,7 +516,7 @@ const onScroll=()=>hdr.classList.toggle("scrolled",scrollY>8);addEventListener("
 $("#menuBtn").onclick=()=>{const o=hdr.classList.toggle("open");$("#menuBtn").setAttribute("aria-expanded",o)};
 $$("#nav a").forEach(a=>a.addEventListener("click",()=>{hdr.classList.remove("open");$("#menuBtn").setAttribute("aria-expanded","false")}));
 $$("[data-talk]").forEach(a=>a.addEventListener("click",()=>setTimeout(()=>$("#e-name").focus({preventScroll:true}),600)));
-const navMap=["about","expertise","why","associations","achievements","gallery","reviews","contact"];
+const navMap=["about","expertise","why","associations","gallery","reviews","contact"];
 const setActive=id=>$$("#nav a:not(.btn)").forEach(a=>a.classList.toggle("active",a.getAttribute("href")==="#"+id));
 const secIO=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting)setActive(e.target.id)})},{rootMargin:"-45% 0px -50% 0px"});
 navMap.forEach(id=>{const el=document.getElementById(id);if(el)secIO.observe(el)});
