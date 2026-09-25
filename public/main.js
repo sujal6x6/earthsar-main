@@ -298,7 +298,7 @@ function renderReviews(){
     return `<article class="card rev"><div class="rev-h"><span class="avatar">${r.avatar?`<img src="${esc(r.avatar)}" alt="">`:esc(initials(r.name))}</span><div><div class="rev-name">${esc(r.name)}</div>${r.verified?`<span class="badge" style="color:var(--heading)">${icon("i-verified")}Verified Client</span>`:""}</div></div>
     <div class="rev-meta">${stars(+r.rating,"sm")}<span class="rev-date">${esc(fmtDate(r.createdAt))}</span></div>
     <p>${esc(r.message)}</p>
-    ${items.length?`<div class="rev-photos">${items.map((m,j)=>`<button class="${m.type==="video"?"vthumb":""}" data-rm="${r.id}:${j}" aria-label="${m.type==="video"?"Play video":"View photo "+(j+1)}">${m.thumb?`<img src="${esc(m.thumb)}" alt="" loading="lazy">`:""}${m.type==="video"?icon("i-play"):""}</button>`).join("")}</div>`:""}
+    ${items.length?`<div class="rev-photos">${items.map((m,j)=>`<button class="${m.type==="video"?"vthumb":""}${m.thumb?"":" media-broken"}" data-rm="${r.id}:${j}" aria-label="${m.type==="video"?"Play video":"View photo "+(j+1)}">${mediaCover(m,"rev-cover")}${m.thumb?`<img src="${esc(m.thumb)}" alt="" loading="lazy">`:""}${m.type==="video"?icon("i-play"):""}</button>`).join("")}</div>`:""}
     ${hasVideo?`<button class="rev-video" data-rm="${r.id}:${items.findIndex(m=>m.type==="video")}">${icon("i-video")}<span>Watch video testimonial</span></button>`:""}</article>`}).join("")
     :`<div class="empty" style="grid-column:1/-1"><b>Client reviews will appear here</b>Reviews are published after our team confirms them.</div>`;
   $$(".rev-video > svg").forEach(s=>{s.style.width="20px";s.style.height="20px"});
@@ -316,9 +316,13 @@ function renderTabs(box,all,current,onPick){
   box.innerHTML=[["all","All",all.length],["image","Photos",nP],["video","Videos",nV]].map(([k,l,n])=>`<button role="tab" aria-selected="${k===current}" data-f="${k}">${l}<span class="n">${n}</span></button>`).join("");
   $$("button",box).forEach(b=>b.onclick=()=>onPick(b.dataset.f));
 }
+function mediaCover(m,cls="media-cover"){
+  const vid=m&&m.type==="video";
+  return `<span class="${cls} ${vid?"video":"image"}" aria-hidden="true"><span class="cover-ic">${icon(vid?"i-video":"i-image")}</span><span>${vid?"Video":"Photo"}</span></span>`;
+}
 function tile(m,i,capHtml,big){
   const vid=m.type==="video";
-  return `<button class="mtile${m.thumb?"":" noimg"}${big?" big":""}" data-i="${i}" aria-label="${vid?"Play video":"View photo"}${m.title?": "+esc(m.title):""}">${m.thumb?`<img src="${esc(m.thumb)}" alt="" loading="lazy">`:""}${vid?`<span class="play">${icon("i-play")}</span>`:""}${capHtml?`<span class="cap">${capHtml}</span>`:""}</button>`;
+  return `<button class="mtile${m.thumb?"":" noimg"}${big?" big":""}" data-i="${i}" aria-label="${vid?"Play video":"View photo"}${m.title?": "+esc(m.title):""}">${mediaCover(m)}${m.thumb?`<img src="${esc(m.thumb)}" alt="" loading="lazy">`:""}${vid?`<span class="play">${icon("i-play")}</span>`:""}${capHtml?`<span class="cap">${capHtml}</span>`:""}</button>`;
 }
 function renderGrid({grid,more,list,showAll,setAll,capFn,featureFirst,invite}){
   /* Show 8 at first (9 with an enlarged first tile). The first tile is enlarged (it takes 4 cells) only when
@@ -376,6 +380,16 @@ function closeModal(){if(onClose){onClose();onClose=null}$("#modal").classList.r
 document.addEventListener("click",e=>{if(e.target.closest("[data-close]"))closeModal()});
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&$("#modal").classList.contains("open"))closeModal()});
 const xBtn=`<button class="modal-x" data-close aria-label="Close">${icon("i-x")}</button>`;
+document.addEventListener("error",e=>{
+  const el=e.target;
+  if(el instanceof HTMLImageElement){
+    const tile=el.closest(".mtile,.rev-photos button");
+    if(tile){tile.classList.add("media-broken");el.hidden=true;return}
+  }
+  if(!(el instanceof HTMLImageElement||el instanceof HTMLVideoElement))return;
+  const stage=el.closest("#vStage");
+  if(stage)stage.innerHTML=`<div class="viewer-cover"><span class="cover-ic">${icon(el instanceof HTMLVideoElement?"i-video":"i-image")}</span><b>Preview unavailable</b><span>Open the media link or try uploading the file again.</span></div>`;
+},true);
 
 /* Photo / video viewer with previous and next. */
 function openViewer(items,start){
