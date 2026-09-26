@@ -6,10 +6,22 @@ require_once __DIR__ . '/api/config.php';
 
 function seo_origin() {
     global $earthsar_config;
+    if (!empty($earthsar_config['SITE_URL'])) return $earthsar_config['SITE_URL'];
     if (!empty($earthsar_config['site_url'])) return $earthsar_config['site_url'];
     $proto = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
     return $proto . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost');
 }
+
+$sitemap_urls = [
+    ['', 'weekly', '1.0'],
+    ['about.html', 'monthly', '0.8'],
+    ['services.html', 'monthly', '0.9'],
+    ['real-estate-advisory-gurugram.html', 'monthly', '0.8'],
+    ['contact.html', 'monthly', '0.7'],
+    ['privacy.html', 'yearly', '0.3'],
+    ['terms.html', 'yearly', '0.3'],
+    ['disclaimer.html', 'yearly', '0.3']
+];
 
 $type = $_GET['type'] ?? '';
 $origin = seo_origin();
@@ -30,12 +42,15 @@ if ($type === 'sitemap') {
     $today = date('Y-m-d');
     echo '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
     echo '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
-    echo "  <url>\n";
-    echo "    <loc>{$origin}/</loc>\n";
-    echo "    <lastmod>{$today}</lastmod>\n";
-    echo "    <changefreq>weekly</changefreq>\n";
-    echo "    <priority>1.0</priority>\n";
-    echo "  </url>\n";
+    foreach ($sitemap_urls as $entry) {
+        [$path, $changefreq, $priority] = $entry;
+        echo "  <url>\n";
+        echo "    <loc>{$origin}/{$path}</loc>\n";
+        echo "    <lastmod>{$today}</lastmod>\n";
+        echo "    <changefreq>{$changefreq}</changefreq>\n";
+        echo "    <priority>{$priority}</priority>\n";
+        echo "  </url>\n";
+    }
     echo '</urlset>' . "\n";
     exit;
 }

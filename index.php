@@ -41,6 +41,7 @@ function upsert_meta($html, $type, $key, $value) {
 
 function site_origin() {
     global $earthsar_config;
+    if (!empty($earthsar_config['SITE_URL'])) return $earthsar_config['SITE_URL'];
     if (!empty($earthsar_config['site_url'])) return $earthsar_config['site_url'];
     $proto = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
     return $proto . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost');

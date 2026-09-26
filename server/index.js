@@ -47,6 +47,17 @@ function siteOrigin(req) {
   return config.siteUrl || `${req.protocol}://${req.get("host")}`;
 }
 
+const sitemapUrls = [
+  ["", "weekly", "1.0"],
+  ["about.html", "monthly", "0.8"],
+  ["services.html", "monthly", "0.9"],
+  ["real-estate-advisory-gurugram.html", "monthly", "0.8"],
+  ["contact.html", "monthly", "0.7"],
+  ["privacy.html", "yearly", "0.3"],
+  ["terms.html", "yearly", "0.3"],
+  ["disclaimer.html", "yearly", "0.3"]
+];
+
 function escapeHtml(value) {
   return String(value == null ? "" : value).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 }
@@ -145,13 +156,12 @@ Sitemap: ${origin}/sitemap.xml
 app.get("/sitemap.xml", (req, res) => {
   const origin = siteOrigin(req);
   const today = new Date().toISOString().slice(0, 10);
-  const urls = [["", "1.0"]];
   res.type("application/xml").send(`<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${urls.map(([path, priority]) => `  <url>
+${sitemapUrls.map(([path, changefreq, priority]) => `  <url>
     <loc>${origin}/${path}</loc>
     <lastmod>${today}</lastmod>
-    <changefreq>weekly</changefreq>
+    <changefreq>${changefreq}</changefreq>
     <priority>${priority}</priority>
   </url>`).join("\n")}
 </urlset>

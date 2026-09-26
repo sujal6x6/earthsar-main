@@ -102,8 +102,8 @@ window.EARTHSAR_CONFIG = {
   /* ---------- Legal pages ----------
      Set to page URLs once your legal text is ready, e.g. "privacy.html". */
   legal: {
-    privacy: "",
-    terms: "",
-    disclaimer: ""
+    privacy: "privacy.html",
+    terms: "terms.html",
+    disclaimer: "disclaimer.html"
   }
 };
