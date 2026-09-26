@@ -333,8 +333,13 @@ function renderGrid({grid,more,list,showAll,setAll,capFn,featureFirst,invite}){
 }
 function renderGallery(){
   const G=S.gallery,sec=$("#gallery");
-  const has=G.length>0;sec.hidden=!has;$("[data-gallery-link]").hidden=!has;
-  if(!has)return;
+  sec.hidden=false;$$("[data-gallery-link]").forEach(a=>a.hidden=false);
+  if(!G.length){
+    $("#galTabs").hidden=true;
+    $("#galGrid").innerHTML=`<div class="empty"><b>earthsar photos and videos will appear here</b>Published site media can be added from the admin Gallery.</div>`;
+    $("#galMore").innerHTML="";
+    return;
+  }
   if(S.galFilter!=="all"&&!G.some(m=>m.type===S.galFilter))S.galFilter="all";
   renderTabs($("#galTabs"),G,S.galFilter,f=>{S.galFilter=f;S.galAll=false;renderGallery()});
   const list=S.galFilter==="all"?G:G.filter(m=>m.type===S.galFilter);
@@ -516,7 +521,19 @@ const onScroll=()=>hdr.classList.toggle("scrolled",scrollY>8);addEventListener("
 $("#menuBtn").onclick=()=>{const o=hdr.classList.toggle("open");$("#menuBtn").setAttribute("aria-expanded",o)};
 $$("#nav a").forEach(a=>a.addEventListener("click",()=>{hdr.classList.remove("open");$("#menuBtn").setAttribute("aria-expanded","false")}));
 $$("[data-talk]").forEach(a=>a.addEventListener("click",()=>setTimeout(()=>$("#e-name").focus({preventScroll:true}),600)));
-const navMap=["about","expertise","why","associations","gallery","reviews","contact"];
+const mobilePageSections=["expertise","why"];
+function updateMobileSectionPage(){
+  const id=location.hash.replace(/^#/,"");
+  const isMobile=matchMedia("(max-width: 760px)").matches;
+  const showPage=isMobile&&mobilePageSections.includes(id);
+  document.body.classList.toggle("section-page",showPage);
+  if(showPage)document.body.dataset.routeSection=id;
+  else delete document.body.dataset.routeSection;
+}
+addEventListener("hashchange",updateMobileSectionPage);
+addEventListener("resize",updateMobileSectionPage,{passive:true});
+updateMobileSectionPage();
+const navMap=["about","team","expertise","why","associations","gallery","reviews","contact"];
 const setActive=id=>$$("#nav a:not(.btn)").forEach(a=>a.classList.toggle("active",a.getAttribute("href")==="#"+id));
 const secIO=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting)setActive(e.target.id)})},{rootMargin:"-45% 0px -50% 0px"});
 navMap.forEach(id=>{const el=document.getElementById(id);if(el)secIO.observe(el)});

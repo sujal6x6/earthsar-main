@@ -125,14 +125,14 @@ function pageDashboard() {
       <a class="panel dash-card" href="#/leads"><span>New leads</span><b>${s.enquiries_new ?? 0}</b><small>Contact form messages needing attention</small></a>
       <a class="panel dash-card" href="#/reviews/pending"><span>Pending reviews</span><b>${s.pending ?? 0}</b><small>Approve or reject before publishing</small></a>
       <a class="panel dash-card" href="#/reviews/approved"><span>Published reviews</span><b>${s.approved ?? 0}</b><small>Live client feedback on the website</small></a>
-      <a class="panel dash-card" href="#/gallery"><span>Gallery items</span><b>${s.gallery_published ?? 0}</b><small>Photos and videos currently shown</small></a>
+      <a class="panel dash-card" href="#/gallery"><span>Website media</span><b>${s.gallery_published ?? 0}</b><small>Photos and videos published by earthsar</small></a>
     </div>
     <section class="panel dash-actions">
       <h2>Quick actions</h2>
       <div>
         <a class="btn btn-primary" href="#/leads">Open leads</a>
         <a class="btn btn-secondary" href="#/reviews/pending">Moderate reviews</a>
-        <a class="btn btn-secondary" href="#/gallery">Manage gallery</a>
+        <a class="btn btn-secondary" href="#/gallery">Manage website media</a>
         <a class="btn btn-secondary" href="#/settings">Website settings</a>
       </div>
     </section>`;
@@ -236,7 +236,7 @@ function removeReview(id) { state.reviews = state.reviews.filter(x => x.id !== i
 
 /* ================= GALLERY ================= */
 async function pageGallery() {
-  main.innerHTML = `<div class="ph"><div><h1>Gallery</h1><p>Photos and videos shown in the Gallery section of the website, in this order. Use the arrows to move items.</p></div></div>
+  main.innerHTML = `<div class="ph"><div><h1>Website Media</h1><p>Photos and videos published by earthsar in the website media section, in this order. Use the arrows to move items.</p></div></div>
     <section class="panel add-card" aria-labelledby="addH">
       <h2 id="addH">Add a photo or video</h2>
       <div class="seg" role="tablist"><button type="button" class="on" data-mode="link">Paste a link</button><button type="button" data-mode="upload">Upload a file</button></div>
@@ -255,7 +255,7 @@ async function pageGallery() {
           <div class="preview" id="gPrev">Preview</div>
         </div>
         <div class="progress" id="gProg"><i></i></div>
-        <div class="form-foot"><span class="note-err" id="gErr" role="alert"></span><button class="btn btn-primary" id="gBtn" type="submit">Add to gallery</button></div>
+        <div class="form-foot"><span class="note-err" id="gErr" role="alert"></span><button class="btn btn-primary" id="gBtn" type="submit">Add to website media</button></div>
       </form>
     </section>
     <div id="glist"><div class="loading">Loading gallery…</div></div>`;
