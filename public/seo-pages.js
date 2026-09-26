@@ -1,4 +1,7 @@
 (function(){
+  document.querySelectorAll("[data-year]").forEach(el=>{
+    el.textContent=new Date().getFullYear();
+  });
   const header=document.querySelector(".page-header");
   const button=document.querySelector(".menu-btn");
   const nav=document.querySelector(".page-links");
