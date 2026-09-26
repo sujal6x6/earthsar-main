@@ -14,7 +14,6 @@ function seo_origin() {
 
 $sitemap_urls = [
     ['', 'weekly', '1.0'],
-    ['about.html', 'monthly', '0.8'],
     ['services.html', 'monthly', '0.9'],
     ['real-estate-advisory-gurugram.html', 'monthly', '0.8'],
     ['contact.html', 'monthly', '0.7'],
