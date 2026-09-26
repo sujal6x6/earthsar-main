@@ -49,6 +49,7 @@ function siteOrigin(req) {
 
 const sitemapUrls = [
   ["", "weekly", "1.0"],
+  ["about.html", "monthly", "0.8"],
   ["services.html", "monthly", "0.9"],
   ["real-estate-advisory-gurugram.html", "monthly", "0.8"],
   ["contact.html", "monthly", "0.7"],
