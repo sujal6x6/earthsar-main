@@ -37,7 +37,7 @@ media.destroy = async items => {
 
 const { pool, query } = require("../server/db");
 const { hashPassword } = require("../server/auth");
-const { start } = require("../server/index");
+const { start } = require("../server/app");
 
 let server, base, cookie = "";
 const ADMIN = { "X-Requested-With": "earthsar-admin" };

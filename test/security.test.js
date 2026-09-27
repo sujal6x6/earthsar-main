@@ -13,7 +13,7 @@ process.env.DATABASE_NAME = '';
 process.env.NODE_ENV = 'test';
 const { check } = require('../server/uploads');
 const media = require('../server/media');
-const { app } = require('../server/index');
+const { app } = require('../server/app');
 const { pool } = require('../server/db');
 let temp, server, base;
 test.before(async () => {
@@ -100,7 +100,7 @@ test('public site starts despite invalid admin configuration and database initia
     db.migrate=async()=>{throw new Error('simulated database outage')};
     db.query=async()=>{throw new Error('simulated database outage')};
     (async()=>{
-      const {start}=require('./server/index');
+      const {start}=require('./server/app');
       const server=await start();
       const base='http://127.0.0.1:'+server.address().port;
       const statuses=[];
@@ -114,4 +114,20 @@ test('public site starts despite invalid admin configuration and database initia
   assert.equal(result.status,0,result.stderr);
   // Database health still reports failure; serving the public page does not.
   assert.deepEqual(JSON.parse(result.stdout),[200,500,503,503]);
+});
+
+test('hosting loader require starts listening immediately without a main-module guard', () => {
+  const script = `
+    process.env.PORT='0';
+    process.env.DATABASE_URL='';
+    const http=require('node:http');
+    let called=false;
+    http.Server.prototype.listen=function(){called=true;return this};
+    require('./server/index');
+    if(!called) throw new Error('Hosting entry did not call listen synchronously');
+    console.log('listen called');
+  `;
+  const result=spawnSync(process.execPath,['-e',script],{cwd:path.join(__dirname,'..'),env:{...process.env,NODE_ENV:'production'},encoding:'utf8',timeout:3000});
+  assert.equal(result.status,0,result.stderr);
+  assert.match(result.stdout,/listen called/);
 });
