@@ -104,6 +104,7 @@ initCursorRing();
 /* Static content comes from config.js. Reviews and the gallery come from the server. */
 const S={
   partners:C.partners||[],credentials:C.credentials||[],team:C.team||[],
+  googleReviews:window.EARTHSAR_GOOGLE_REVIEWS||C.googleReviews||[],
   reviews:[],summary:null,gallery:[],limits:{photoMb:8,videoMb:50},loaded:false,
   settings:Object.assign({},C.stats||{},C.contact||{}),
   hero:{image:C.heroImage||"",alt:C.heroImageAlt||"earthsar advisors with clients"},
@@ -283,6 +284,35 @@ document.addEventListener("click",e=>{const b=e.target.closest("[data-team]");if
 /* ================= REVIEWS ================= */
 const stars=(n,cls="")=>`<span class="stars ${cls}" aria-label="${n} out of 5 stars">${[1,2,3,4,5].map(i=>`<svg class="${i<=Math.floor(n+.25)?"":"off"}" aria-hidden="true"><use href="#i-star"/></svg>`).join("")}</span>`;
 const fmtDate=t=>t?new Date(t).toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"}):"";
+function googleReviews(){
+  return (S.googleReviews||[]).map((r,i)=>({
+    id:`google-${i+1}`,
+    name:String(r.name||"Google reviewer").trim(),
+    rating:Math.max(1,Math.min(5,parseInt(r.rating,10)||5)),
+    message:String(r.message||"5-star rating shared on Google.").trim(),
+    dateLabel:String(r.dateLabel||"Google review").trim(),
+    source:"Google",
+    verified:false,
+    avatar:null,
+    media:[],
+    videoLink:null,
+    createdAt:""
+  }));
+}
+function mergeReviews(reviews){
+  const seen=new Set();
+  return [...googleReviews(),...(reviews||[])].filter(r=>{
+    const key=`${String(r.name||"").toLowerCase()}|${String(r.message||"").toLowerCase()}`;
+    if(seen.has(key))return false;
+    seen.add(key);return true;
+  });
+}
+function reviewSummary(reviews){
+  const distribution={1:0,2:0,3:0,4:0,5:0};
+  let total=0;
+  reviews.forEach(r=>{const n=Math.max(1,Math.min(5,parseInt(r.rating,10)||0));if(n){distribution[n]++;total+=n}});
+  return{count:reviews.length,average:reviews.length?total/reviews.length:0,distribution};
+}
 function videoInfo(u){
   if(!u)return null;const s=safeUrl(u);if(!s)return null;
   let m=s.match(/(?:youtube\.com\/(?:watch\?(?:.*&)?v=|shorts\/|embed\/|live\/)|youtu\.be\/)([\w-]{6,})/);
@@ -306,8 +336,9 @@ function renderReviews(){
   const list=S.showAll?R:R.slice(0,6);
   $("#revGrid").innerHTML=R.length?list.map(r=>{
     const items=reviewMedia(r),hasVideo=items.some(m=>m.type==="video");
-    return `<article class="card rev"><div class="rev-h"><span class="avatar">${r.avatar?`<img src="${esc(r.avatar)}" alt="">`:esc(initials(r.name))}</span><div><div class="rev-name">${esc(r.name)}</div>${r.verified?`<span class="badge" style="color:var(--heading)">${icon("i-verified")}Verified Client</span>`:""}</div></div>
-    <div class="rev-meta">${stars(+r.rating,"sm")}<span class="rev-date">${esc(fmtDate(r.createdAt))}</span></div>
+    const badge=r.verified?`<span class="badge" style="color:var(--heading)">${icon("i-verified")}Verified Client</span>`:r.source?`<span class="badge" style="color:var(--heading)">${icon("i-verified")}${esc(r.source)} Review</span>`:"";
+    return `<article class="card rev"><div class="rev-h"><span class="avatar">${r.avatar?`<img src="${esc(r.avatar)}" alt="">`:esc(initials(r.name))}</span><div><div class="rev-name">${esc(r.name)}</div>${badge}</div></div>
+    <div class="rev-meta">${stars(+r.rating,"sm")}<span class="rev-date">${esc(r.dateLabel||fmtDate(r.createdAt))}</span></div>
     <p>${esc(r.message)}</p>
     ${items.length?`<div class="rev-photos">${items.map((m,j)=>`<button class="${m.type==="video"?"vthumb":""}${m.thumb?"":" media-broken"}" data-rm="${r.id}:${j}" aria-label="${m.type==="video"?"Play video":"View photo "+(j+1)}">${mediaCover(m,"rev-cover")}${m.thumb?`<img src="${esc(m.thumb)}" alt="" loading="lazy">`:""}${m.type==="video"?icon("i-play"):""}</button>`).join("")}</div>`:""}
     ${hasVideo?`<button class="rev-video" data-rm="${r.id}:${items.findIndex(m=>m.type==="video")}">${icon("i-video")}<span>Watch video testimonial</span></button>`:""}</article>`}).join("")
@@ -375,7 +406,8 @@ function renderClientMedia(){
 
 async function loadDynamic(){
   const [rv,gl]=await Promise.allSettled([getJSON("/api/reviews"),getJSON("/api/gallery")]);
-  if(rv.status==="fulfilled"){S.reviews=rv.value.reviews||[];S.summary=rv.value.summary;if(rv.value.limits)S.limits=rv.value.limits;S.loaded=true}
+  if(rv.status==="fulfilled"){S.reviews=mergeReviews(rv.value.reviews||[]);S.summary=reviewSummary(S.reviews);if(rv.value.limits)S.limits=rv.value.limits;S.loaded=true}
+  else{S.reviews=mergeReviews([]);S.summary=reviewSummary(S.reviews);S.loaded=true}
   if(gl.status==="fulfilled")S.gallery=gl.value.items||[];
   renderReviews();renderClientMedia();renderGallery();
   if(location.hash==="#gallery"&&S.gallery.length)$("#gallery").scrollIntoView();
