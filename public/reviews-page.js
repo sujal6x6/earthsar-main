@@ -70,7 +70,7 @@
           </div>
         </div>
         <div class="review-rating"><span>${starText(review.rating)}</span><em>${esc(dateText(review))}</em></div>
-        <p>${esc(review.message)}</p>
+        <p class="review-copy">${esc(review.message)}</p>
       </article>
     `).join("") : `<div class="card"><h3>No reviews yet</h3><p>Client reviews will appear here after they are published.</p></div>`;
   }
@@ -85,6 +85,7 @@
       }
     }catch(error){}
     render(mergeReviews(dynamicReviews));
+    window.setupReviewPreviews(grid);
   }
 
   if(grid && summary) load();

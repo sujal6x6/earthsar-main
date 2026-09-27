@@ -339,10 +339,11 @@ function renderReviews(){
     const badge=r.verified?`<span class="badge" style="color:var(--heading)">${icon("i-verified")}Verified Client</span>`:r.source?`<span class="badge" style="color:var(--heading)">${icon("i-verified")}${esc(r.source)} Review</span>`:"";
     return `<article class="card rev"><div class="rev-h"><span class="avatar">${r.avatar?`<img src="${esc(r.avatar)}" alt="">`:esc(initials(r.name))}</span><div><div class="rev-name">${esc(r.name)}</div>${badge}</div></div>
     <div class="rev-meta">${stars(+r.rating,"sm")}<span class="rev-date">${esc(r.dateLabel||fmtDate(r.createdAt))}</span></div>
-    <p>${esc(r.message)}</p>
+    <p class="review-copy">${esc(r.message)}</p>
     ${items.length?`<div class="rev-photos">${items.map((m,j)=>`<button class="${m.type==="video"?"vthumb":""}${m.thumb?"":" media-broken"}" data-rm="${r.id}:${j}" aria-label="${m.type==="video"?"Play video":"View photo "+(j+1)}">${mediaCover(m,"rev-cover")}${m.thumb?`<img src="${esc(m.thumb)}" alt="" loading="lazy">`:""}${m.type==="video"?icon("i-play"):""}</button>`).join("")}</div>`:""}
     ${hasVideo?`<button class="rev-video" data-rm="${r.id}:${items.findIndex(m=>m.type==="video")}">${icon("i-video")}<span>Watch video testimonial</span></button>`:""}</article>`}).join("")
     :`<div class="empty" style="grid-column:1/-1"><b>Client reviews will appear here</b>Reviews are published after our team confirms them.</div>`;
+  window.setupReviewPreviews($("#revGrid"));
   $$(".rev-video > svg").forEach(s=>{s.style.width="20px";s.style.height="20px"});
   $$(".badge svg").forEach(s=>{s.style.width="14px";s.style.height="14px"});
   $("#moreWrap").innerHTML=R.length>3?`<a class="btn btn-secondary" href="/reviews.html">Show all ${R.length} reviews</a>`:"";
