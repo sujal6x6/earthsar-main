@@ -150,7 +150,7 @@ Fonts: Outfit (headings) and Manrope (body), loaded from Google Fonts.
 
 ## Security update deployment
 
-- Before deploying, set a unique JWT_SECRET of at least 32 characters on the host. Missing, blank, and former default values are rejected. Generate it locally with: node -e "console.log(require('crypto').randomBytes(48).toString('hex'))". Never commit the result. Rotating the secret signs out existing administrators.
+- Before deploying, set a unique JWT_SECRET of at least 32 characters on the host. Missing, blank, and former default values disable admin access without stopping public pages. Generate it locally with: node -e "console.log(require('crypto').randomBytes(48).toString('hex'))". Never commit the result. Rotating the secret signs out existing administrators.
 - Set NODE_ENV=production (APP_ENV=production for PHP is also supported). Use Node 20+ for the Node backend; Node 22/24 is recommended. Run npm ci to install the locked content-type detector.
 - Initialize via npm run setup (Node) or php setup.php (PHP CLI). Browser initialization endpoints have been removed.
 - Apache/LiteSpeed deployments must retain both the root .htaccess and public/uploads/.htaccess, enable rewrite/headers, and allow the overrides. Other hosts need equivalent rules: reject executable upload extensions, deny deployment files, disable directory listing/script execution, apply nosniff and CSP to static HTML as well as dynamic responses.

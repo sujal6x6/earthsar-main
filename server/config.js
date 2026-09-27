@@ -33,8 +33,10 @@ const config = {
   }
 };
 
-if (config.jwtSecret.length < 32 || /^(earthsar-production-jwt-secret-min-32-chars-long|fallback_secret_must_be_changed_in_prod)$/.test(config.jwtSecret)) {
-  throw new Error("Set JWT_SECRET to a unique, securely generated value of at least 32 characters.");
+config.adminAuthConfigured = config.jwtSecret.length >= 32 && !['earthsar-production-jwt-secret-min-32-chars-long', 'fallback_secret_must_be_changed_in_prod'].includes(config.jwtSecret);
+if (!config.adminAuthConfigured) {
+  config.jwtSecret = '';
+  console.warn('Admin access disabled: configure a unique JWT_SECRET of at least 32 characters.');
 }
 
 if (!config.databaseUrl) {

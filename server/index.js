@@ -215,14 +215,19 @@ app.use((err, req, res, next) => {
 });
 
 async function start() {
-  if (config.databaseUrl) {
-    await migrate();
-    await bootstrapAdmin();
-  }
-  return new Promise((resolve, reject) => {
-    const server = app.listen(config.port, () => resolve(server));
-    server.once("error", reject);
+  const server = await new Promise((resolve, reject) => {
+    const listening = app.listen(config.port, () => resolve(listening));
+    listening.once('error', reject);
   });
+  if (config.databaseUrl) {
+    try {
+      await migrate();
+      await bootstrapAdmin();
+    } catch (err) {
+      console.error('Database initialization unavailable; public server remains online:', err.message);
+    }
+  }
+  return server;
 }
 
 if (require.main === module) {

@@ -59,6 +59,8 @@ $config = [
 // Alias used by index.php
 $earthsar_config = &$config;
 
-if (strlen($config['JWT_SECRET']) < 32 || in_array($config['JWT_SECRET'], ['earthsar-production-jwt-secret-min-32-chars-long', 'fallback_secret_must_be_changed_in_prod'], true)) {
-    throw new RuntimeException('JWT_SECRET must be a unique, securely generated value of at least 32 characters.');
+$config['ADMIN_AUTH_CONFIGURED'] = strlen($config['JWT_SECRET']) >= 32 && !in_array($config['JWT_SECRET'], ['earthsar-production-jwt-secret-min-32-chars-long', 'fallback_secret_must_be_changed_in_prod'], true);
+if (!$config['ADMIN_AUTH_CONFIGURED']) {
+    $config['JWT_SECRET'] = '';
+    error_log('Admin access disabled: configure a unique JWT_SECRET of at least 32 characters.');
 }

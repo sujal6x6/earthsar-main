@@ -7,6 +7,16 @@ require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/jwt.php';
 
+function require_auth_configuration() {
+    global $config;
+    if (empty($config['ADMIN_AUTH_CONFIGURED'])) {
+        http_response_code(503);
+        header('Content-Type: application/json');
+        echo json_encode(['error' => 'Admin access is temporarily unavailable. Contact the site administrator.']);
+        exit;
+    }
+}
+
 define('COOKIE_NAME', 'es_admin');
 define('MAX_AGE', 7 * 24 * 60 * 60); // 7 days
 
@@ -15,6 +25,7 @@ function hash_pw($pw) {
 }
 
 function verify_login($email, $password) {
+    require_auth_configuration();
     $email = strtolower(trim((string)($email ?? '')));
     $password = (string)($password ?? '');
     $rows = db_query("SELECT * FROM admins WHERE email = ?", [$email]);
@@ -31,6 +42,7 @@ function verify_login($email, $password) {
 }
 
 function issue_cookie($admin) {
+    require_auth_configuration();
     global $config;
     $exp = time() + MAX_AGE;
     $payload = [
@@ -69,6 +81,7 @@ function clear_cookie() {
  * Returns admin row or sends 401/403 and exits.
  */
 function require_admin() {
+    require_auth_configuration();
     global $config;
 
     if (empty($_COOKIE[COOKIE_NAME])) {
@@ -127,6 +140,7 @@ function require_admin() {
  */
 function bootstrap_admin() {
     global $config;
+    if (empty($config['ADMIN_AUTH_CONFIGURED'])) return;
     $email = strtolower(trim($config['ADMIN_EMAIL'] ?? ''));
     $password = $config['ADMIN_PASSWORD'] ?? '';
     $name = $config['ADMIN_NAME'] ?? 'Admin';

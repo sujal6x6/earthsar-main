@@ -83,10 +83,35 @@ test('static HTML receives restrictive script policy and standard headers', asyn
   assert.match(csp, /object-src 'none'/);
   assert.match(csp, /frame-ancestors 'self'/);
 });
-test('production rejects missing, short, and known default signing secrets', () => {
+test('production disables admin auth for missing, short, and default secrets', () => {
   for (const secret of ['', 'short', 'earthsar-production-jwt-secret-min-32-chars-long', 'fallback_secret_must_be_changed_in_prod']) {
-    const result = spawnSync(process.execPath, ['-e', 'require("./server/config")'], { cwd: path.join(__dirname, '..'), env: { ...process.env, NODE_ENV: 'production', JWT_SECRET: secret }, encoding: 'utf8' });
-    assert.notEqual(result.status, 0);
+    const result = spawnSync(process.execPath, ['-e', 'console.log(JSON.stringify({enabled:require("./server/config").adminAuthConfigured}))'], { cwd: path.join(__dirname, '..'), env: { ...process.env, NODE_ENV: 'production', JWT_SECRET: secret }, encoding: 'utf8' });
+    assert.equal(result.status, 0);
+    assert.equal(JSON.parse(result.stdout).enabled, false);
     assert.match(result.stderr, /JWT_SECRET/);
   }
+});
+
+test('public site starts despite invalid admin configuration and database initialization failure', () => {
+  const script = `
+    process.env.PORT='0';
+    process.env.DATABASE_URL='mysql://test@127.0.0.1:1/test';
+    const db=require('./server/db');
+    db.migrate=async()=>{throw new Error('simulated database outage')};
+    db.query=async()=>{throw new Error('simulated database outage')};
+    (async()=>{
+      const {start}=require('./server/index');
+      const server=await start();
+      const base='http://127.0.0.1:'+server.address().port;
+      const statuses=[];
+      for(const route of ['/','/api/health','/api/admin/me','/api/admin/login']) statuses.push((await fetch(base+route)).status);
+      console.log(JSON.stringify(statuses));
+      await new Promise(r=>server.close(r));
+      await db.pool.end();
+    })().catch(e=>{console.error(e);process.exit(1)});
+  `;
+  const result=spawnSync(process.execPath,['-e',script],{cwd:path.join(__dirname,'..'),env:{...process.env,NODE_ENV:'production',JWT_SECRET:''},encoding:'utf8',timeout:15000});
+  assert.equal(result.status,0,result.stderr);
+  // Database health still reports failure; serving the public page does not.
+  assert.deepEqual(JSON.parse(result.stdout),[200,500,503,503]);
 });

@@ -21,6 +21,7 @@ async function verifyLogin(email, password) {
 }
 
 function issue(res, admin) {
+  if (!config.adminAuthConfigured) throw new Error("Admin authentication is not configured.");
   const token = jwt.sign({ sub: admin.id, v: admin.token_version }, config.jwtSecret, { expiresIn: "7d" });
   res.cookie(COOKIE, token, cookieOptions());
 }
@@ -34,6 +35,7 @@ function clear(res) {
    Changes also need the X-Requested-With header, which a browser will not
    send from another site. Together with SameSite=Strict this blocks CSRF. */
 async function requireAdmin(req, res, next) {
+  if (!config.adminAuthConfigured) return res.status(503).json({ error: "Admin access is temporarily unavailable." });
   const token = req.cookies && req.cookies[COOKIE];
   if (!token) return res.status(401).json({ error: "Sign in to continue." });
   let payload;
@@ -62,6 +64,7 @@ async function hashPassword(pw) {
 
 /* Create the first admin from ADMIN_EMAIL / ADMIN_PASSWORD if there are none yet. */
 async function bootstrapAdmin() {
+  if (!config.adminAuthConfigured) return;
   const { email, password, name } = config.bootstrapAdmin;
   if (!email || !password) return;
   const { rows } = await query("SELECT COUNT(*) AS n FROM admins");

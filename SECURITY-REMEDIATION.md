@@ -17,13 +17,13 @@
 - axe-core WCAG A/AA scan on all 10 pages at 390px: no detected violations in the final pass. Automated checks do not replace manual accessibility testing.
 - Eight Node security regression tests passed; the database integration suite was skipped because no disposable MySQL database was configured.
 - Native PHP 8.3 upload/JWT regression checks and syntax checks passed. Local PHP HTTP tests rejected disguised uploads (400), unauthenticated admin access (401), and excess review submissions (429).
-- Both runtimes rejected weak signing-secret configurations.
+- Both runtimes refuse admin authentication with weak signing-secret configurations.
 - Browser checks against the real Express middleware (with stubbed database reads) passed for homepage, reviews, and admin sign-in, with no CSP violations or script errors.
 - Dependency audit: zero reported advisories for the final lockfile.
 
 ## Required deployment configuration
 
-1. Set a unique, securely generated `JWT_SECRET` of at least 32 characters **before deployment**. Missing/default secrets now cause startup/configuration failure. Rotate existing secrets if a fallback was used; this invalidates old sessions.
+1. Set a unique, securely generated `JWT_SECRET` of at least 32 characters **before deployment**. Missing/default secrets disable admin access; public pages remain available. Rotate existing secrets if a fallback was used; this invalidates old sessions.
 2. Node deployments require Node 20+ (22/24 recommended), `npm ci`, and `NODE_ENV=production`. PHP needs the `fileinfo` extension and its production environment setting.
 3. Preserve root `.htaccess` and `public/uploads/.htaccess` on Apache/LiteSpeed. Ensure override/header rules are enabled. Other hosting stacks need equivalent rules; CDN/static responses may need configuration outside this repository.
 4. Run CLI setup if migrations are needed; do not restore public setup routes.

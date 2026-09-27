@@ -9,6 +9,10 @@ const { sanitizeSiteSettings } = require("../site-settings");
 const { makeUpload, cleanup, check, UserError } = require("../uploads");
 
 const router = express.Router();
+router.use((req, res, next) => {
+  if (!config.adminAuthConfigured) return res.status(503).json({ error: "Admin access is temporarily unavailable. Contact the site administrator." });
+  next();
+});
 router.use(express.json({ limit: "50kb" }));
 router.use((req, res, next) => {
   res.set("Cache-Control", "no-store");
