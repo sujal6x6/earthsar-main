@@ -327,13 +327,16 @@ function reviewMedia(r){
   if(r.videoLink)list.push(Object.assign({},r.videoLink,{review:r}));
   return list;
 }
+const reviewPhoneScreen=window.matchMedia("(max-width:680px)");
+reviewPhoneScreen.addEventListener("change",()=>renderReviews());
 function renderReviews(){
   const R=S.reviews,sum=S.summary||{count:0,average:0,distribution:{}},n=sum.count,avg=sum.average;
   $("#summary").removeAttribute("aria-busy");
   $("#summary").innerHTML=n?`<div class="big">${avg.toFixed(1)}</div>${stars(avg)}<div class="based">Based on ${n} published review${n>1?"s":""}</div>
     <div class="bars">${[5,4,3,2,1].map(k=>{const c=sum.distribution[k]||0;return `<div class="bar"><span>${k}★</span><span class="t"><i style="width:${c/n*100}%"></i></span><span>${c}</span></div>`}).join("")}</div>`
     :`<div class="big" style="color:var(--faint)">—</div>${stars(0)}<div class="based">${S.loaded?"No reviews published yet. Be the first to share your experience.":"Reviews could not be loaded. Refresh the page to try again."}</div>`;
-  const list=R.slice(0,3);
+  const reviewLimit=reviewPhoneScreen.matches?3:4;
+  const list=R.slice(0,reviewLimit);
   $("#revGrid").innerHTML=R.length?list.map(r=>{
     const items=reviewMedia(r),hasVideo=items.some(m=>m.type==="video");
     const badge=r.verified?`<span class="badge" style="color:var(--heading)">${icon("i-verified")}Verified Client</span>`:r.source?`<span class="badge" style="color:var(--heading)">${icon("i-verified")}${esc(r.source)} Review</span>`:"";
@@ -346,7 +349,7 @@ function renderReviews(){
   window.setupReviewPreviews($("#revGrid"));
   $$(".rev-video > svg").forEach(s=>{s.style.width="20px";s.style.height="20px"});
   $$(".badge svg").forEach(s=>{s.style.width="14px";s.style.height="14px"});
-  $("#moreWrap").innerHTML=R.length>3?`<a class="btn btn-secondary" href="/reviews.html">Show all ${R.length} reviews</a>`:"";
+  $("#moreWrap").innerHTML=R.length>reviewLimit?`<a class="btn btn-secondary" href="/reviews.html">Show all ${R.length} reviews</a>`:"";
   $$("[data-rm]").forEach(b=>b.onclick=()=>{const[id,j]=b.dataset.rm.split(":").map(Number);const r=S.reviews.find(x=>x.id===id);if(r)openViewer(reviewMedia(r),j)});
 }
 
