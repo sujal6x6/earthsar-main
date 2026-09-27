@@ -156,10 +156,15 @@ function renderHeroContent(){
   if(h.eyebrow)$(".hero .eyebrow").textContent=h.eyebrow;
   if(h.title){
     const lines=String(h.title).split(/\n+/).map(s=>s.trim()).filter(Boolean).slice(0,4);
-    $(".hero h1").innerHTML=lines.map(line=>{
-      const html=esc(line).replace(/\b(Return)\b/i,'<span class="o">$1</span>');
-      return `<span class="ln">${html}</span>`;
-    }).join("");
+    const normalized=lines.join(" ").replace(/\s+/g," ");
+    if(/honesty/i.test(normalized)&&/transparency/i.test(normalized)&&/trust/i.test(normalized)){
+      $(".hero h1").innerHTML=`<span class="ln hero-values">Honesty <span class="sep">|</span> Transparency</span><span class="ln hero-trust"><span class="o">Trust</span></span>`;
+    }else{
+      $(".hero h1").innerHTML=lines.map(line=>{
+        const html=esc(line).replace(/\b(Return|Trust)\b/i,'<span class="o">$1</span>');
+        return `<span class="ln">${html}</span>`;
+      }).join("");
+    }
   }
   if(h.lead)$(".hero p.lead").textContent=h.lead;
   if(Array.isArray(h.trust)&&h.trust.length){
@@ -238,11 +243,20 @@ function renderCreds(){
 
 /* ================= TEAM ================= */
 function initials(n){return String(n||"?").trim().split(/\s+/).slice(0,2).map(w=>w[0]).join("").toUpperCase()}
+function orderedTeam(team){
+  const order=["naveen","bhaskar","neha","dushyant","juber"];
+  return [...team].sort((a,b)=>{
+    const an=String(a.name||"").toLowerCase(),bn=String(b.name||"").toLowerCase();
+    const ai=order.findIndex(n=>an.includes(n)),bi=order.findIndex(n=>bn.includes(n));
+    return (ai<0?99:ai)-(bi<0?99:bi);
+  });
+}
 function renderTeam(){
   const g=$("#teamGrid");
   if(!S.team.length){
     g.innerHTML=[1,2,3].map(()=>`<article class="card member ph"><div class="member-photo"><span class="ini">${icon("i-user")}</span></div><div class="member-body"><h3>Advisor name</h3><div class="role">Designation</div><div class="div"></div><p>Placeholder profile — add real team members in js/config.js.</p></div></article>`).join("");
     $$(".member.ph .ini svg",g).forEach(s=>{s.style.width="64px";s.style.height="64px";s.style.color="var(--heading)"});return}
+  S.team=orderedTeam(S.team);
   g.innerHTML=S.team.map((m,idx)=>{
     return `<article class="card card-hover member reveal in"><div class="member-photo">${m.photo?`<img src="${esc(m.photo)}" alt="${esc(m.name)}" loading="lazy">`:`<span class="ini">${esc(initials(m.name))}</span>`}</div><div class="member-body"><h3>${esc(m.name)}</h3><div class="role">${esc(m.role)}</div><div class="div"></div>${m.experience?`<div class="xp">${esc(m.experience)}</div>`:""}<button class="btn btn-secondary member-read" type="button" data-team="${idx}">Read more</button></div></article>`;
   }).join("");

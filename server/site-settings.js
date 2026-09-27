@@ -13,7 +13,7 @@ const DEFAULT_SITE_SETTINGS = {
   },
   hero: {
     eyebrow: "Real estate advisory",
-    title: "Honesty |\nTransparency |\nTrust",
+    title: "Honesty | Transparency\nTrust",
     lead: "We don't just show properties. We help you understand them with smart advice, honest conversations and long-term relationships.",
     trust: ["Right Property", "Right Time", "Right Return"],
     cardTitle: "The 3R value",
@@ -50,18 +50,18 @@ const DEFAULT_SITE_SETTINGS = {
       photo: "assets/bhaskar-rawat.jpg"
     },
     {
-      name: "Dushyant Arora",
-      role: "Manager Sales",
-      experience: "Around 6 years in real estate",
-      bio: "With around 6 years of experience in real estate, Dushyant brings youthful energy, confidence, adaptability and a strong ability to learn and execute.\n\nA graduate who began working at a young age, he brings experience from diverse fields along with a natural ability to connect with people. His real estate journey has been shaped by hands-on learning, curiosity and taking ownership quickly, developing strong practical knowledge across client coordination and end-to-end real estate transactions.\n\nKnown for being polite, approachable and dependable, Dushyant has a natural ability to build rapport with clients and make them comfortable from the very first interaction.\n\nDespite being one of the younger members of the team, his maturity, ambition and sense of responsibility set him apart. Focused on his goals and always willing to learn, he represents the next generation of real estate professionals at earthsar.",
-      photo: "assets/dushyant-arora.png"
-    },
-    {
       name: "Mrs. Neha Sharma",
       role: "Marketing, Branding & Administration",
       experience: "Around 10 years across marketing, administration and operations",
       bio: "With around 10 years of experience across marketing, administration and business operations, Neha brings together creativity, organisation and a strong understanding of business.\n\nAn MBA with a specialisation in Marketing Management, she began her professional journey in administrative and corporate roles before moving into marketing and creative communication. Her passion for art and design gives her a natural eye for visual storytelling and branding communication.\n\nAt earthsar, Neha manages marketing, creatives, social media, lead generation, HR and administration, while also playing an active role in building the company's digital and operational presence.\n\nShe was instrumental in conceptualising the earthsar name and logo, helping shape the branding identity from the very beginning.\n\nA passionate artist, Neha brings together creativity, business understanding and attention to detail to help build a distinctive and consistent earthsar branding.",
       photo: "assets/neha-sharma.jpg"
+    },
+    {
+      name: "Dushyant Arora",
+      role: "Manager Sales",
+      experience: "Around 6 years in real estate",
+      bio: "With around 6 years of experience in real estate, Dushyant brings youthful energy, confidence, adaptability and a strong ability to learn and execute.\n\nA graduate who began working at a young age, he brings experience from diverse fields along with a natural ability to connect with people. His real estate journey has been shaped by hands-on learning, curiosity and taking ownership quickly, developing strong practical knowledge across client coordination and end-to-end real estate transactions.\n\nKnown for being polite, approachable and dependable, Dushyant has a natural ability to build rapport with clients and make them comfortable from the very first interaction.\n\nDespite being one of the younger members of the team, his maturity, ambition and sense of responsibility set him apart. Focused on his goals and always willing to learn, he represents the next generation of real estate professionals at earthsar.",
+      photo: "assets/dushyant-arora.png"
     },
     {
       name: "Juber",
