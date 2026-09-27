@@ -10,7 +10,7 @@ function json_response($data, $status = 200) {
 
 function handle_cors() {
     // Minimal same-origin CORS handling
-    header("Access-Control-Allow-Origin: *");
+    // API is same-origin; no cross-origin access is granted.
     header("Access-Control-Allow-Methods: GET, POST, PUT, PATCH, DELETE, OPTIONS");
     header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
     if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
@@ -20,33 +20,28 @@ function handle_cors() {
 }
 
 function rate_limit($key, $limit, $window) {
-    $dir = '/tmp/earthsar_rate/';
-    if (!is_dir($dir)) {
-        mkdir($dir, 0777, true);
-    }
-    
+    $dir = sys_get_temp_dir() . '/earthsar_rate';
+    if (!is_dir($dir) && !@mkdir($dir, 0700, true) && !is_dir($dir)) throw new RuntimeException('Rate limit storage unavailable.');
     $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
-    $file = $dir . md5($ip . '_' . $key) . '.json';
-    
-    $now = time();
-    $data = [];
-    
-    if (file_exists($file)) {
-        $data = json_decode(file_get_contents($file), true);
-        if (!is_array($data)) $data = [];
+    $file = $dir . '/' . hash('sha256', $ip . '_' . $key) . '.json';
+    $handle = fopen($file, 'c+');
+    if (!$handle) throw new RuntimeException('Rate limit storage unavailable.');
+    try {
+        if (!flock($handle, LOCK_EX)) throw new RuntimeException('Rate limit lock unavailable.');
+        $data = json_decode(stream_get_contents($handle), true);
+        $now = time();
+        $data = array_values(array_filter(is_array($data) ? $data : [], fn($timestamp) => is_numeric($timestamp) && $timestamp > $now - $window));
+        $blocked = count($data) >= $limit;
+        if (!$blocked) $data[] = $now;
+        rewind($handle);
+        ftruncate($handle, 0);
+        fwrite($handle, json_encode($data));
+        fflush($handle);
+        flock($handle, LOCK_UN);
+    } finally {
+        fclose($handle);
     }
-    
-    // Cleanup old entries
-    $data = array_filter($data, function($timestamp) use ($now, $window) {
-        return $timestamp > ($now - $window);
-    });
-    
-    if (count($data) >= $limit) {
-        json_response(['error' => 'Rate limit exceeded'], 429);
-    }
-    
-    $data[] = $now;
-    file_put_contents($file, json_encode(array_values($data)));
+    if ($blocked) json_response(['error' => 'Rate limit exceeded'], 429);
 }
 
 function get_request_method() {
@@ -165,7 +160,7 @@ try {
             json_response(['error' => 'Route not found'], 404);
         }
     }
-} catch (Exception $e) {
+} catch (Throwable $e) {
     error_log($e->getMessage());
-    json_response(['error' => 'Internal Server Error', 'message' => $e->getMessage()], 500);
+    json_response(['error' => 'Internal Server Error', 'message' => 'Please try again later.'], 500);
 }

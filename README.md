@@ -32,7 +32,7 @@ test/api.test.js        Automated tests
 
 ## What you need
 
-1. **Node.js 18.18 or newer** (20 or 22 recommended).
+1. **Node.js 20 or newer** (22 or 24 recommended).
 2. **A MySQL/MariaDB database.** Hostinger Web/Cloud hosting includes this.
 3. **Writable hosting storage** for uploaded photos and videos.
 
@@ -147,3 +147,14 @@ TEST_DATABASE_URL=mysql://user:pass@localhost:3306/earthsar_test npm test
 | `--ink` | #182433 | Body text |
 
 Fonts: Outfit (headings) and Manrope (body), loaded from Google Fonts.
+
+## Security update deployment
+
+- Before deploying, set a unique JWT_SECRET of at least 32 characters on the host. Missing, blank, and former default values are rejected. Generate it locally with: node -e "console.log(require('crypto').randomBytes(48).toString('hex'))". Never commit the result. Rotating the secret signs out existing administrators.
+- Set NODE_ENV=production (APP_ENV=production for PHP is also supported). Use Node 20+ for the Node backend; Node 22/24 is recommended. Run npm ci to install the locked content-type detector.
+- Initialize via npm run setup (Node) or php setup.php (PHP CLI). Browser initialization endpoints have been removed.
+- Apache/LiteSpeed deployments must retain both the root .htaccess and public/uploads/.htaccess, enable rewrite/headers, and allow the overrides. Other hosts need equivalent rules: reject executable upload extensions, deny deployment files, disable directory listing/script execution, apply nosniff and CSP to static HTML as well as dynamic responses.
+- Uploaded media now uses detected content types and safe extensions. Existing suspect uploads should be reviewed separately; this change does not delete existing customer files. Back up media before any cleanup.
+- The local security suite runs without a database: node --test test/security.test.js. The existing API integration suite needs TEST_DATABASE_URL pointing to a disposable MySQL database; it drops tables and must never use production.
+
+PHP hosts also require the fileinfo extension. Run php test/php-security.php for database-free upload/JWT regression checks. PHP rate limits now lock local storage updates; multi-server deployments still need shared rate-limit storage.

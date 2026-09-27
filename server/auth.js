@@ -38,7 +38,7 @@ async function requireAdmin(req, res, next) {
   if (!token) return res.status(401).json({ error: "Sign in to continue." });
   let payload;
   try {
-    payload = jwt.verify(token, config.jwtSecret);
+    payload = jwt.verify(token, config.jwtSecret, { algorithms: ["HS256"] });
   } catch {
     clear(res);
     return res.status(401).json({ error: "Your session has expired. Sign in again." });

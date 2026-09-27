@@ -1,4 +1,6 @@
 <?php
+// Keep configuration errors out of HTTP responses.
+ini_set('display_errors', '0');
 // config.php
 function load_env($file) {
     if (!file_exists($file)) return;
@@ -18,6 +20,10 @@ function load_env($file) {
 
 $env_file = dirname(__DIR__) . '/.env';
 load_env($env_file);
+foreach (['DATABASE_URL','DATABASE_HOST','DATABASE_PORT','DATABASE_USER','DATABASE_PASS','DATABASE_NAME','JWT_SECRET','ADMIN_EMAIL','ADMIN_PASSWORD','ADMIN_NAME','NODE_ENV','APP_ENV','SITE_URL','REVIEW_PHOTO_MAX_MB','REVIEW_VIDEO_MAX_MB','ADMIN_UPLOAD_MAX_MB'] as $key) {
+    $value = getenv($key);
+    if ($value !== false) $_ENV[$key] = $value;
+}
 
 // Handle DATABASE_URL if individual vars aren't set
 if (empty($_ENV['DATABASE_HOST']) && !empty($_ENV['DATABASE_URL'])) {
@@ -36,10 +42,10 @@ $config = [
     'DATABASE_PASS' => $_ENV['DATABASE_PASS'] ?? '',
     'DATABASE_NAME' => $_ENV['DATABASE_NAME'] ?? 'earthsar',
     
-    'JWT_SECRET' => $_ENV['JWT_SECRET'] ?? 'fallback_secret_must_be_changed_in_prod',
+    'JWT_SECRET' => trim($_ENV['JWT_SECRET'] ?? ''),
     
-    'ADMIN_EMAIL' => $_ENV['ADMIN_EMAIL'] ?? 'admin@example.com',
-    'ADMIN_PASSWORD' => $_ENV['ADMIN_PASSWORD'] ?? 'admin123',
+    'ADMIN_EMAIL' => $_ENV['ADMIN_EMAIL'] ?? '',
+    'ADMIN_PASSWORD' => $_ENV['ADMIN_PASSWORD'] ?? '',
     'ADMIN_NAME' => $_ENV['ADMIN_NAME'] ?? 'Admin',
     
     'REVIEW_PHOTO_MAX_MB' => isset($_ENV['REVIEW_PHOTO_MAX_MB']) ? (float)$_ENV['REVIEW_PHOTO_MAX_MB'] : 20,
@@ -52,3 +58,7 @@ $config = [
 
 // Alias used by index.php
 $earthsar_config = &$config;
+
+if (strlen($config['JWT_SECRET']) < 32 || in_array($config['JWT_SECRET'], ['earthsar-production-jwt-secret-min-32-chars-long', 'fallback_secret_must_be_changed_in_prod'], true)) {
+    throw new RuntimeException('JWT_SECRET must be a unique, securely generated value of at least 32 characters.');
+}

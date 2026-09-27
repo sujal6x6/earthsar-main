@@ -2,7 +2,7 @@
 /**
  * Handles robots.txt and sitemap.xml dynamically.
  */
-require_once __DIR__ . '/api/config.php';
+require_once __DIR__ . '/config.php';
 
 function seo_origin() {
     global $earthsar_config;

@@ -100,9 +100,9 @@ router.post("/reviews", reviewLimiter, reviewUpload, async (req, res) => {
     const avatarFile = (f.avatar || [])[0];
     const photoFiles = f.photos || [];
     const videoFile = (f.video || [])[0];
-    if (avatarFile) check(avatarFile, { kind: "image", maxMb: L.reviewPhotoMb, label: "Profile photo" });
-    photoFiles.forEach((p, i) => check(p, { kind: "image", maxMb: L.reviewPhotoMb, label: `Photo ${i + 1}` }));
-    if (videoFile) check(videoFile, { kind: "video", maxMb: L.reviewVideoMb, label: "Video" });
+    if (avatarFile) await check(avatarFile, { kind: "image", maxMb: L.reviewPhotoMb, label: "Profile photo" });
+    for (const [i, p] of photoFiles.entries()) await check(p, { kind: "image", maxMb: L.reviewPhotoMb, label: `Photo ${i + 1}` });
+    if (videoFile) await check(videoFile, { kind: "video", maxMb: L.reviewVideoMb, label: "Video" });
 
     // Store in parallel and remember each one so we can undo on failure.
     const track = p => p.then(r => (uploaded.push(r), r));

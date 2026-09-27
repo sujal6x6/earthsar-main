@@ -5,8 +5,8 @@ function base64url_encode($data) {
 }
 
 function base64url_decode($data) {
-    $padded = str_pad($data, strlen($data) % 4, '=', STR_PAD_RIGHT);
-    return base64_decode(strtr($padded, '-_', '+/'));
+    $padded = str_pad($data, strlen($data) + (4 - strlen($data) % 4) % 4, '=', STR_PAD_RIGHT);
+    return base64_decode(strtr($padded, '-_', '+/'), true);
 }
 
 function jwt_encode($payload, $secret) {
@@ -28,7 +28,10 @@ function jwt_decode($token, $secret) {
     
     list($base64UrlHeader, $base64UrlPayload, $base64UrlSignature) = $parts;
     
+    $header = json_decode(base64url_decode($base64UrlHeader) ?: '', true);
+    if (!is_array($header) || ($header['alg'] ?? '') !== 'HS256') return null;
     $signature = base64url_decode($base64UrlSignature);
+    if ($signature === false) return null;
     $expectedSignature = hash_hmac('sha256', $base64UrlHeader . "." . $base64UrlPayload, $secret, true);
     
     if (!hash_equals($expectedSignature, $signature)) {
@@ -37,7 +40,7 @@ function jwt_decode($token, $secret) {
     
     $payload = json_decode(base64url_decode($base64UrlPayload), true);
     
-    if (isset($payload['exp']) && $payload['exp'] < time()) {
+    if (!is_array($payload) || !isset($payload['sub'], $payload['v'], $payload['exp']) || !is_numeric($payload['exp']) || $payload['exp'] <= time()) {
         return null; // Expired
     }
     

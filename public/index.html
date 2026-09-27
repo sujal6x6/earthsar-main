@@ -91,14 +91,7 @@
   }
 }
 </script>
-<script>
-try {
-  const theme = localStorage.getItem("earthsar-theme");
-  document.documentElement.dataset.theme = theme === "dark" || theme === "light" ? theme : "light";
-} catch (e) {
-  document.documentElement.dataset.theme = "light";
-}
-</script>
+<script src="/theme-init.js"></script>
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="/review-previews.css">
 </head>

@@ -42,8 +42,11 @@ function kindOf(file) {
 }
 
 /* Throws a UserError when a file is the wrong type or too big. */
-function check(file, { kind, maxMb, label }) {
-  const k = kindOf(file);
+async function check(file, { kind, maxMb, label }) {
+  const { fileTypeFromFile } = await import("file-type");
+  let detected;
+  try { detected = await fileTypeFromFile(file.path); } catch { detected = null; }
+  const k = detected ? kindOf({ mimetype: detected.mime }) : null;
   if (!k || (kind && k !== kind)) {
     throw new UserError(
       kind === "video"
@@ -56,6 +59,7 @@ function check(file, { kind, maxMb, label }) {
   if (maxMb && file.size > maxMb * 1024 * 1024) {
     throw new UserError(`${label} is larger than ${maxMb} MB.`);
   }
+  file.verifiedMime = detected.mime;
   return k;
 }
 

@@ -12,6 +12,7 @@ process.env.DATABASE_URL = process.env.TEST_DATABASE_URL;
 process.env.JWT_SECRET = "test-secret-test-secret-test-secret-123";
 process.env.ADMIN_EMAIL = "";
 process.env.PORT = "0";
+process.env.REVIEW_PHOTO_MAX_MB = "5";
 
 /* ---- fake media storage ---- */
 const media = require("../server/media");
@@ -54,7 +55,16 @@ async function call(method, path, { body, headers = {}, form } = {}) {
   try { data = await res.json(); } catch {}
   return { status: res.status, data };
 }
-const file = (bytes, type, name) => new Blob([Buffer.alloc(bytes, 1)], { type });
+const file = (bytes, type, name) => {
+  const headers = {
+    'image/jpeg': Buffer.from([0xff, 0xd8, 0xff, 0xe0]),
+    'image/png': Buffer.from('89504e470d0a1a0a0000000d4948445200000001000000010806000000','hex'),
+    'video/mp4': Buffer.from('00000018667479706d703432000000006d70343269736f6d','hex')
+  };
+  const data = Buffer.alloc(bytes);
+  if (headers[type]) headers[type].copy(data);
+  return new Blob([data], { type });
+};
 function reviewForm(extra = {}) {
   const fd = new FormData();
   const fields = { name: "Asha Verma", email: "asha@example.com", rating: "5", message: "Very helpful advisors.", ...extra };

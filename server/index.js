@@ -23,7 +23,10 @@ app.use(
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
-        scriptSrc: ["'self'", "'unsafe-inline'"],
+        scriptSrc: ["'self'"],
+        objectSrc: ["'none'"],
+        frameAncestors: ["'self'"],
+        baseUri: ["'self'"],
         styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
         fontSrc: ["'self'", "https://fonts.gstatic.com"],
         imgSrc: ["'self'", "data:", "blob:", "https:"],
@@ -175,6 +178,12 @@ app.use("/admin", (req, res, next) => {
   next();
 });
 app.get(["/", "/index.html"], sendIndex);
+app.use("/uploads", (req, res, next) => {
+  if (!/\.(?:jpe?g|png|webp|gif|heic|heif|avif|mp4|webm|mov|m4v|3gp)$/i.test(req.path)) return res.sendStatus(404);
+  res.set("Content-Security-Policy", "default-src 'none'; sandbox");
+  res.set("X-Content-Type-Options", "nosniff");
+  next();
+});
 app.use(
   express.static(PUBLIC, {
     extensions: ["html"],
@@ -205,22 +214,21 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: "Something went wrong on the server. Try again in a moment." });
 });
 
-const server = app.listen(config.port, () => {
-  console.log(`earthsar running on http://localhost:${config.port} (admin: /admin)`);
-});
-
-if (config.databaseUrl) {
-  (async () => {
-    try {
-      await migrate();
-      await bootstrapAdmin();
-      console.log("Database initialized successfully.");
-    } catch (err) {
-      console.error("Database initialization warning:", err.message);
-    }
-  })();
-} else {
-  console.warn("DATABASE_URL is not set. Site running in read-only / static mode.");
+async function start() {
+  if (config.databaseUrl) {
+    await migrate();
+    await bootstrapAdmin();
+  }
+  return new Promise((resolve, reject) => {
+    const server = app.listen(config.port, () => resolve(server));
+    server.once("error", reject);
+  });
 }
 
-module.exports = { app, server };
+if (require.main === module) {
+  start().then(server => console.log(`earthsar running on port ${server.address().port}`)).catch(err => {
+    console.error("Server startup failed:", err.message);
+    process.exitCode = 1;
+  });
+}
+module.exports = { app, start };

@@ -138,3 +138,18 @@ p{margin:14px 0 0;color:var(--muted)}
   .ftr-brand{grid-column:1/-1}
   .review-page-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
+
+.btn-primary,.hero .btn:not(.btn-secondary){background:#B84F00;color:#fff}
+.btn-primary:hover{background:#963F00}
+.eyebrow{color:#B84F00}
+
+/* Collapse navigation before tablet links exceed the available width. */
+@media (min-width:761px) and (max-width:1024px){
+  .menu-btn{display:inline-flex}
+  .page-links{display:none}
+  .page-header.open .page-links{display:flex;flex-direction:column;align-items:stretch;position:absolute;top:100%;left:0;right:0;background:#fff;border-bottom:1px solid var(--line);padding:10px 24px 18px;font-size:17px;white-space:normal}
+  .page-header.open .page-links a{padding:12px 4px;border-bottom:1px solid var(--line)}
+  .page-header.open .page-links a::after{left:4px;right:auto;width:28px;bottom:8px}
+}
+
+.page-header.open .page-links{max-height:calc(100vh - 78px);max-height:calc(100dvh - 78px);overflow-y:auto}

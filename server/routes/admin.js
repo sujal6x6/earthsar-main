@@ -34,23 +34,8 @@ const loginLimiter = rateLimit({
   message: { error: "Too many sign-in attempts. Wait 1 minute and try again." }
 });
 
-// Diagnostic & Initialization endpoint: https://earthsar.in/api/admin/init
-router.get("/init", async (req, res) => {
-  try {
-    const { migrate } = require("../db");
-    await migrate();
-    await auth.bootstrapAdmin();
-    const { rows } = await query("SELECT id, email, name, created_at FROM admins");
-    res.json({
-      ok: true,
-      message: "Database tables migrated and admin initialized successfully.",
-      adminsCount: rows.length,
-      admins: rows.map(a => ({ email: a.email, name: a.name }))
-    });
-  } catch (err) {
-    res.status(500).json({ ok: false, error: err.message, stack: err.code || err.errno });
-  }
-});
+// Initialization is available only through the deployment CLI.
+router.all("/init", (req, res) => res.status(404).json({ error: "Not found." }));
 
 router.post("/login", loginLimiter, async (req, res) => {
   try {
@@ -60,7 +45,7 @@ router.post("/login", loginLimiter, async (req, res) => {
     res.json({ admin: { email: admin.email, name: admin.name } });
   } catch (err) {
     console.error("Login database error:", err.message);
-    res.status(500).json({ error: "Database error: " + err.message });
+    res.status(500).json({ error: "Sign-in is temporarily unavailable. Try again later." });
   }
 });
 
@@ -291,7 +276,7 @@ const galleryUpload = makeUpload(config.limits.adminUploadMb).single("file");
 router.post("/gallery/upload", galleryUpload, async (req, res) => {
   try {
     if (!req.file) throw new UserError("Choose a photo or video to upload.");
-    const kind = check(req.file, { label: "The file" });
+    const kind = await check(req.file, { label: "The file" });
     let uploaded;
     try {
       uploaded = await media.uploadFile(req.file, kind, "gallery");

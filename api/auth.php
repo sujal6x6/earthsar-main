@@ -20,7 +20,7 @@ function verify_login($email, $password) {
     $rows = db_query("SELECT * FROM admins WHERE email = ?", [$email]);
     if (empty($rows)) {
         // Constant-time: always run password_verify even if no user found
-        password_verify($password, '$2y$10$dummy.hash.to.prevent.timing.attacks.000000000000000');
+        password_verify($password, '$2b$12$wzcIC0NmX396cueV3JNnuODNwIa3WB7yBNMdYL52yHygCi3vCOURy');
         return null;
     }
     $admin = $rows[0];
@@ -39,7 +39,7 @@ function issue_cookie($admin) {
         'exp' => $exp
     ];
     $token = jwt_encode($payload, $config['JWT_SECRET']);
-    $secure = $config['APP_ENV'] === 'production';
+    $secure = $config['APP_ENV'] === 'production' || (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
 
     setcookie(COOKIE_NAME, $token, [
         'expires' => $exp,
@@ -53,7 +53,7 @@ function issue_cookie($admin) {
 
 function clear_cookie() {
     global $config;
-    $secure = $config['APP_ENV'] === 'production';
+    $secure = $config['APP_ENV'] === 'production' || (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
     setcookie(COOKIE_NAME, '', [
         'expires' => time() - 3600,
         'path' => '/api/admin',

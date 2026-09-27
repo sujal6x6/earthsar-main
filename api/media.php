@@ -21,7 +21,8 @@ $EXT_BY_TYPE = [
  */
 function media_check_type($file, $maxMb = null) {
     global $IMAGE_TYPES, $VIDEO_TYPES;
-    $mime = $file['type'] ?? (function_exists('mime_content_type') ? mime_content_type($file['tmp_name']) : '');
+    $mime = (new finfo(FILEINFO_MIME_TYPE))->file($file['tmp_name']);
+    if (in_array($mime, ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif']) && @getimagesize($file['tmp_name']) === false) return null;
     if (in_array($mime, $IMAGE_TYPES)) $kind = 'image';
     elseif (in_array($mime, $VIDEO_TYPES)) $kind = 'video';
     else return null;
@@ -34,16 +35,16 @@ function media_check_type($file, $maxMb = null) {
 
 function _safe_ext($file) {
     global $EXT_BY_TYPE;
-    $ext = strtolower(pathinfo($file['name'] ?? '', PATHINFO_EXTENSION));
-    if ($ext && preg_match('/^[a-z0-9]{1,8}$/', $ext)) return '.' . $ext;
-    if (isset($EXT_BY_TYPE[$file['type'] ?? ''])) return $EXT_BY_TYPE[$file['type']];
-    return str_starts_with($file['type'] ?? '', 'video/') ? '.mp4' : '.jpg';
+    $mime = (new finfo(FILEINFO_MIME_TYPE))->file($file['tmp_name']);
+    if (!isset($EXT_BY_TYPE[$mime])) throw new RuntimeException('Unsupported upload content.');
+    return $EXT_BY_TYPE[$mime];
 }
 
 /**
  * Move uploaded file to public/uploads/{subfolder}. Returns ['type','url','publicId'].
  */
 function upload_file($file, $kind, $subfolder) {
+    if (media_check_type($file) !== $kind) throw new RuntimeException('Unsupported upload content.');
     $dir = UPLOAD_DIR . '/' . $subfolder;
     if (!is_dir($dir)) mkdir($dir, 0755, true);
 
@@ -70,7 +71,7 @@ function media_destroy($items) {
         $file = PUBLIC_DIR . $url;
         // Safety: make sure it's inside public dir
         $real = realpath(dirname($file));
-        if ($real && strpos($real, realpath(PUBLIC_DIR)) === 0) {
+        if ($real && ($real === realpath(UPLOAD_DIR) || strpos($real, realpath(UPLOAD_DIR) . DIRECTORY_SEPARATOR) === 0)) {
             @unlink($file);
         }
     }

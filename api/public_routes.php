@@ -108,6 +108,20 @@ function post_review() {
         _pub_json_out(['error' => 'Check the highlighted fields.', 'fields' => $errors], 400);
     }
 
+    // Validate every attachment before moving any file into public storage.
+    $pending = [];
+    foreach (['avatar' => 'image', 'video' => 'video'] as $field => $kind) {
+        if (!empty($_FILES[$field]) && $_FILES[$field]['error'] === UPLOAD_ERR_OK) $pending[] = [$_FILES[$field], $kind];
+    }
+    if (!empty($_FILES['photos'])) {
+        $files = _rearray_files($_FILES['photos']);
+        if (count($files) > 4) _pub_json_out(['error' => 'Upload at most four photos.'], 400);
+        foreach ($files as $file) if ($file['error'] === UPLOAD_ERR_OK) $pending[] = [$file, 'image'];
+    }
+    foreach ($pending as [$file, $kind]) {
+        $maxMb = $kind === 'image' ? $config['REVIEW_PHOTO_MAX_MB'] : $config['REVIEW_VIDEO_MAX_MB'];
+        if (media_check_type($file, $maxMb) !== $kind) _pub_json_out(['error' => 'An attachment has an unsupported type or exceeds the upload limit.'], 400);
+    }
     $uploaded = [];
     try {
         $avatar = null;

@@ -282,7 +282,7 @@ function openTeamModal(i){
 document.addEventListener("click",e=>{const b=e.target.closest("[data-team]");if(b){e.preventDefault();openTeamModal(+b.dataset.team)}});
 
 /* ================= REVIEWS ================= */
-const stars=(n,cls="")=>`<span class="stars ${cls}" aria-label="${n} out of 5 stars">${[1,2,3,4,5].map(i=>`<svg class="${i<=Math.floor(n+.25)?"":"off"}" aria-hidden="true"><use href="#i-star"/></svg>`).join("")}</span>`;
+const stars=(n,cls="")=>`<span class="stars ${cls}" role="img" aria-label="${n} out of 5 stars">${[1,2,3,4,5].map(i=>`<svg class="${i<=Math.floor(n+.25)?"":"off"}" aria-hidden="true"><use href="#i-star"/></svg>`).join("")}</span>`;
 const fmtDate=t=>t?new Date(t).toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"}):"";
 function googleReviews(){
   return (S.googleReviews||[]).map((r,i)=>({

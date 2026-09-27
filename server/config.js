@@ -18,7 +18,7 @@ const config = {
   isProd,
   port: process.env.PORT ? Number(process.env.PORT) : 3000,
   databaseUrl: dbUrl,
-  jwtSecret: process.env.JWT_SECRET || "earthsar-production-jwt-secret-min-32-chars-long",
+  jwtSecret: (process.env.JWT_SECRET || "").trim(),
   siteUrl: (process.env.SITE_URL || "").trim().replace(/\/+$/, ""),
   // Optional first-run admin. Created only when the admins table is empty.
   bootstrapAdmin: {
@@ -32,6 +32,10 @@ const config = {
     adminUploadMb: num(process.env.ADMIN_UPLOAD_MAX_MB, 100)
   }
 };
+
+if (config.jwtSecret.length < 32 || /^(earthsar-production-jwt-secret-min-32-chars-long|fallback_secret_must_be_changed_in_prod)$/.test(config.jwtSecret)) {
+  throw new Error("Set JWT_SECRET to a unique, securely generated value of at least 32 characters.");
+}
 
 if (!config.databaseUrl) {
   console.warn("Warning: DATABASE_URL is not set. Set it in Hostinger environment variables.");

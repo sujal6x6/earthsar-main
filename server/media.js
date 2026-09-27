@@ -30,10 +30,9 @@ function storageName() {
 }
 
 function safeExt(file) {
-  const ext = path.extname(file.originalname || "").toLowerCase();
-  if (/^\.[a-z0-9]{1,8}$/.test(ext)) return ext;
-  if (EXT_BY_TYPE[file.mimetype]) return EXT_BY_TYPE[file.mimetype];
-  return (file.mimetype || "").startsWith("video/") ? ".mp4" : ".jpg";
+  const ext = EXT_BY_TYPE[file.verifiedMime];
+  if (!ext) throw new Error("Upload has not passed content validation.");
+  return ext;
 }
 
 /* Store a temp upload under public/uploads. Returns {type,url,publicId}. */
@@ -59,7 +58,7 @@ async function destroy(items) {
       const url = item.publicId || item.url || "";
       if (!url.startsWith("/uploads/")) return;
       const file = path.join(PUBLIC_DIR, url);
-      const rel = path.relative(PUBLIC_DIR, file);
+      const rel = path.relative(UPLOAD_DIR, file);
       if (rel.startsWith("..") || path.isAbsolute(rel)) return;
       await fs.promises.unlink(file).catch(err => {
         if (err.code !== "ENOENT") console.warn("Local media delete failed for", url, err.message);
