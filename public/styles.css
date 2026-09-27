@@ -703,3 +703,12 @@ p{margin:0}
 .rev-photos button.vthumb .rev-cover .cover-ic,.rev-photos button.vthumb .rev-cover span:last-child{display:none}
 .rev-photos button.vthumb svg{position:absolute;left:50%;top:50%;width:22px;height:22px;transform:translate(-50%,-50%);color:#fff;z-index:1}
 .form-note{font-size:13.5px;color:var(--muted);margin-top:4px}
+
+/* Tighter section rhythm on laptop and desktop screens. */
+@media (min-width:1024px){
+  :root{--desktop-section-space:clamp(56px,5vw,72px)}
+  .sec{padding-block:var(--desktop-section-space)}
+  .sec-head{margin-bottom:32px}
+  .hero{padding-block:48px 56px}
+  .stats{padding-bottom:48px}
+}
