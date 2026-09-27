@@ -1,21 +1,21 @@
-window.EARTHSAR_GOOGLE_REVIEWS = [
+window.earthsarGoogleReviews = [
   {
     name: "Suhaib Naeem",
     rating: 5,
     dateLabel: "3 months ago",
-    message: "I had an excellent experience working with Earthz Enterprises as the channel partner for my property purchase in M3M.\n\nWhat truly sets Earthz Enterprises apart is their professionalism, transparency, and customer-first approach. In an industry where buyers are often faced with unrealistic promises and lack of post-sales support, Earthz Enterprises stands out for its integrity and commitment to delivering what is promised. They do not just facilitate a sale, they genuinely stand by their customers throughout the entire journey and ensure that commitments made by the developer are followed through.\n\nA special mention goes to Mr. Naveen, whose dedication and proactive approach have been exceptional. From the pre-sales stage to possession, he has been consistently available, responsive, and supportive. Whether it was addressing queries, coordinating with the developer, or resolving concerns, Naveen always took ownership and ensured smooth communication at every step. His professionalism, market knowledge, and willingness to go the extra mile gave us confidence and peace of mind throughout the process.\n\nI highly recommend Earthz Enterprises to anyone looking for a trustworthy and reliable real estate advisor. Their commitment to customer satisfaction and long-term relationships makes them a standout partner in the real estate market."
+    message: "I had an excellent experience working with earthsar as the channel partner for my property purchase in M3M.\n\nWhat truly sets earthsar apart is their professionalism, transparency, and customer-first approach. In an industry where buyers are often faced with unrealistic promises and lack of post-sales support, earthsar stands out for its integrity and commitment to delivering what is promised. They do not just facilitate a sale, they genuinely stand by their customers throughout the entire journey and ensure that commitments made by the developer are followed through.\n\nA special mention goes to Mr. Naveen, whose dedication and proactive approach have been exceptional. From the pre-sales stage to possession, he has been consistently available, responsive, and supportive. Whether it was addressing queries, coordinating with the developer, or resolving concerns, Naveen always took ownership and ensured smooth communication at every step. His professionalism, market knowledge, and willingness to go the extra mile gave us confidence and peace of mind throughout the process.\n\nI highly recommend earthsar to anyone looking for a trustworthy and reliable real estate advisor. Their commitment to customer satisfaction and long-term relationships makes them a standout partner in the real estate market."
   },
   {
     name: "bhupinder anand",
     rating: 5,
     dateLabel: "3 months ago",
-    message: "Earthz Enterprises is by far one of the most trustworthy real estate companies I have dealt with. Mr. Naveen, Mr. Bhaskar, and the entire Earthz/Arthz team are genuine, honest, and highly professional. Their transparency, commitment, and professionalism stood out."
+    message: "earthsar is by far one of the most trustworthy real estate companies I have dealt with. Mr. Naveen, Mr. Bhaskar, and the entire earthsar team are genuine, honest, and highly professional. Their transparency, commitment, and professionalism stood out."
   },
   {
     name: "Rahul Balwada",
     rating: 5,
     dateLabel: "3 months ago",
-    message: "Had a great experience working with Earthz for property search in Gurgaon. Naveen Sharma was extremely professional, transparent, and responsive throughout the process. He took time to understand my requirements, provided honest advice, and supported the process well."
+    message: "Had a great experience working with earthsar for property search in Gurgaon. Naveen Sharma was extremely professional, transparent, and responsive throughout the process. He took time to understand my requirements, provided honest advice, and supported the process well."
   },
   {
     name: "Chaitanya Mittal",
@@ -27,61 +27,61 @@ window.EARTHSAR_GOOGLE_REVIEWS = [
     name: "Nandita Choudhury",
     rating: 5,
     dateLabel: "3 months ago",
-    message: "We are truly grateful to the entire team of EarthZ Enterprise, Gurgaon, for an extremely seamless and reliable experience. A special mention must go to Mr. Naveen Sharma whose professionalism and expertise were evident in every interaction."
+    message: "We are truly grateful to the entire team of earthsar, Gurgaon, for an extremely seamless and reliable experience. A special mention must go to Mr. Naveen Sharma whose professionalism and expertise were evident in every interaction."
   },
   {
     name: "Mohit Gupta",
     rating: 5,
     dateLabel: "3 months ago",
-    message: "I had a very positive experience working with EarthZ Enterprises Solutions Pvt Ltd, especially with Mr. Bhaskar Rawat. What truly sets them apart is their professionalism, transparency, and focus on building long-term relationships."
+    message: "I had a very positive experience working with earthsar, especially with Mr. Bhaskar Rawat. What truly sets them apart is their professionalism, transparency, and focus on building long-term relationships."
   },
   {
     name: "Nupur Bhargava",
     rating: 5,
     dateLabel: "5 months ago",
-    message: "Had a great experience working with EarthZ Enterprise Solutions Pvt. Ltd. while searching for a property. The team was extremely professional and, more importantly, really took the time to understand our specific requirements."
+    message: "Had a great experience working with earthsar while searching for a property. The team was extremely professional and, more importantly, really took the time to understand our specific requirements."
   },
   {
     name: "shanu",
     rating: 5,
     dateLabel: "2 months ago",
-    message: "I had a great experience working with the team of EarthZ Enterprise, special thanks to Mr. Dushyant Arora. They were professional, responsive, and made the entire process of finding a rental shop smooth and hassle-free. They understood my requirement well."
+    message: "I had a great experience working with the team of earthsar, special thanks to Mr. Dushyant Arora. They were professional, responsive, and made the entire process of finding a rental shop smooth and hassle-free. They understood my requirement well."
   },
   {
     name: "Raju Kumar",
     rating: 5,
     dateLabel: "3 months ago",
-    message: "I am Raj Kumar from Navitasys India Pvt. Ltd., and we engaged EarthZ Enterprise for real estate services for our expatriate employees in Gurugram. The team supported us professionally through the requirement."
+    message: "I am Raj Kumar from Navitasys India Pvt. Ltd., and we engaged earthsar for real estate services for our expatriate employees in Gurugram. The team supported us professionally through the requirement."
   },
   {
     name: "Rahul Vashishta",
     rating: 5,
     dateLabel: "a month ago",
-    message: "This is a strong recommendation for Naveen Sharma of Earthz Enterprise, who recently provided us with exceptional advisory support during our condominium search. Naveen is a detail-oriented real estate professional whose consultative approach helped us."
+    message: "This is a strong recommendation for Naveen Sharma of earthsar, who recently provided us with exceptional advisory support during our condominium search. Naveen is a detail-oriented real estate professional whose consultative approach helped us."
   },
   {
     name: "Naman Malik",
     rating: 5,
     dateLabel: "4 months ago",
-    message: "If you are looking for the easiest and most reliable way to close your property deals in Gurgaon, EarthZ is the name to trust. My experience with them was smooth, transparent, and completely hassle-free from start to finish."
+    message: "If you are looking for the easiest and most reliable way to close your property deals in Gurgaon, earthsar is the name to trust. My experience with them was smooth, transparent, and completely hassle-free from start to finish."
   },
   {
     name: "ankit gupta",
     rating: 5,
     dateLabel: "5 months ago",
-    message: "Had a great experience with Naveen Sharma from Earthz Enterprise. He was professional, detail-oriented, and took a consultative approach to help us make the right decision."
+    message: "Had a great experience with Naveen Sharma from earthsar. He was professional, detail-oriented, and took a consultative approach to help us make the right decision."
   },
   {
     name: "Sandeep Arora",
     rating: 5,
     dateLabel: "3 months ago",
-    message: "If you have reached out to Earthz Enterprise Solutions Pvt. Ltd., it is the right place for all your property related matters and associated solutions. We had a seamless experience to let out our condominium on lease."
+    message: "If you have reached out to earthsar, it is the right place for all your property related matters and associated solutions. We had a seamless experience to let out our condominium on lease."
   },
   {
     name: "Sushil Anand",
     rating: 5,
     dateLabel: "3 months ago",
-    message: "Thank you entire EarthZ team for hassle free solution buying new property. Amazing experience and the most important thing you followed what you have promised. I am fully confident you will grow by leaps and bounds considering providing great customer experience. Thank you Navin and Bhaskar."
+    message: "Thank you entire earthsar team for hassle free solution buying new property. Amazing experience and the most important thing you followed what you have promised. I am fully confident you will grow by leaps and bounds considering providing great customer experience. Thank you Navin and Bhaskar."
   },
   {
     name: "Meenu Parti",
@@ -111,19 +111,19 @@ window.EARTHSAR_GOOGLE_REVIEWS = [
     name: "Nishant Kumar",
     rating: 5,
     dateLabel: "a year ago",
-    message: "First of all, I really appreciate the professionals of Earthz Group and special thanks to Mr. Bhaskar Rawat and Mr. Naveen Sharma. You guys are extremely talented and well researched individuals. Earthz group is one stop solution for property needs."
+    message: "First of all, I really appreciate the professionals of earthsar and special thanks to Mr. Bhaskar Rawat and Mr. Naveen Sharma. You guys are extremely talented and well researched individuals. earthsar is one stop solution for property needs."
   },
   {
     name: "Anshul Tiwari",
     rating: 5,
     dateLabel: "a year ago",
-    message: "Outstanding service, transparency, and long-term relationship with EarthZ Enterprise."
+    message: "Outstanding service, transparency, and long-term relationship with earthsar."
   },
   {
     name: "vikash mittal",
     rating: 5,
     dateLabel: "4 months ago",
-    message: "I really appreciate Earthz support for finding a good home. If you find an honest and disciplined way to deal, consider Earthz Enterprise."
+    message: "I really appreciate earthsar support for finding a good home. If you find an honest and disciplined way to deal, consider earthsar."
   },
   {
     name: "neha aggarwal",
@@ -147,13 +147,13 @@ window.EARTHSAR_GOOGLE_REVIEWS = [
     name: "Sumita Dev",
     rating: 5,
     dateLabel: "a year ago",
-    message: "It was a pleasure doing business with EarthZ group. They helped me get a flat with best possible price and in my budget. I would recommend them to all for honest and transparent dealing."
+    message: "It was a pleasure doing business with earthsar. They helped me get a flat with best possible price and in my budget. I would recommend them to all for honest and transparent dealing."
   },
   {
     name: "Mahima Sharma",
     rating: 5,
     dateLabel: "2 years ago",
-    message: "I found a wonderful house through EarthZ. The knowledge about the market and insights were amazing. They are truly the best real estate agents you can find."
+    message: "I found a wonderful house through earthsar. The knowledge about the market and insights were amazing. They are truly the best real estate agents you can find."
   },
   {
     name: "Pranav Dadhich",
@@ -177,7 +177,7 @@ window.EARTHSAR_GOOGLE_REVIEWS = [
     name: "Rishabh Raj",
     rating: 5,
     dateLabel: "2 years ago",
-    message: "Naveen Sharma, best wishes to EarthZ Enterprise and Naveen Sharma ji. What you are doing, no one else is doing it in real estate, and that is working with honesty, no hard sale."
+    message: "Naveen Sharma, best wishes to earthsar and Naveen Sharma ji. What you are doing, no one else is doing it in real estate, and that is working with honesty, no hard sale."
   },
   {
     name: "Shivam Singh",

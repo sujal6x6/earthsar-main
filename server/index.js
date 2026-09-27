@@ -53,6 +53,7 @@ const sitemapUrls = [
   ["services.html", "monthly", "0.9"],
   ["real-estate-advisory-gurugram.html", "monthly", "0.8"],
   ["contact.html", "monthly", "0.7"],
+  ["reviews.html", "monthly", "0.8"],
   ["privacy.html", "yearly", "0.3"],
   ["terms.html", "yearly", "0.3"],
   ["disclaimer.html", "yearly", "0.3"]

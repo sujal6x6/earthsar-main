@@ -4,7 +4,7 @@
    Reviews, the gallery and enquiries are managed in the admin panel (/admin).
    Only add genuine, verifiable information.
    ===================================================================== */
-window.EARTHSAR_CONFIG = {
+window.earthsarConfig = {
 
   /* ---------- Statistics ----------
      Leave a value empty ("") to show "XX" as a placeholder. */

@@ -3,10 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Disclaimer | earthsar</title>
-<meta name="description" content="Disclaimer for earthsar website information, property advisory content and third-party property details.">
-<meta name="robots" content="index, follow">
-<link rel="canonical" href="https://earthsar.in/disclaimer.html">
+<title>earthsar Reviews | Client Feedback for Real Estate Advisory</title>
+<meta name="description" content="Read client reviews for earthsar, a real estate advisory firm in Gurugram and Delhi NCR built on honesty, transparency and trust.">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="canonical" href="https://earthsar.in/reviews.html">
+<meta property="og:title" content="earthsar Reviews | Client Feedback for Real Estate Advisory">
+<meta property="og:description" content="Read what clients say about earthsar real estate advisory in Gurugram and Delhi NCR.">
+<meta property="og:url" content="https://earthsar.in/reviews.html">
+<meta property="og:image" content="https://earthsar.in/assets/hero-property.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -21,19 +25,34 @@
       <a href="/">Home</a>
       <a href="/about.html">About</a>
       <a href="/#team">Team</a>
-      <a href="/services.html">Our Expertise</a>
+      <a href="/#expertise">Our Expertise</a>
       <a href="/#why">Why earthsar</a>
       <a href="/#associations">Associations</a>
       <a href="/#gallery">Media</a>
-      <a href="/reviews.html">Reviews</a>
+      <a href="/reviews.html" aria-current="page">Reviews</a>
       <a href="/contact.html">Contact</a>
     </nav>
     <button class="menu-btn" type="button" aria-label="Open menu" aria-expanded="false"><span></span></button>
   </div>
 </header>
 <main>
-<section class="hero"><div class="wrap"><div class="eyebrow">Legal</div><h1>Disclaimer</h1><p class="lead">This disclaimer explains the limits of information shown on the earthsar website.</p></div></section>
-<section class="content"><div class="wrap"><p>Website content is shared for general information and advisory communication. It should not be treated as legal, tax, financial or investment advice. Property decisions should be made after independent checks, document review and professional advice where required.</p><p>Project names, locations, pricing, availability, specifications, possession timelines and images may be provided by third parties or may change without notice. earthsar aims to communicate clearly, but does not guarantee that all third-party information will remain current at all times.</p><p>Any testimonial, review, photo or video reflects the relevant client's submitted experience or approved media. Results and property outcomes can vary depending on market conditions, project terms and individual requirements.</p><p>For specific questions, please contact earthsar directly.</p></div></section>
+<section class="hero">
+  <div class="wrap">
+    <div class="eyebrow">Client reviews</div>
+    <h1>Real feedback from people who trusted earthsar with property decisions.</h1>
+    <p class="lead">These reviews reflect client experiences with earthsar's real estate advisory, from property shortlisting and site visits to negotiation guidance and post-deal support.</p>
+    <div class="review-summary-page" id="reviewPageSummary" aria-live="polite"></div>
+  </div>
+</section>
+<section class="content">
+  <div class="wrap">
+    <div class="section-intro">
+      <h2>All published reviews</h2>
+      <p>Homepage shows only a short preview. This page keeps the full review list in one place.</p>
+    </div>
+    <div class="review-page-grid" id="reviewPageGrid"></div>
+  </div>
+</section>
 </main>
 <footer class="ftr">
   <div class="wrap">
@@ -51,6 +70,8 @@
     <div class="ftr-bot"><span>&copy; <span data-year></span> earthsar. All rights reserved.</span></div>
   </div>
 </footer>
+<script src="/google-reviews.js"></script>
+<script src="/reviews-page.js"></script>
 <script src="/seo-pages.js"></script>
 </body>
 </html>
