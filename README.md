@@ -57,6 +57,12 @@ Pick one:
 
 ## Settings (`.env`)
 
+### Social media accounts
+
+In **Admin → Settings → Social Media**, choose **Add social account**, select a platform/logo, and enter its HTTPS profile link. Enable **Show on website** and click **Save website details** to display it. Change the platform to change its logo, uncheck visibility to hide an account while keeping its link, or remove it and save.
+
+All accounts start hidden (the default list is empty). Facebook, Instagram, LinkedIn, X, YouTube and Threads logos are bundled locally. Enabled accounts appear in the footer on all public pages; no empty social section is shown. Settings are stored in the existing site settings database record, with support for both Node and PHP backends.
+
 | Setting | Required | What it is |
 |---|---|---|
 | `DATABASE_URL` | Yes | MySQL/MariaDB connection string, for example `mysql://USER:PASSWORD@HOST:3306/DATABASE`. |

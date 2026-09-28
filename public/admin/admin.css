@@ -206,3 +206,11 @@ body.adm{background:var(--neutral);min-height:100vh;overflow-x:hidden}
 .dlg.media .x{position:absolute;right:10px;top:10px;z-index:2;width:38px;height:38px;border-radius:50%;border:0;background:rgba(255,255,255,.92);color:var(--es-blue);cursor:pointer;display:grid;place-items:center}
 .dlg.media .x svg{width:15px;height:15px}
 .progress.show{display:block}
+
+.social-editor-row{display:grid;grid-template-columns:28px minmax(120px,1fr) minmax(160px,2fr) auto auto;gap:14px;align-items:center;padding:16px 0;border-bottom:1px solid var(--line)}
+.social-editor-row label{display:grid;gap:8px;font-size:13px;font-weight:600;min-width:0}
+.social-editor-row input,.social-editor-row select{width:100%;min-width:0;border:1px solid var(--line);border-radius:8px;padding:10px 12px;font:inherit;color:var(--heading);background:var(--surface)}
+.social-editor-row input:focus-visible,.social-editor-row select:focus-visible{outline:2px solid #004aad;outline-offset:2px}
+.social-editor-row .social-visibility{display:flex;align-items:center}
+.social-editor-row input[type=checkbox]{width:18px;height:18px}
+@media(max-width:900px){.social-editor-row{grid-template-columns:28px minmax(0,1fr)}.social-editor-row>label,.social-editor-row>button{grid-column:2}}

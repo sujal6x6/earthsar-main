@@ -139,6 +139,7 @@ function cleanTeam(team = []) {
 
 function sanitizeSiteSettings(input = {}) {
   return {
+    social: require("../public/social-links").clean(input.social),
     stats: cleanStats({ ...DEFAULT_SITE_SETTINGS.stats, ...(input.stats || {}) }),
     contact: cleanContact({ ...DEFAULT_SITE_SETTINGS.contact, ...(input.contact || {}) }),
     hero: cleanHero({ ...DEFAULT_SITE_SETTINGS.hero, ...(input.hero || {}) }),

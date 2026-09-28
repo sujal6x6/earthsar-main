@@ -137,11 +137,30 @@ function clean_team($team) {
     return empty($clean) ? $DEFAULT_SITE_SETTINGS['team'] : array_slice($clean, 0, 20);
 }
 
+function clean_social($items) {
+    if (!is_array($items)) return [];
+    $platforms = ['facebook', 'instagram', 'linkedin', 'x', 'youtube', 'threads'];
+    $clean = [];
+    foreach (array_slice($items, 0, 12) as $item) {
+        if (!is_array($item) || !in_array($item['platform'] ?? '', $platforms, true)) continue;
+        $url = is_string($item['url'] ?? null) ? trim($item['url']) : '';
+        $parts = parse_url($url);
+        if (strlen($url) > 2048 || !filter_var($url, FILTER_VALIDATE_URL) ||
+            strtolower($parts['scheme'] ?? '') !== 'https' ||
+            strpos($parts['host'] ?? '', '.') === false ||
+            isset($parts['user']) || isset($parts['pass']) || preg_match('/[\s\\\\]/', $url)) $url = '';
+        $clean[] = ['platform' => $item['platform'], 'url' => $url,
+            'enabled' => ($item['enabled'] ?? false) === true && $url !== ''];
+    }
+    return $clean;
+}
+
 function sanitize_site_settings($input) {
     global $DEFAULT_SITE_SETTINGS;
     if (!is_array($input)) return $DEFAULT_SITE_SETTINGS;
     
     return [
+        'social' => clean_social($input['social'] ?? []),
         'hero' => clean_hero($input['hero'] ?? null),
         'contact' => clean_contact($input['contact'] ?? null),
         'stats' => clean_stats($input['stats'] ?? null),

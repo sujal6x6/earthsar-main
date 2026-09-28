@@ -525,6 +525,12 @@ function drawSettingsForm() {
       </div>
     </section>
     <section>
+      <h2>Social Media</h2>
+      <p>Add your accounts when ready. Choose a platform to use its logo, then enable Show on website. Blank or disabled accounts stay hidden.</p>
+      <div id="socialEditor"></div>
+      <button type="button" class="btn btn-secondary" id="addSocial">Add social account</button>
+    </section>
+    <section>
       <h2>Homepage Hero</h2>
       <div class="form-grid">
         ${settingsField("Small heading", "hero.eyebrow", h.eyebrow, { max: 80 })}
@@ -568,6 +574,7 @@ function drawSettingsForm() {
     </section>
     <div class="form-foot settings-foot"><span class="note-err" id="settingsErr" role="alert"></span><button class="btn btn-primary" id="settingsBtn" type="submit">Save website details</button></div>
   </form>`;
+  window.mountSocialEditor(document.getElementById("socialEditor"), s.social || []);
   normalizeContactDefaults();
   setTimeout(normalizeContactDefaults, 80);
   setTimeout(normalizeContactDefaults, 350);
@@ -639,6 +646,8 @@ async function saveSettingsForm(e) {
       bio: settingsValue(form, `team.${i}.bio`)
     }))
   };
+  try { settings.social = window.readSocialEditor(document.getElementById("socialEditor")); }
+  catch (ex) { err.textContent = ex.message; return; }
   btn.disabled = true;
   try {
     state.settings = (await api("PATCH", "/settings", { settings })).settings;

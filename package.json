@@ -8,7 +8,7 @@
     "start": "node server/index.js",
     "dev": "node --watch server/index.js",
     "create-admin": "node scripts/create-admin.js",
-    "test": "node --test test/security.test.js test/api.test.js",
+    "test": "node --test test/security.test.js test/api.test.js test/social.test.js",
     "setup": "node scripts/setup.js"
   },
   "engines": {
