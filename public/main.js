@@ -396,12 +396,19 @@ function renderGallery(){
 }
 function renderClientMedia(){
   const all=S.reviews.flatMap(reviewMedia);
+  const sec=$("#client-media");
+  if(!all.length){
+    if(sec)sec.hidden=true;
+    $$("[data-client-media-link]").forEach(a=>a.hidden=true);
+    $("#cmTabs").hidden=true;
+    $("#cmGrid").innerHTML="";
+    $("#cmMore").innerHTML="";
+    return;
+  }
+  if(sec)sec.hidden=false;
+  $$("[data-client-media-link]").forEach(a=>a.hidden=false);
   if(S.cmFilter!=="all"&&!all.some(m=>m.type===S.cmFilter))S.cmFilter="all";
   renderTabs($("#cmTabs"),all,S.cmFilter,f=>{S.cmFilter=f;S.cmAll=false;renderClientMedia()});
-  if(!all.length){
-    $("#cmGrid").innerHTML=`<div class="empty"><b>Photos and videos from client reviews will appear here</b>Clients can add photos or a video with their review.</div>`;
-    $("#cmMore").innerHTML="";return;
-  }
   const list=S.cmFilter==="all"?all:all.filter(m=>m.type===S.cmFilter);
   renderGrid({grid:$("#cmGrid"),more:$("#cmMore"),list,showAll:S.cmAll,setAll:v=>{S.cmAll=v;renderClientMedia()},
     capFn:m=>`<b>${esc(m.review.name)}</b>${stars(+m.review.rating,"sm")}`});
@@ -537,6 +544,75 @@ function openReviewForm(){
   };
 }
 document.addEventListener("click",e=>{const b=e.target.closest("[data-review]");if(b){e.preventDefault();openReviewForm()}});
+
+document.addEventListener("click",e=>{
+  const cover=e.target.closest(".client-video-cover");
+  if(!cover)return;
+  const card=cover.closest(".client-video-card");
+  const video=card&&card.querySelector("video");
+  if(!video)return;
+  card.classList.add("is-playing");
+  video.controls=true;
+  video.muted=false;
+  video.loop=false;
+  video.play().catch(()=>card.classList.remove("is-playing"));
+});
+document.addEventListener("ended",e=>{
+  const video=e.target;
+  if(video&&video.matches&&video.matches(".client-video-card video")){
+    const card=video.closest(".client-video-card");
+    if(card){
+      card.classList.remove("is-playing");
+      video.controls=false;
+      video.muted=true;
+      video.loop=true;
+      if(!reduce)video.play().catch(()=>{});
+    }
+  }
+},true);
+function initClientVideos(){
+  const grid=$("[data-client-video-carousel]");
+  if(!grid)return;
+  const cards=$$(".client-video-card",grid);
+  cards.forEach(card=>{
+    const video=$("video",card);
+    if(!video)return;
+    video.controls=false;
+    video.muted=true;
+    video.loop=true;
+    video.playsInline=true;
+  });
+  if("IntersectionObserver" in window){
+    const videoIO=new IntersectionObserver(entries=>{
+      entries.forEach(entry=>{
+        const card=entry.target,video=$("video",card);
+        if(!video||card.classList.contains("is-playing"))return;
+        if(entry.isIntersecting&&!reduce)video.play().catch(()=>{});
+        else video.pause();
+      });
+    },{threshold:.45});
+    cards.forEach(card=>videoIO.observe(card));
+  }else{
+    cards.forEach(card=>{const video=$("video",card);if(video&&!reduce)video.play().catch(()=>{})});
+  }
+  const mobile=matchMedia("(max-width:760px)");
+  let timer=null,index=0;
+  const stop=()=>{clearInterval(timer);timer=null};
+  const start=()=>{
+    stop();
+    if(!mobile.matches||reduce||cards.length<2)return;
+    timer=setInterval(()=>{
+      if(document.querySelector(".client-video-card.is-playing"))return;
+      index=(index+1)%cards.length;
+      cards[index].scrollIntoView({behavior:"smooth",inline:"center",block:"nearest"});
+    },3600);
+  };
+  ["pointerdown","focusin","touchstart"].forEach(type=>grid.addEventListener(type,stop,{passive:true}));
+  grid.addEventListener("scroll",()=>{if(!mobile.matches)return;clearTimeout(grid._swipeT);grid._swipeT=setTimeout(()=>{const mid=grid.getBoundingClientRect().left+grid.clientWidth/2;let best=0,dist=Infinity;cards.forEach((card,i)=>{const r=card.getBoundingClientRect(),d=Math.abs(r.left+r.width/2-mid);if(d<dist){dist=d;best=i}});index=best;start()},260)},{passive:true});
+  mobile.addEventListener("change",start);
+  start();
+}
+initClientVideos();
 
 /* ================= ENQUIRY ================= */
 $("#enqForm").onsubmit=async e=>{

@@ -57,14 +57,14 @@ const DEFAULT_SITE_SETTINGS = {
       photo: "assets/neha-sharma.jpg"
     },
     {
-      name: "Dushyant Arora",
+      name: "Mr. Dushyant Arora",
       role: "Manager Sales",
       experience: "Around 6 years in real estate",
       bio: "With around 6 years of experience in real estate, Dushyant brings youthful energy, confidence, adaptability and a strong ability to learn and execute.\n\nA graduate who began working at a young age, he brings experience from diverse fields along with a natural ability to connect with people. His real estate journey has been shaped by hands-on learning, curiosity and taking ownership quickly, developing strong practical knowledge across client coordination and end-to-end real estate transactions.\n\nKnown for being polite, approachable and dependable, Dushyant has a natural ability to build rapport with clients and make them comfortable from the very first interaction.\n\nDespite being one of the younger members of the team, his maturity, ambition and sense of responsibility set him apart. Focused on his goals and always willing to learn, he represents the next generation of real estate professionals at earthsar.",
       photo: "assets/dushyant-arora.png"
     },
     {
-      name: "Juber",
+      name: "Mr. Juber",
       role: "Asst. Manager Sales",
       experience: "Around 3 years in real estate",
       bio: "With around 3 years of experience in real estate, Juber brings a sincere, dependable and hands-on approach to his work.\n\nKnown for his reliability, discipline and commitment, he takes ownership of every responsibility entrusted to him and consistently ensures that tasks are completed with care and within timelines.\n\nConsistent, responsible and trustworthy, Juber is a dependable member of the earthsar team.",
