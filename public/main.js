@@ -598,13 +598,19 @@ function initClientVideos(){
   const mobile=matchMedia("(max-width:760px)");
   let timer=null,index=0;
   const stop=()=>{clearInterval(timer);timer=null};
+  const scrollToCard=i=>{
+    const card=cards[i];
+    if(!card)return;
+    const left=card.offsetLeft-(grid.clientWidth-card.clientWidth)/2;
+    grid.scrollTo({left:Math.max(0,left),behavior:"smooth"});
+  };
   const start=()=>{
     stop();
     if(!mobile.matches||reduce||cards.length<2)return;
     timer=setInterval(()=>{
       if(document.querySelector(".client-video-card.is-playing"))return;
       index=(index+1)%cards.length;
-      cards[index].scrollIntoView({behavior:"smooth",inline:"center",block:"nearest"});
+      scrollToCard(index);
     },3600);
   };
   ["pointerdown","focusin","touchstart"].forEach(type=>grid.addEventListener(type,stop,{passive:true}));
