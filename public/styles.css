@@ -411,7 +411,7 @@ p{margin:0}
 .client-video-play svg{width:24px;height:24px;margin-left:4px;color:#fff}
 .client-video-card.is-playing .client-video-cover{display:none}
 @media (max-width:760px){
-  .client-video-grid{display:flex;justify-content:flex-start;gap:16px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;margin-inline:-16px;padding:4px 16px 18px;-webkit-overflow-scrolling:touch;touch-action:pan-x pinch-zoom}
+  .client-video-grid{display:flex;justify-content:flex-start;gap:16px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;margin-inline:-16px;padding:4px 16px 18px;-webkit-overflow-scrolling:touch;touch-action:pan-x pan-y pinch-zoom}
   .client-video-grid::-webkit-scrollbar{display:none}
   .client-video-card{flex:0 0 min(82vw,320px);scroll-snap-align:center}
   .client-video-card{border-radius:16px}

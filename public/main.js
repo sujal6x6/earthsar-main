@@ -381,13 +381,14 @@ function renderGrid({grid,more,list,showAll,setAll,capFn,featureFirst,invite}){
 }
 function renderGallery(){
   const G=S.gallery,sec=$("#gallery");
-  sec.hidden=false;$$("[data-gallery-link]").forEach(a=>a.hidden=false);
   if(!G.length){
+    sec.hidden=true;$$("[data-gallery-link]").forEach(a=>a.hidden=true);
     $("#galTabs").hidden=true;
-    $("#galGrid").innerHTML=`<div class="empty"><b>earthsar photos and videos will appear here</b>Published site media can be added from the admin Gallery.</div>`;
+    $("#galGrid").innerHTML="";
     $("#galMore").innerHTML="";
     return;
   }
+  sec.hidden=false;$$("[data-gallery-link]").forEach(a=>a.hidden=false);
   if(S.galFilter!=="all"&&!G.some(m=>m.type===S.galFilter))S.galFilter="all";
   renderTabs($("#galTabs"),G,S.galFilter,f=>{S.galFilter=f;S.galAll=false;renderGallery()});
   const list=S.galFilter==="all"?G:G.filter(m=>m.type===S.galFilter);
