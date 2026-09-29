@@ -1,6 +1,6 @@
 /* Crawlable support pages for earthsar */
 :root{
-  --es-orange:#F0780A;
+  --es-orange:#F1770A;
   --es-blue:#004BAF;
   --es-blue-deep:#003170;
   --ink:#182433;
@@ -139,8 +139,8 @@ p{margin:14px 0 0;color:var(--muted)}
   .review-page-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 
-.btn-primary,.hero .btn:not(.btn-secondary){background:#B84F00;color:#fff}
-.btn-primary:hover{background:#963F00}
+.btn-primary,.hero .btn:not(.btn-secondary){background:var(--es-orange);border-color:var(--es-orange);color:#17263C}
+.btn-primary:hover,.hero .btn:not(.btn-secondary):hover{background:var(--es-orange);border-color:var(--es-orange);color:#17263C}
 .eyebrow{color:#B84F00}
 
 /* Collapse navigation before tablet links exceed the available width. */

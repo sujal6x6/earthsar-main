@@ -1,7 +1,7 @@
 /* earthsar - Smart Advisors In Real Estate
-   Brand colours taken from the final logo: orange #F0780A, blue #004BAF */
+   Brand colours taken from the final logo: orange #F1770A, blue #004BAF */
 :root{
-  --es-orange:#F0780A; --es-orange-d:#D86909; --es-blue:#004BAF; --es-blue-d:#003C8C; --es-blue-deep:#003170;
+  --es-orange:#F1770A; --es-orange-d:#D86909; --es-blue:#004BAF; --es-blue-d:#003C8C; --es-blue-deep:#003170;
   --white:#FFFFFF;
   --bg:#FFFFFF; --surface:#FFFFFF; --soft-blue:#F4F8FF; --soft-orange:#FFF6EE; --neutral:#F7F8FA;
   --ink:#182433; --muted:#566377; --faint:#8793A5;
@@ -69,7 +69,7 @@ p{margin:0}
 .btn:hover{transform:translateY(-1px)}
 .btn:active{transform:translateY(0)}
 .btn-primary{background:var(--es-orange);color:#fff;box-shadow:0 1px 2px rgba(240,120,10,.25),0 6px 16px rgba(240,120,10,.18)}
-.btn-primary:hover{background:var(--es-orange-d)}
+.btn-primary:hover{background:var(--es-orange)}
 .btn-secondary{background:var(--surface);color:var(--heading);border-color:var(--heading)}
 .btn-secondary:hover{background:var(--es-blue);border-color:var(--es-blue);color:#fff}
 .btn-ghost-light{background:transparent;color:#fff;border-color:rgba(255,255,255,.7)}
@@ -715,8 +715,8 @@ p{margin:0}
 
 /* Accessible foregrounds and narrow-screen containment. */
 .hero-grid>*{min-width:0}
-.btn-primary{background:#B84F00;color:#fff}
-.btn-primary:hover{background:#963F00}
+.btn-primary{background:var(--es-orange);color:#17263C}
+.btn-primary:hover{background:var(--es-orange);color:#17263C}
 .step-dot{color:var(--heading)}
 :root{--accent-text:#B84F00}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--accent-text:#FF9A3D}}
