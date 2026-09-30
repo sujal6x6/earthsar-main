@@ -48,9 +48,9 @@ let siteSettings = {
   clientVideos: [
     {
       src: "assets/client-videos/client-testimonial-1.mp4",
-      kicker: "Client testimonial",
-      title: "Mr. Padam Jeet",
-      subtitle: "EarthZ client experience"
+      kicker: "",
+      title: "Mr. Padam jeet ji",
+      subtitle: ""
     },
     {
       src: "assets/client-videos/client-testimonial-2.mp4",

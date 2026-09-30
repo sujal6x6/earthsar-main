@@ -11,7 +11,7 @@ const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
 const safeUrl=u=>{try{const x=new URL(u);return /^https?:$/.test(x.protocol)?x.href:""}catch(e){return ""}};
 const CLIENT_VIDEO_DEFAULTS=[
-  {src:"assets/client-videos/client-testimonial-1.mp4",kicker:"Client testimonial",title:"Mr. Padam Jeet",subtitle:"EarthZ client experience"},
+  {src:"assets/client-videos/client-testimonial-1.mp4",kicker:"",title:"Mr. Padam jeet ji",subtitle:""},
   {src:"assets/client-videos/client-testimonial-2.mp4",kicker:"Client testimonial",title:"EarthZ client testimonial",subtitle:"Client feedback, shared in their own words"}
 ];
 function normalizeClientVideos(videos){
