@@ -10,6 +10,22 @@ const icon=(id,cls="")=>`<svg class="${cls}" aria-hidden="true"><use href="#${id
 const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
 const safeUrl=u=>{try{const x=new URL(u);return /^https?:$/.test(x.protocol)?x.href:""}catch(e){return ""}};
+const CLIENT_VIDEO_DEFAULTS=[
+  {src:"assets/client-videos/client-testimonial-1.mp4",kicker:"Client testimonial",title:"Mr. Padam Jeet",subtitle:"EarthZ client experience"},
+  {src:"assets/client-videos/client-testimonial-2.mp4",kicker:"Client testimonial",title:"EarthZ client testimonial",subtitle:"Client feedback, shared in their own words"}
+];
+function normalizeClientVideos(videos){
+  const input=Array.isArray(videos)?videos:[];
+  return CLIENT_VIDEO_DEFAULTS.map((def,i)=>{
+    const item=input[i]||{};
+    return {
+      src:def.src,
+      kicker:String(item.kicker||def.kicker||"").trim(),
+      title:String(item.title||def.title||"").trim(),
+      subtitle:String(item.subtitle||def.subtitle||"").trim()
+    };
+  });
+}
 function toast(msg){const t=$("#toast");t.textContent=msg;t.classList.add("show");clearTimeout(toast._t);toast._t=setTimeout(()=>t.classList.remove("show"),3200)}
 $("#yr").textContent=new Date().getFullYear();
 
@@ -104,6 +120,7 @@ initCursorRing();
 /* Static content comes from config.js. Reviews and the gallery come from the server. */
 const S={
   partners:C.partners||[],credentials:C.credentials||[],team:C.team||[],
+  clientVideos:normalizeClientVideos(C.clientVideos),
   googleReviews:window.earthsarGoogleReviews||C.googleReviews||[],
   reviews:[],summary:null,gallery:[],limits:{photoMb:8,videoMb:50},loaded:false,
   settings:Object.assign({},C.stats||{},C.contact||{}),
@@ -118,8 +135,9 @@ async function loadSiteSettings(){
     if(x.contact||x.stats)S.settings=Object.assign({},S.settings,x.stats||{},x.contact||{});
     if(x.hero)S.hero=Object.assign({},S.hero,x.hero,{image:x.hero.image||"",alt:x.hero.imageAlt||x.hero.alt||S.hero.alt});
     if(Array.isArray(x.team))S.team=x.team;
+    if(Array.isArray(x.clientVideos))S.clientVideos=normalizeClientVideos(x.clientVideos);
     applySEO(x.seo);
-    renderHeroContent();renderHero();renderStats();renderContact();renderTeam();
+    renderHeroContent();renderHero();renderStats();renderContact();renderTeam();renderClientVideos();
   }catch(e){}
 }
 
@@ -240,6 +258,35 @@ function renderCreds(){
   }
   if(sec)sec.hidden=false;
   g.innerHTML=S.credentials.map(c=>`<article class="card card-hover cred reveal in"><span class="tag">${esc(c.type||"Credential")}</span><h3>${esc(c.title)}</h3><div class="meta">${esc([c.issuer,c.year].filter(Boolean).join(", "))}</div>${c.description?`<p>${esc(c.description)}</p>`:""}${c.reference?`<div class="ref">Reference: <b>${esc(c.reference)}</b></div>`:""}</article>`).join("");
+}
+
+/* ================= CLIENT VIDEOS ================= */
+function videoSrc(path){
+  const clean=String(path||"").trim();
+  if(!clean)return "";
+  if(/^https?:\/\//i.test(clean)||clean.startsWith("/"))return clean;
+  return `/${clean}`;
+}
+function renderClientVideos(){
+  const videos=normalizeClientVideos(S.clientVideos);
+  S.clientVideos=videos;
+  $$(".client-video-card").forEach((card,i)=>{
+    const v=videos[i];
+    if(!v)return;
+    card.dataset.videoIndex=String(i);
+    const video=$("video",card);
+    const src=videoSrc(v.src);
+    if(video&&src&&video.getAttribute("src")!==src)video.setAttribute("src",src);
+    const cover=$(".client-video-cover",card);
+    if(cover)cover.setAttribute("aria-label",`Play ${v.title||"client testimonial"}`);
+    const fields={kicker:v.kicker,title:v.title,subtitle:v.subtitle};
+    Object.entries(fields).forEach(([key,value])=>{
+      const el=$(`[data-video-field="${key}"]`,card);
+      if(!el)return;
+      el.textContent=value;
+      el.hidden=!value;
+    });
+  });
 }
 
 /* ================= TEAM ================= */
@@ -424,7 +471,7 @@ async function loadDynamic(){
   if(location.hash==="#gallery"&&S.gallery.length)$("#gallery").scrollIntoView();
 }
 
-renderHeroContent();renderHero();renderStats();renderContact();renderPartners();renderCreds();renderTeam();loadSiteSettings();loadDynamic();
+renderHeroContent();renderHero();renderStats();renderContact();renderPartners();renderCreds();renderTeam();renderClientVideos();loadSiteSettings();loadDynamic();
 
 /* ================= MODAL ================= */
 let lastFocus=null,onClose=null;

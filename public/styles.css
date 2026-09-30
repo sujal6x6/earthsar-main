@@ -407,6 +407,7 @@ p{margin:0}
 .client-video-cover::after{content:"";position:absolute;right:-70px;bottom:-90px;width:220px;height:220px;border-radius:50%;border:28px solid rgba(241,119,10,.22);pointer-events:none}
 .client-video-kicker{position:relative;z-index:1;font-family:var(--f-head);font-size:13px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#FFB16B}
 .client-video-title{position:relative;z-index:1;font-family:var(--f-head);font-size:clamp(20px,2.4vw,28px);line-height:1.12;font-weight:700;max-width:14ch;text-shadow:0 2px 12px rgba(0,0,0,.35)}
+.client-video-subtitle{position:relative;z-index:1;font-size:14.5px;font-weight:700;line-height:1.35;color:rgba(255,255,255,.86);max-width:22ch;text-shadow:0 2px 12px rgba(0,0,0,.35)}
 .client-video-play{position:relative;z-index:1;width:64px;height:64px;border-radius:50%;background:var(--es-orange);display:grid;place-items:center;box-shadow:0 12px 28px rgba(0,0,0,.28)}
 .client-video-play svg{width:24px;height:24px;margin-left:4px;color:#fff}
 .client-video-card.is-playing .client-video-cover{display:none}

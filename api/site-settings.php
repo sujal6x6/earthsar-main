@@ -29,6 +29,20 @@ $DEFAULT_SITE_SETTINGS = [
         'description' => 'Professional land surveying services including boundary, topographic, and construction surveys.',
         'keywords' => 'land surveyor, boundary survey, topographic survey, construction staking'
     ],
+    'clientVideos' => [
+        [
+            'src' => 'assets/client-videos/client-testimonial-1.mp4',
+            'kicker' => 'Client testimonial',
+            'title' => 'Mr. Padam Jeet',
+            'subtitle' => 'EarthZ client experience'
+        ],
+        [
+            'src' => 'assets/client-videos/client-testimonial-2.mp4',
+            'kicker' => 'Client testimonial',
+            'title' => 'EarthZ client testimonial',
+            'subtitle' => 'Client feedback, shared in their own words'
+        ]
+    ],
     'team' => [
         [
             'id' => 't1',
@@ -155,6 +169,23 @@ function clean_social($items) {
     return $clean;
 }
 
+function clean_client_videos($videos) {
+    global $DEFAULT_SITE_SETTINGS;
+    if (!is_array($videos)) return $DEFAULT_SITE_SETTINGS['clientVideos'];
+
+    $clean = [];
+    foreach ($DEFAULT_SITE_SETTINGS['clientVideos'] as $index => $default) {
+        $item = isset($videos[$index]) && is_array($videos[$index]) ? $videos[$index] : [];
+        $clean[] = [
+            'src' => $default['src'],
+            'kicker' => text($item['kicker'] ?? $default['kicker'], 60),
+            'title' => text($item['title'] ?? $default['title'], 120),
+            'subtitle' => text($item['subtitle'] ?? $default['subtitle'], 160)
+        ];
+    }
+    return $clean;
+}
+
 function sanitize_site_settings($input) {
     global $DEFAULT_SITE_SETTINGS;
     if (!is_array($input)) return $DEFAULT_SITE_SETTINGS;
@@ -165,6 +196,7 @@ function sanitize_site_settings($input) {
         'contact' => clean_contact($input['contact'] ?? null),
         'stats' => clean_stats($input['stats'] ?? null),
         'seo' => clean_seo($input['seo'] ?? null),
+        'clientVideos' => clean_client_videos($input['clientVideos'] ?? null),
         'team' => clean_team($input['team'] ?? null)
     ];
 }

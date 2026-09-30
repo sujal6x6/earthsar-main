@@ -508,8 +508,20 @@ function advisorEditor(member, i) {
   </section>`;
 }
 
+function videoCoverEditor(video, i) {
+  return `<section class="settings-advisor settings-video">
+    <h3>Review video ${i + 1}</h3>
+    <p>Video file: ${esc(video.src || `assets/client-videos/client-testimonial-${i + 1}.mp4`)}</p>
+    <div class="form-grid">
+      ${settingsField("Small label", `clientVideos.${i}.kicker`, video.kicker || "Client testimonial", { max: 60 })}
+      ${settingsField("Cover title", `clientVideos.${i}.title`, video.title, { full: true, max: 120 })}
+      ${settingsField("Cover subtitle", `clientVideos.${i}.subtitle`, video.subtitle, { full: true, max: 160, hint: "Use EarthZ here when the client says EarthZ in the video." })}
+    </div>
+  </section>`;
+}
+
 function drawSettingsForm() {
-  const s = state.settings || {}, c = s.contact || {}, st = s.stats || {}, h = s.hero || {}, seo = s.seo || {}, team = s.team || [];
+  const s = state.settings || {}, c = s.contact || {}, st = s.stats || {}, h = s.hero || {}, seo = s.seo || {}, team = s.team || [], clientVideos = s.clientVideos || [];
   const phone = c.phone || c.whatsapp || "+91 79820 08930";
   const whatsapp = c.whatsapp || c.phone || "+91 79820 08930";
   const email = c.email || "info@earthsar.in";
@@ -550,6 +562,11 @@ function drawSettingsForm() {
         ${settingsField("Satisfaction", "stats.satisfaction", st.satisfaction, { max: 12 })}
         ${settingsField("Properties sold", "stats.properties", st.properties, { max: 12 })}
       </div>
+    </section>
+    <section>
+      <h2>Client Video Covers</h2>
+      <p>Edit the cover text shown before visitors play each video. The current two videos use EarthZ because clients say that name in the videos.</p>
+      <div class="advisor-grid">${[0, 1].map(i => videoCoverEditor(clientVideos[i] || {}, i)).join("")}</div>
     </section>
     <section>
       <h2>SEO Optimization</h2>
@@ -644,6 +661,11 @@ async function saveSettingsForm(e) {
       experience: settingsValue(form, `team.${i}.experience`),
       photo: settingsValue(form, `team.${i}.photo`),
       bio: settingsValue(form, `team.${i}.bio`)
+    })),
+    clientVideos: [0, 1].map(i => ({
+      kicker: settingsValue(form, `clientVideos.${i}.kicker`),
+      title: settingsValue(form, `clientVideos.${i}.title`),
+      subtitle: settingsValue(form, `clientVideos.${i}.subtitle`)
     }))
   };
   try { settings.social = window.readSocialEditor(document.getElementById("socialEditor")); }

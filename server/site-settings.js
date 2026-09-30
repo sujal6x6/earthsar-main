@@ -34,6 +34,20 @@ const DEFAULT_SITE_SETTINGS = {
     twitterTitle: "earthsar | Real Estate Advisory in Gurugram & Delhi NCR",
     twitterDescription: "Transparent real estate advisory for homes, investments, commercial property, selling and leasing."
   },
+  clientVideos: [
+    {
+      src: "assets/client-videos/client-testimonial-1.mp4",
+      kicker: "Client testimonial",
+      title: "Mr. Padam Jeet",
+      subtitle: "EarthZ client experience"
+    },
+    {
+      src: "assets/client-videos/client-testimonial-2.mp4",
+      kicker: "Client testimonial",
+      title: "EarthZ client testimonial",
+      subtitle: "Client feedback, shared in their own words"
+    }
+  ],
   team: [
     {
       name: "Mr. Naveen Sharma",
@@ -137,6 +151,19 @@ function cleanTeam(team = []) {
   }));
 }
 
+function cleanClientVideos(videos = []) {
+  const input = Array.isArray(videos) ? videos : [];
+  return DEFAULT_SITE_SETTINGS.clientVideos.map((def, index) => {
+    const item = input[index] || {};
+    return {
+      src: def.src,
+      kicker: text(item.kicker || def.kicker, 60),
+      title: text(item.title || def.title, 120),
+      subtitle: text(item.subtitle || def.subtitle, 160)
+    };
+  });
+}
+
 function sanitizeSiteSettings(input = {}) {
   return {
     social: require("../public/social-links").clean(input.social),
@@ -144,6 +171,7 @@ function sanitizeSiteSettings(input = {}) {
     contact: cleanContact({ ...DEFAULT_SITE_SETTINGS.contact, ...(input.contact || {}) }),
     hero: cleanHero({ ...DEFAULT_SITE_SETTINGS.hero, ...(input.hero || {}) }),
     seo: cleanSeo({ ...DEFAULT_SITE_SETTINGS.seo, ...(input.seo || {}) }),
+    clientVideos: cleanClientVideos(input.clientVideos && input.clientVideos.length ? input.clientVideos : DEFAULT_SITE_SETTINGS.clientVideos),
     team: cleanTeam(input.team && input.team.length ? input.team : DEFAULT_SITE_SETTINGS.team)
   };
 }

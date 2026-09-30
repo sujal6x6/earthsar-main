@@ -58,6 +58,23 @@ window.earthsarConfig = {
   credentials: [
   ],
 
+  /* ---------- Client video cover text ----------
+     Videos live in /assets/client-videos. The cover text can also be edited in the admin panel. */
+  clientVideos: [
+    {
+      src: "assets/client-videos/client-testimonial-1.mp4",
+      kicker: "Client testimonial",
+      title: "Mr. Padam Jeet",
+      subtitle: "EarthZ client experience"
+    },
+    {
+      src: "assets/client-videos/client-testimonial-2.mp4",
+      kicker: "Client testimonial",
+      title: "EarthZ client testimonial",
+      subtitle: "Client feedback, shared in their own words"
+    }
+  ],
+
   /* ---------- Team ----------
      { name: "Full Name", role: "Designation", experience: "12 years in real-estate advisory",
        bio: "Short introduction.", linkedin: "https://linkedin.com/in/...", photo: "images/name.jpg" } */

@@ -186,6 +186,7 @@ body.adm{background:var(--neutral);min-height:100vh;overflow-x:hidden}
 .advisor-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:stretch}
 .settings-advisor{border:1px solid var(--line);border-radius:10px;background:var(--soft-blue);padding:16px;display:grid;gap:12px}
 .settings-advisor h3{font-size:16px}
+.settings-video p{font-size:13px;color:var(--muted);word-break:break-word}
 .settings-foot{border-top:1px solid var(--line);padding-top:18px}
 .acc-card{padding:24px;max-width:520px;display:grid;gap:16px}
 .acc-card h2{font-size:20px}

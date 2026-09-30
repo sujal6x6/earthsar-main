@@ -45,6 +45,20 @@ let siteSettings = {
     twitterTitle: "earthsar | Real Estate Advisory in Gurugram & Delhi NCR",
     twitterDescription: "Transparent real estate advisory for homes, investments, commercial property, selling and leasing."
   },
+  clientVideos: [
+    {
+      src: "assets/client-videos/client-testimonial-1.mp4",
+      kicker: "Client testimonial",
+      title: "Mr. Padam Jeet",
+      subtitle: "EarthZ client experience"
+    },
+    {
+      src: "assets/client-videos/client-testimonial-2.mp4",
+      kicker: "Client testimonial",
+      title: "EarthZ client testimonial",
+      subtitle: "Client feedback, shared in their own words"
+    }
+  ],
   team: [
     {
       name: "Mr. Naveen Sharma",
