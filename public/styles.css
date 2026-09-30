@@ -222,10 +222,11 @@ p{margin:0}
 .step p{color:var(--muted);font-size:15px;max-width:24ch;margin-inline:auto}
 @media (max-width:900px){
   .process{grid-template-columns:1fr;gap:0}
-  .proc-line{left:27px;right:auto;top:28px;bottom:28px;width:2px;height:auto}
-  .proc-line i{transform:scaleY(0);transform-origin:top}
-  .process.in .proc-line i{transform:scaleY(1)}
+  .proc-line{display:none}
   .step{text-align:left;display:grid;grid-template-columns:56px 1fr;gap:20px;padding-bottom:30px}
+  .step:not(:last-child)::before{content:"";position:absolute;left:27px;top:28px;bottom:-28px;width:2px;background:var(--line-strong);border-radius:2px;transform:translateX(-50%)}
+  .step:not(:last-child)::after{content:"";position:absolute;left:27px;top:28px;bottom:-28px;width:2px;background:var(--es-orange);border-radius:2px;transform:translateX(-50%) scaleY(0);transform-origin:top;transition:transform 1.8s cubic-bezier(.3,.6,.2,1)}
+  .process.in .step:not(:last-child)::after{transform:translateX(-50%) scaleY(1)}
   .step-dot{margin:0}
   .step p{margin:0;max-width:none}
 }
@@ -673,7 +674,7 @@ p{margin:0}
   .why .ic svg{width:36px;height:36px}
   .step{grid-template-columns:44px 1fr;gap:14px;padding-bottom:22px}
   .step-dot{width:44px;height:44px;font-size:15px}
-  .proc-line{left:21px}
+  .step:not(:last-child)::before,.step:not(:last-child)::after{left:22px;top:22px;bottom:-22px}
   .step h3{font-size:18px}
   .pr{padding:18px 0}
   .pr h3{font-size:24px;gap:12px}
