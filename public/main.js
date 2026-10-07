@@ -273,13 +273,14 @@ function renderClientVideos(){
   $$(".client-video-card").forEach((card,i)=>{
     const v=videos[i];
     if(!v)return;
+    const hideKicker=i===0||/padam\s+jeet/i.test(v.title||"")||/client-testimonial-1/i.test(v.src||"");
     card.dataset.videoIndex=String(i);
     const video=$("video",card);
     const src=videoSrc(v.src);
     if(video&&src&&video.getAttribute("src")!==src)video.setAttribute("src",src);
     const cover=$(".client-video-cover",card);
     if(cover)cover.setAttribute("aria-label",`Play ${v.title||"client testimonial"}`);
-    const fields={kicker:v.kicker,title:v.title,subtitle:v.subtitle};
+    const fields={kicker:hideKicker?"":v.kicker,title:v.title,subtitle:v.subtitle};
     Object.entries(fields).forEach(([key,value])=>{
       const el=$(`[data-video-field="${key}"]`,card);
       if(!el)return;
@@ -320,7 +321,6 @@ function openTeamModal(i){
   <div class="modal-b advisor-modal">
     <div class="advisor-modal-photo">${m.photo?`<img src="${esc(m.photo)}" alt="${esc(m.name)}">`:`<span class="ini">${esc(initials(m.name))}</span>`}</div>
     <div class="advisor-modal-copy">
-      ${m.experience?`<div class="xp">${esc(m.experience)}</div>`:""}
       ${bio}
       ${li?`<a class="li" href="${esc(li)}" target="_blank" rel="noopener noreferrer">${icon("i-in")}LinkedIn</a>`:""}
     </div>
