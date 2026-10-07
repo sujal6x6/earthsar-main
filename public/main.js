@@ -307,7 +307,7 @@ function renderTeam(){
     $$(".member.ph .ini svg",g).forEach(s=>{s.style.width="64px";s.style.height="64px";s.style.color="var(--heading)"});return}
   S.team=orderedTeam(S.team);
   g.innerHTML=S.team.map((m,idx)=>{
-    return `<article class="card card-hover member reveal in"><div class="member-photo">${m.photo?`<img src="${esc(m.photo)}" alt="${esc(m.name)}" loading="lazy">`:`<span class="ini">${esc(initials(m.name))}</span>`}</div><div class="member-body"><h3>${esc(m.name)}</h3><div class="role">${esc(m.role)}</div><div class="div"></div>${m.experience?`<div class="xp">${esc(m.experience)}</div>`:""}<button class="btn btn-secondary member-read" type="button" data-team="${idx}">Read more</button></div></article>`;
+    return `<article class="card card-hover member reveal in"><div class="member-photo">${m.photo?`<img src="${esc(m.photo)}" alt="${esc(m.name)}" loading="lazy">`:`<span class="ini">${esc(initials(m.name))}</span>`}</div><div class="member-body"><h3>${esc(m.name)}</h3><div class="role">${esc(m.role)}</div><div class="div"></div><button class="btn btn-secondary member-read" type="button" data-team="${idx}">Read more</button></div></article>`;
   }).join("");
 }
 function openTeamModal(i){
@@ -321,6 +321,7 @@ function openTeamModal(i){
   <div class="modal-b advisor-modal">
     <div class="advisor-modal-photo">${m.photo?`<img src="${esc(m.photo)}" alt="${esc(m.name)}">`:`<span class="ini">${esc(initials(m.name))}</span>`}</div>
     <div class="advisor-modal-copy">
+      ${m.experience?`<div class="xp">${esc(m.experience)}</div>`:""}
       ${bio}
       ${li?`<a class="li" href="${esc(li)}" target="_blank" rel="noopener noreferrer">${icon("i-in")}LinkedIn</a>`:""}
     </div>

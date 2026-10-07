@@ -733,7 +733,6 @@ p{margin:0}
   .ftr h4::after{width:18px}
   .ftr ul{gap:5px}
   .ftr li{line-height:1.35}
-  #fContact li:nth-child(n+4){display:none}
   .ftr-bot{margin-top:18px;padding-top:12px;font-size:12px}
   .modal{padding:10px}
   .modal-h{padding:22px 20px 8px}
