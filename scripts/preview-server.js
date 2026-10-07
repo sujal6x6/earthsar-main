@@ -19,7 +19,7 @@ let siteSettings = {
     phone: "+91 79820 08930",
     whatsapp: "+91 79820 08930",
     email: "info@earthsar.in",
-    address: "DLF Corporate Greens, Sector - 74A, Gurugram, Haryana",
+    address: "DLF Corporate Greens, Tower No. 4, 11th Floor, Office No. 1118, Sector 74A, Gurugram, Haryana",
     hours: "Mon-Sun, 10:00 am - 7:00 pm IST"
   },
   hero: {
