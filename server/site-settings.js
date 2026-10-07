@@ -100,11 +100,15 @@ function cleanStats(stats = {}) {
 }
 
 function cleanContact(contact = {}) {
+  let address = text(contact.address, 300);
+  if (/DLF Corporate Greens,\s*Sector\s*-\s*74A/i.test(address)) {
+    address = DEFAULT_SITE_SETTINGS.contact.address;
+  }
   return {
     phone: text(contact.phone, 40),
     whatsapp: text(contact.whatsapp, 40),
     email: text(contact.email, 255).toLowerCase(),
-    address: text(contact.address, 300),
+    address,
     hours: text(contact.hours, 120)
   };
 }

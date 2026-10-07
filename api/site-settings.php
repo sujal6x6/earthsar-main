@@ -93,11 +93,15 @@ function clean_hero($hero) {
 function clean_contact($contact) {
     global $DEFAULT_SITE_SETTINGS;
     if (!is_array($contact)) return $DEFAULT_SITE_SETTINGS['contact'];
+    $address = text($contact['address'] ?? $DEFAULT_SITE_SETTINGS['contact']['address'], 300);
+    if (preg_match('/DLF Corporate Greens,\s*Sector\s*-\s*74A/i', $address)) {
+        $address = $DEFAULT_SITE_SETTINGS['contact']['address'];
+    }
     
     return [
         'phone' => text($contact['phone'] ?? $DEFAULT_SITE_SETTINGS['contact']['phone'], 50),
         'email' => filter_var($contact['email'] ?? $DEFAULT_SITE_SETTINGS['contact']['email'], FILTER_SANITIZE_EMAIL),
-        'address' => text($contact['address'] ?? $DEFAULT_SITE_SETTINGS['contact']['address'], 200),
+        'address' => $address,
         'facebook' => filter_var($contact['facebook'] ?? $DEFAULT_SITE_SETTINGS['contact']['facebook'], FILTER_SANITIZE_URL),
         'twitter' => filter_var($contact['twitter'] ?? $DEFAULT_SITE_SETTINGS['contact']['twitter'], FILTER_SANITIZE_URL),
         'instagram' => filter_var($contact['instagram'] ?? $DEFAULT_SITE_SETTINGS['contact']['instagram'], FILTER_SANITIZE_URL),

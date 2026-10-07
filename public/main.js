@@ -132,7 +132,11 @@ async function loadSiteSettings(){
   try{
     const d=await getJSON("/api/settings");
     const x=d.settings||{};
-    if(x.contact||x.stats)S.settings=Object.assign({},S.settings,x.stats||{},x.contact||{});
+    const contact=Object.assign({},x.contact||{});
+    if(contact.address&&/DLF Corporate Greens,\s*Sector\s*-\s*74A/i.test(contact.address)){
+      contact.address=(C.contact&&C.contact.address)||S.settings.address||contact.address;
+    }
+    if(x.contact||x.stats)S.settings=Object.assign({},S.settings,x.stats||{},contact);
     if(x.hero)S.hero=Object.assign({},S.hero,x.hero,{image:x.hero.image||"",alt:x.hero.imageAlt||x.hero.alt||S.hero.alt});
     if(Array.isArray(x.team))S.team=x.team;
     if(Array.isArray(x.clientVideos))S.clientVideos=normalizeClientVideos(x.clientVideos);
