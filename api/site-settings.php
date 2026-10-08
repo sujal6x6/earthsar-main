@@ -29,6 +29,11 @@ $DEFAULT_SITE_SETTINGS = [
         'description' => 'Professional land surveying services including boundary, topographic, and construction surveys.',
         'keywords' => 'land surveyor, boundary survey, topographic survey, construction staking'
     ],
+    'maintenance' => [
+        'enabled' => false,
+        'title' => 'Website under maintenance',
+        'message' => 'We are making a few updates and will be back online shortly. For urgent property advice, please contact us directly.'
+    ],
     'clientVideos' => [
         [
             'src' => 'assets/client-videos/client-testimonial-1.mp4',
@@ -136,6 +141,18 @@ function clean_seo($seo) {
     ];
 }
 
+function clean_maintenance($maintenance) {
+    global $DEFAULT_SITE_SETTINGS;
+    if (!is_array($maintenance)) return $DEFAULT_SITE_SETTINGS['maintenance'];
+
+    $enabled = $maintenance['enabled'] ?? false;
+    return [
+        'enabled' => $enabled === true || $enabled === 1 || $enabled === '1' || $enabled === 'true',
+        'title' => text($maintenance['title'] ?? $DEFAULT_SITE_SETTINGS['maintenance']['title'], 90),
+        'message' => text($maintenance['message'] ?? $DEFAULT_SITE_SETTINGS['maintenance']['message'], 300)
+    ];
+}
+
 function clean_team($team) {
     global $DEFAULT_SITE_SETTINGS;
     if (!is_array($team)) return $DEFAULT_SITE_SETTINGS['team'];
@@ -200,6 +217,7 @@ function sanitize_site_settings($input) {
         'contact' => clean_contact($input['contact'] ?? null),
         'stats' => clean_stats($input['stats'] ?? null),
         'seo' => clean_seo($input['seo'] ?? null),
+        'maintenance' => clean_maintenance($input['maintenance'] ?? null),
         'clientVideos' => clean_client_videos($input['clientVideos'] ?? null),
         'team' => clean_team($input['team'] ?? null)
     ];

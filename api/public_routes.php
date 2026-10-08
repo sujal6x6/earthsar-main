@@ -22,6 +22,23 @@ function _pub_json_out($data, $status = 200) {
     exit;
 }
 
+function read_public_settings() {
+    $rows = db_query("SELECT setting_value FROM site_settings WHERE setting_key = 'site'");
+    $saved = [];
+    if (!empty($rows[0])) {
+        $val = $rows[0]['setting_value'];
+        $saved = is_string($val) ? (json_decode($val, true) ?? []) : (array)$val;
+    }
+    return sanitize_site_settings($saved);
+}
+
+function ensure_not_maintenance() {
+    $settings = read_public_settings();
+    if (!empty($settings['maintenance']['enabled'])) {
+        _pub_json_out(['error' => 'The website is currently in maintenance mode.'], 503);
+    }
+}
+
 /* ---------- Reviews ---------- */
 
 function _public_review($r) {
@@ -54,6 +71,7 @@ function _public_review($r) {
 
 function get_reviews() {
     global $config;
+    ensure_not_maintenance();
     $rows = db_query("SELECT * FROM reviews WHERE status = 'approved' ORDER BY created_at DESC LIMIT 500");
 
     $distribution = [1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0];
@@ -81,6 +99,7 @@ function get_reviews() {
 
 function post_review() {
     global $config, $_EMAIL_RE;
+    ensure_not_maintenance();
 
     // Honeypot check
     if (!empty($_POST['website'])) {
@@ -196,6 +215,7 @@ function post_review() {
 /* ---------- Gallery ---------- */
 
 function get_gallery() {
+    ensure_not_maintenance();
     $rows = db_query("SELECT * FROM gallery_items WHERE published = 1 ORDER BY sort_order ASC, created_at DESC LIMIT 300");
     $items = array_map(function($g) {
         return array_merge(
@@ -209,19 +229,14 @@ function get_gallery() {
 /* ---------- Settings ---------- */
 
 function get_settings() {
-    $rows = db_query("SELECT setting_value FROM site_settings WHERE setting_key = 'site'");
-    $saved = [];
-    if (!empty($rows[0])) {
-        $val = $rows[0]['setting_value'];
-        $saved = is_string($val) ? (json_decode($val, true) ?? []) : (array)$val;
-    }
-    _pub_json_out(['settings' => sanitize_site_settings($saved)]);
+    _pub_json_out(['settings' => read_public_settings()]);
 }
 
 /* ---------- Enquiries ---------- */
 
 function post_enquiry() {
     global $_EMAIL_RE;
+    ensure_not_maintenance();
 
     $body = json_decode(file_get_contents('php://input'), true) ?? [];
 

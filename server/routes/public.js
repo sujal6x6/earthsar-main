@@ -12,6 +12,33 @@ const router = express.Router();
 const str = (v, max) => String(v == null ? "" : v).trim().slice(0, max);
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+async function readSiteSettings() {
+  const { rows } = await query("SELECT setting_value FROM site_settings WHERE setting_key = 'site'");
+  let saved = {};
+  if (rows && rows[0]) {
+    try {
+      saved = typeof rows[0].setting_value === "string" ? JSON.parse(rows[0].setting_value) : rows[0].setting_value;
+    } catch {
+      saved = {};
+    }
+  }
+  return sanitizeSiteSettings(saved);
+}
+
+router.use(async (req, res, next) => {
+  if (req.path === "/settings" || req.path === "/health" || req.path.startsWith("/admin")) return next();
+  try {
+    const settings = await readSiteSettings();
+    if (settings.maintenance && settings.maintenance.enabled) {
+      res.set("Cache-Control", "no-cache");
+      return res.status(503).json({ error: "The website is currently in maintenance mode." });
+    }
+  } catch (err) {
+    console.warn("Could not check maintenance mode:", err.message);
+  }
+  next();
+});
+
 /* ---------- Reviews ---------- */
 
 function publicReview(r) {
@@ -152,17 +179,8 @@ router.get("/gallery", async (req, res) => {
 
 router.get("/settings", async (req, res) => {
   try {
-    const { rows } = await query("SELECT setting_value FROM site_settings WHERE setting_key = 'site'");
-    let saved = {};
-    if (rows && rows[0]) {
-      try {
-        saved = typeof rows[0].setting_value === "string" ? JSON.parse(rows[0].setting_value) : rows[0].setting_value;
-      } catch {
-        saved = {};
-      }
-    }
     res.set("Cache-Control", "no-cache");
-    res.json({ settings: sanitizeSiteSettings(saved) });
+    res.json({ settings: await readSiteSettings() });
   } catch (err) {
     console.warn("Could not fetch settings from DB, using defaults:", err.message);
     res.set("Cache-Control", "no-cache");

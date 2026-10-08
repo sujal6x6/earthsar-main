@@ -494,6 +494,10 @@ function settingsField(label, name, value, opts = {}) {
   return `<div class="${cls}"><label>${esc(label)}</label>${field}${hint}</div>`;
 }
 
+function settingsCheckbox(label, name, checked, hint = "") {
+  return `<div class="fld full"><label class="check maintenance-check"><input type="checkbox" data-key="${esc(name)}" ${checked ? "checked" : ""}><span>${esc(label)}</span></label>${hint ? `<div class="hint">${esc(hint)}</div>` : ""}</div>`;
+}
+
 function advisorEditor(member, i) {
   const title = `Advisor ${i + 1}`;
   return `<section class="settings-advisor">
@@ -521,11 +525,20 @@ function videoCoverEditor(video, i) {
 }
 
 function drawSettingsForm() {
-  const s = state.settings || {}, c = s.contact || {}, st = s.stats || {}, h = s.hero || {}, seo = s.seo || {}, team = s.team || [], clientVideos = s.clientVideos || [];
+  const s = state.settings || {}, c = s.contact || {}, st = s.stats || {}, h = s.hero || {}, seo = s.seo || {}, maintenance = s.maintenance || {}, team = s.team || [], clientVideos = s.clientVideos || [];
   const phone = c.phone || c.whatsapp || "+91 79820 08930";
   const whatsapp = c.whatsapp || c.phone || "+91 79820 08930";
   const email = c.email || "info@earthsar.in";
   $("#settingsBox").innerHTML = `<form class="panel settings-form" id="settingsForm" data-settings-version="edit-v2" novalidate>
+    <section class="maintenance-panel${maintenance.enabled ? " is-on" : ""}">
+      <h2>Maintenance Mode</h2>
+      <div class="notice">${maintenance.enabled ? "The public website is paused. Admin access stays available so you can turn it back on." : "Turn this on when you want visitors to see a temporary maintenance page instead of the website."}</div>
+      <div class="form-grid">
+        ${settingsCheckbox("Pause the public website", "maintenance.enabled", maintenance.enabled, "Visitors will see a maintenance page. Admin panel and admin APIs continue working.")}
+        ${settingsField("Maintenance heading", "maintenance.title", maintenance.title || "Website under maintenance", { full: true, max: 90 })}
+        ${settingsField("Maintenance message", "maintenance.message", maintenance.message || "We are making a few updates and will be back online shortly. For urgent property advice, please contact us directly.", { full: true, area: true, rows: 3, max: 300 })}
+      </div>
+    </section>
     <section>
       <h2>Contact Details</h2>
       <div class="form-grid">
@@ -613,6 +626,10 @@ function settingsValue(form, name) {
   const el = $(`[data-key="${name}"]`, form);
   return el ? el.value.trim() : "";
 }
+function settingsChecked(form, name) {
+  const el = $(`[data-key="${name}"]`, form);
+  return Boolean(el && el.checked);
+}
 
 async function saveSettingsForm(e) {
   e.preventDefault();
@@ -620,6 +637,11 @@ async function saveSettingsForm(e) {
   err.textContent = "";
   normalizeContactDefaults();
   const settings = {
+    maintenance: {
+      enabled: settingsChecked(form, "maintenance.enabled"),
+      title: settingsValue(form, "maintenance.title") || "Website under maintenance",
+      message: settingsValue(form, "maintenance.message") || "We are making a few updates and will be back online shortly. For urgent property advice, please contact us directly."
+    },
     contact: {
       phone: settingsValue(form, "contact.phone") || settingsValue(form, "contact.whatsapp") || "+91 79820 08930",
       whatsapp: settingsValue(form, "contact.whatsapp") || settingsValue(form, "contact.phone") || "+91 79820 08930",

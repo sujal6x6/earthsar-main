@@ -137,6 +137,40 @@ async function indexHtml(req) {
   return html;
 }
 
+function maintenanceHtml(settings) {
+  const maintenance = settings.maintenance || {};
+  const contact = settings.contact || {};
+  const title = maintenance.title || "Website under maintenance";
+  const message = maintenance.message || "We are making a few updates and will be back online shortly.";
+  const phone = contact.phone || contact.whatsapp || "";
+  const email = contact.email || "";
+  return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>${escapeHtml(title)} | earthsar</title>
+<style>
+:root{color-scheme:light;--blue:#0B2D4D;--orange:#E97824;--ink:#263342;--muted:#687386;--bg:#F6F3EE;--surface:#fff}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px;background:var(--bg);color:var(--ink);font-family:Arial,Helvetica,sans-serif}
+main{width:min(620px,100%);background:var(--surface);border:1px solid #E4DED4;border-top:5px solid var(--orange);border-radius:18px;padding:38px 34px;box-shadow:0 24px 70px rgba(11,45,77,.16);text-align:center}
+.brand img{width:min(220px,80%);height:auto;margin-bottom:20px}
+h1{margin:0;color:var(--blue);font-size:clamp(28px,5vw,42px);line-height:1.08}p{font-size:18px;line-height:1.65;margin:18px auto 0;max-width:46ch;color:var(--muted)}
+.contact{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:26px}.contact a{border:1px solid #D9E1EA;border-radius:999px;padding:10px 16px;color:var(--blue);text-decoration:none;font-weight:700}.contact a:hover{border-color:var(--blue)}
+</style>
+</head>
+<body>
+<main>
+<div class="brand" aria-label="earthsar"><img src="/assets/earthsar-logo.png" alt="earthsar - Smart Advisors In Real Estate"></div>
+<h1>${escapeHtml(title)}</h1>
+<p>${escapeHtml(message)}</p>
+${phone || email ? `<div class="contact">${phone ? `<a href="tel:${escapeHtml(phone.replace(/\s+/g, ""))}">${escapeHtml(phone)}</a>` : ""}${email ? `<a href="mailto:${escapeHtml(email)}">${escapeHtml(email)}</a>` : ""}</div>` : ""}
+</main>
+</body>
+</html>`;
+}
+
 async function sendIndex(req, res, next) {
   try {
     res.set("Cache-Control", "no-cache");
@@ -145,6 +179,22 @@ async function sendIndex(req, res, next) {
     next(err);
   }
 }
+
+app.use(async (req, res, next) => {
+  if (!["GET", "HEAD"].includes(req.method) || req.path.startsWith("/admin") || req.path.startsWith("/api")) return next();
+  if (req.accepts(["html", "json"]) !== "html") return next();
+  try {
+    const settings = await readPublicSettings();
+    if (settings.maintenance && settings.maintenance.enabled) {
+      res.set("Cache-Control", "no-cache");
+      res.set("Retry-After", "3600");
+      return res.status(503).type("html").send(maintenanceHtml(settings));
+    }
+  } catch (err) {
+    console.warn("Could not render maintenance page:", err.message);
+  }
+  next();
+});
 
 app.get("/robots.txt", (req, res) => {
   const origin = siteOrigin(req);

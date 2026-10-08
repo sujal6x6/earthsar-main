@@ -34,6 +34,11 @@ const DEFAULT_SITE_SETTINGS = {
     twitterTitle: "earthsar | Real Estate Advisory in Gurugram & Delhi NCR",
     twitterDescription: "Transparent real estate advisory for homes, investments, commercial property, selling and leasing."
   },
+  maintenance: {
+    enabled: false,
+    title: "Website under maintenance",
+    message: "We are making a few updates and will be back online shortly. For urgent property advice, please contact us directly."
+  },
   clientVideos: [
     {
       src: "assets/client-videos/client-testimonial-1.mp4",
@@ -144,6 +149,14 @@ function cleanSeo(seo = {}) {
   };
 }
 
+function cleanMaintenance(maintenance = {}) {
+  return {
+    enabled: maintenance.enabled === true || maintenance.enabled === "true" || maintenance.enabled === 1 || maintenance.enabled === "1",
+    title: text(maintenance.title || DEFAULT_SITE_SETTINGS.maintenance.title, 90),
+    message: text(maintenance.message || DEFAULT_SITE_SETTINGS.maintenance.message, 300)
+  };
+}
+
 function cleanTeam(team = []) {
   return (Array.isArray(team) ? team : []).slice(0, 5).map(member => ({
     name: text(member.name, 120),
@@ -175,6 +188,7 @@ function sanitizeSiteSettings(input = {}) {
     contact: cleanContact({ ...DEFAULT_SITE_SETTINGS.contact, ...(input.contact || {}) }),
     hero: cleanHero({ ...DEFAULT_SITE_SETTINGS.hero, ...(input.hero || {}) }),
     seo: cleanSeo({ ...DEFAULT_SITE_SETTINGS.seo, ...(input.seo || {}) }),
+    maintenance: cleanMaintenance({ ...DEFAULT_SITE_SETTINGS.maintenance, ...(input.maintenance || {}) }),
     clientVideos: cleanClientVideos(input.clientVideos && input.clientVideos.length ? input.clientVideos : DEFAULT_SITE_SETTINGS.clientVideos),
     team: cleanTeam(input.team && input.team.length ? input.team : DEFAULT_SITE_SETTINGS.team)
   };
