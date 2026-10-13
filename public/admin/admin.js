@@ -17,7 +17,8 @@ const SETTINGS_SECTIONS = [
   ["videos", "Videos"],
   ["seo", "SEO"],
   ["social", "Social"],
-  ["maintenance", "Maintenance"]
+  ["maintenance", "Maintenance"],
+  ["account", "Account"]
 ];
 let activeSettingsPanel = "brands";
 
@@ -456,44 +457,13 @@ main.addEventListener("focusout", async e => {
 /* ================= SETTINGS ================= */
 async function pageSettings() {
   main.innerHTML = `<div class="ph"><div><h1>Website Settings</h1><p>Edit contact details, homepage content, advisor cards and SEO metadata.</p></div><a class="btn btn-secondary" href="/" target="_blank" rel="noopener">View website</a></div>
-    <div id="settingsBox"><div class="loading">Loading website settings...</div></div>
-    <form class="panel acc-card" id="profileForm" novalidate>
-      <h2>Admin username</h2>
-      <p style="color:var(--muted)">Change the login username/email used for this admin panel.</p>
-      <div class="fld"><label for="u-name">Display name</label><input id="u-name" autocomplete="name" maxlength="160" value="${esc(state.me.admin.name || "")}"></div>
-      <div class="fld"><label for="u-email">Login username / email</label><input id="u-email" type="email" autocomplete="username" maxlength="255" value="${esc(state.me.admin.email || "")}" required></div>
-      <div class="fld"><label for="u-current">Current password</label><input id="u-current" type="password" autocomplete="current-password" required><div class="hint">Required before changing the admin username.</div></div>
-      <div class="form-foot" style="margin-top:0"><span class="note-err" id="uErr" role="alert"></span><button class="btn btn-primary" type="submit">Save admin username</button></div>
-    </form>
-    <form class="panel acc-card" id="pwForm" novalidate>
-      <h2>Change password</h2>
-      <div class="fld"><label for="p-cur">Current password</label><input id="p-cur" type="password" autocomplete="current-password"></div>
-      <div class="fld"><label for="p-new">New password</label><input id="p-new" type="password" autocomplete="new-password" minlength="10"><div class="hint">At least 10 characters. Other devices will be signed out.</div></div>
-      <div class="form-foot" style="margin-top:0"><span class="note-err" id="pErr" role="alert"></span><button class="btn btn-primary" type="submit">Change password</button></div>
-    </form>
-    <div class="panel acc-card" style="margin-top:16px"><h2>Sign out</h2><p style="color:var(--muted)">Sign out of the admin panel on this device.</p><div><button class="btn btn-plain" id="logout">Sign out</button></div></div>`;
+    <div id="settingsBox"><div class="loading">Loading website settings...</div></div>`;
   try {
     state.settings = (await api("GET", "/settings")).settings;
     drawSettingsForm();
   } catch (err) {
     $("#settingsBox").innerHTML = `<div class="panel empty-state"><b>Settings could not be loaded</b>${esc(err.message)}</div>`;
   }
-  $("#profileForm").onsubmit = async e => {
-    e.preventDefault(); $("#uErr").textContent = "";
-    try {
-      const d = await api("PATCH", "/profile", { name: $("#u-name").value, email: $("#u-email").value, current: $("#u-current").value });
-      state.me.admin = d.admin;
-      $("#whoami").textContent = d.admin.email;
-      $("#u-current").value = "";
-      toast("Admin username saved.");
-    } catch (err) { $("#uErr").textContent = err.message; }
-  };
-  $("#pwForm").onsubmit = async e => {
-    e.preventDefault(); $("#pErr").textContent = "";
-    try { await api("POST", "/password", { current: $("#p-cur").value, next: $("#p-new").value }); $("#pwForm").reset(); toast("Password changed."); }
-    catch (err) { $("#pErr").textContent = err.message; }
-  };
-  $("#logout").onclick = async () => { try { await api("POST", "/logout"); } catch { } state.me = null; showLogin(); };
 }
 
 function settingsField(label, name, value, opts = {}) {
@@ -582,6 +552,65 @@ function switchSettingsPanel(id) {
   activeSettingsPanel = id;
   $$("[data-settings-nav]").forEach(btn => btn.setAttribute("aria-selected", btn.dataset.settingsNav === id ? "true" : "false"));
   $$("[data-settings-panel]").forEach(panel => { panel.hidden = panel.dataset.settingsPanel !== id; });
+  const foot = $(".settings-foot");
+  if (foot) foot.hidden = id === "account";
+}
+
+function accountPanel() {
+  const admin = state.me && state.me.admin || {};
+  return `
+    <div class="section-head">
+      <div>
+        <h2>Admin Account</h2>
+        <p>Manage login details and this device session.</p>
+      </div>
+    </div>
+    <div class="account-grid">
+      <section class="account-box">
+        <h3>Username</h3>
+        <div class="fld"><label for="u-name">Display name</label><input id="u-name" autocomplete="name" maxlength="160" value="${esc(admin.name || "")}"></div>
+        <div class="fld"><label for="u-email">Login username / email</label><input id="u-email" type="email" autocomplete="username" maxlength="255" value="${esc(admin.email || "")}" required></div>
+        <div class="fld"><label for="u-current">Current password</label><input id="u-current" type="password" autocomplete="current-password" required><div class="hint">Required before changing the admin username.</div></div>
+        <div class="form-foot compact-foot"><span class="note-err" id="uErr" role="alert"></span><button class="btn btn-primary" id="profileBtn" type="button">Save username</button></div>
+      </section>
+      <section class="account-box">
+        <h3>Password</h3>
+        <div class="fld"><label for="p-cur">Current password</label><input id="p-cur" type="password" autocomplete="current-password"></div>
+        <div class="fld"><label for="p-new">New password</label><input id="p-new" type="password" autocomplete="new-password" minlength="10"><div class="hint">At least 10 characters. Other devices will be signed out.</div></div>
+        <div class="form-foot compact-foot"><span class="note-err" id="pErr" role="alert"></span><button class="btn btn-primary" id="pwBtn" type="button">Change password</button></div>
+      </section>
+      <section class="account-box signout-box">
+        <h3>Sign out</h3>
+        <p>Sign out of the admin panel on this device.</p>
+        <button class="btn btn-plain" id="logout" type="button">Sign out</button>
+      </section>
+    </div>`;
+}
+
+function bindAccountButtons() {
+  const profileBtn = $("#profileBtn");
+  if (profileBtn) profileBtn.onclick = async () => {
+    $("#uErr").textContent = "";
+    try {
+      const d = await api("PATCH", "/profile", { name: $("#u-name").value, email: $("#u-email").value, current: $("#u-current").value });
+      state.me.admin = d.admin;
+      $("#whoami").textContent = d.admin.email;
+      $("#u-current").value = "";
+      toast("Admin username saved.");
+    } catch (err) { $("#uErr").textContent = err.message; }
+  };
+  const pwBtn = $("#pwBtn");
+  if (pwBtn) pwBtn.onclick = async () => {
+    $("#pErr").textContent = "";
+    try {
+      await api("POST", "/password", { current: $("#p-cur").value, next: $("#p-new").value });
+      $("#p-cur").value = "";
+      $("#p-new").value = "";
+      toast("Password changed.");
+    } catch (err) { $("#pErr").textContent = err.message; }
+  };
+  const logout = $("#logout");
+  if (logout) logout.onclick = async () => { try { await api("POST", "/logout"); } catch { } state.me = null; showLogin(); };
 }
 
 function drawSettingsForm() {
@@ -681,6 +710,7 @@ function drawSettingsForm() {
       </div>
       </div>
     `)}
+    ${settingsPanel("account", accountPanel())}
     <div class="form-foot settings-foot"><span class="note-err" id="settingsErr" role="alert"></span><button class="btn btn-primary" id="settingsBtn" type="submit">Save website details</button></div>
   </form>`;
   window.mountSocialEditor(document.getElementById("socialEditor"), s.social || []);
@@ -690,6 +720,7 @@ function drawSettingsForm() {
   $("#settingsForm").onsubmit = saveSettingsForm;
   $("#settingsForm").addEventListener("click", onSettingsFormClick);
   $("#settingsForm").addEventListener("change", onSettingsFormChange);
+  bindAccountButtons();
   switchSettingsPanel(activeSettingsPanel);
 }
 
