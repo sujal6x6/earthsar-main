@@ -177,9 +177,15 @@ body.adm{background:var(--neutral);min-height:100vh;overflow-x:hidden}
 .settings-grid>div{border:1px solid var(--line);border-radius:10px;background:var(--soft-blue);padding:14px 16px;display:grid;gap:4px}
 .settings-grid small{color:var(--muted);font-weight:700}
 .settings-grid b{color:var(--heading);font-weight:700}
-.settings-form{padding:24px;margin-bottom:16px;display:grid;gap:26px}
+.settings-form{padding:18px;margin-bottom:16px;display:grid;gap:18px}
 .settings-form section{display:grid;gap:14px}
 .settings-form h2{font-size:20px}
+.settings-menu{position:sticky;top:10px;z-index:5;display:flex;gap:6px;overflow-x:auto;padding:6px;background:var(--surface);border:1px solid var(--line-strong);border-radius:12px;box-shadow:var(--shadow)}
+.settings-menu::-webkit-scrollbar{display:none}
+.settings-menu button{flex:0 0 auto;border:0;background:transparent;color:var(--muted);border-radius:9px;padding:9px 12px;font-family:var(--f-head);font-weight:700;font-size:14px;cursor:pointer;white-space:nowrap}
+.settings-menu button:hover{color:var(--heading)}
+.settings-menu button[aria-selected=true]{background:var(--es-blue);color:#fff}
+.settings-panel{display:grid;gap:14px;min-height:220px}
 .settings-form .section-head{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;flex-wrap:wrap}
 .settings-form .section-head p{color:var(--muted);margin-top:4px}
 .settings-form .form-grid.compact{grid-template-columns:repeat(3,minmax(0,1fr))}
@@ -206,7 +212,7 @@ body.adm{background:var(--neutral);min-height:100vh;overflow-x:hidden}
 .acc-card h2{font-size:20px}
 @media (max-width:900px){.advisor-grid,.settings-form .form-grid.compact{grid-template-columns:1fr}}
 @media (max-width:760px){.partner-edit{grid-template-columns:1fr}.partner-preview{max-width:180px}}
-@media (max-width:700px){.settings-grid{grid-template-columns:1fr}}
+@media (max-width:700px){.settings-grid{grid-template-columns:1fr}.settings-form{padding:14px;gap:14px}.settings-menu{top:8px;margin:-2px -2px 0}.settings-menu button{padding:8px 10px;font-size:13px}.settings-panel{min-height:0}.settings-form .section-head{align-items:flex-start}.settings-form .section-head .btn{width:100%;justify-content:center}}
 
 /* ---------- dialog & viewer ---------- */
 .dlg{border:0;border-top:4px solid var(--es-orange);border-radius:var(--r-lg);padding:0;width:min(460px,calc(100% - 32px));background:var(--bg);color:var(--ink);box-shadow:0 30px 80px rgba(0,20,60,.3)}

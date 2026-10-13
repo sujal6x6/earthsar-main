@@ -8,6 +8,18 @@ const stars = n => `<span class="stars sm" aria-label="${n} out of 5 stars">${[1
 const fmt = t => t ? new Date(t).toLocaleString("en-IN", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit" }) : "";
 const main = $("#main");
 const state = { me: null, stats: null, reviews: [], gallery: [], enquiries: [], settings: null };
+const SETTINGS_SECTIONS = [
+  ["brands", "Trusted brands"],
+  ["team", "Expert teams"],
+  ["contact", "Contact"],
+  ["hero", "Hero"],
+  ["stats", "Stats"],
+  ["videos", "Videos"],
+  ["seo", "SEO"],
+  ["social", "Social"],
+  ["maintenance", "Maintenance"]
+];
+let activeSettingsPanel = "brands";
 
 function toast(msg) { const t = $("#toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove("show"), 3000); }
 
@@ -557,22 +569,49 @@ function partnerEditor(partner, i, total) {
   </section>`;
 }
 
+function settingsMenu() {
+  return `<div class="settings-menu" role="tablist" aria-label="Website settings sections">${SETTINGS_SECTIONS.map(([id, label]) => `<button type="button" role="tab" data-settings-nav="${id}" aria-selected="${id === activeSettingsPanel}">${esc(label)}</button>`).join("")}</div>`;
+}
+
+function settingsPanel(id, html) {
+  return `<section class="settings-panel" data-settings-panel="${esc(id)}" role="tabpanel"${id === activeSettingsPanel ? "" : " hidden"}>${html}</section>`;
+}
+
+function switchSettingsPanel(id) {
+  if (!SETTINGS_SECTIONS.some(([k]) => k === id)) id = SETTINGS_SECTIONS[0][0];
+  activeSettingsPanel = id;
+  $$("[data-settings-nav]").forEach(btn => btn.setAttribute("aria-selected", btn.dataset.settingsNav === id ? "true" : "false"));
+  $$("[data-settings-panel]").forEach(panel => { panel.hidden = panel.dataset.settingsPanel !== id; });
+}
+
 function drawSettingsForm() {
   const s = state.settings || {}, c = s.contact || {}, st = s.stats || {}, h = s.hero || {}, seo = s.seo || {}, maintenance = s.maintenance || {}, team = s.team || [], clientVideos = s.clientVideos || [], partners = s.partners || [];
   const phone = c.phone || c.whatsapp || "+91 79820 08930";
   const whatsapp = c.whatsapp || c.phone || "+91 79820 08930";
   const email = c.email || "info@earthsar.in";
-  $("#settingsBox").innerHTML = `<form class="panel settings-form" id="settingsForm" data-settings-version="edit-v2" novalidate>
-    <section class="maintenance-panel${maintenance.enabled ? " is-on" : ""}">
-      <h2>Maintenance Mode</h2>
-      <div class="notice">${maintenance.enabled ? "The public website is paused. Admin access stays available so you can turn it back on." : "Turn this on when you want visitors to see a temporary maintenance page instead of the website."}</div>
-      <div class="form-grid">
-        ${settingsCheckbox("Pause the public website", "maintenance.enabled", maintenance.enabled, "Visitors will see a maintenance page. Admin panel and admin APIs continue working.")}
-        ${settingsField("Maintenance heading", "maintenance.title", maintenance.title || "Website under maintenance", { full: true, max: 90 })}
-        ${settingsField("Maintenance message", "maintenance.message", maintenance.message || "We are making a few updates and will be back online shortly. For urgent property advice, please contact us directly.", { full: true, area: true, rows: 3, max: 300 })}
+  $("#settingsBox").innerHTML = `<form class="panel settings-form" id="settingsForm" data-settings-version="edit-v3" novalidate>
+    ${settingsMenu()}
+    ${settingsPanel("brands", `
+      <div class="section-head">
+        <div>
+          <h2>Associated With Trusted Names</h2>
+          <p>Brand logos shown in the homepage sliding Associations section.</p>
+        </div>
+        <button class="btn btn-secondary btn-sm" type="button" data-partner-add>Add brand logo</button>
       </div>
-    </section>
-    <section>
+      <div class="partner-grid" id="partnerGrid">${partners.length ? partners.map((p, i) => partnerEditor(p, i, partners.length)).join("") : `<div class="panel empty-state"><b>No logos yet</b>Add a logo to show it in the Associations slider.</div>`}</div>
+    `)}
+    ${settingsPanel("team", `
+      <div class="section-head">
+        <div>
+          <h2>Our Expert Teams</h2>
+          <p>Team members shown on the homepage, in this order.</p>
+        </div>
+        <button class="btn btn-secondary btn-sm" type="button" data-team-add>Add team member</button>
+      </div>
+      <div class="advisor-grid">${team.length ? team.map((m, i) => advisorEditor(m, i, team.length)).join("") : `<div class="panel empty-state"><b>No team members yet</b>Add a team member to show them on the homepage.</div>`}</div>
+    `)}
+    ${settingsPanel("contact", `
       <h2>Contact Details</h2>
       <div class="form-grid">
         ${settingsField("Phone", "contact.phone", phone, { max: 40 })}
@@ -581,14 +620,8 @@ function drawSettingsForm() {
         ${settingsField("Office hours", "contact.hours", c.hours, { max: 120 })}
         ${settingsField("Office address", "contact.address", c.address, { full: true, area: true, rows: 2, max: 300 })}
       </div>
-    </section>
-    <section>
-      <h2>Social Media</h2>
-      <p>Add your accounts when ready. Choose a platform to use its logo, then enable Show on website. Blank or disabled accounts stay hidden.</p>
-      <div id="socialEditor"></div>
-      <button type="button" class="btn btn-secondary" id="addSocial">Add social account</button>
-    </section>
-    <section>
+    `)}
+    ${settingsPanel("hero", `
       <h2>Homepage Hero</h2>
       <div class="form-grid">
         ${settingsField("Small heading", "hero.eyebrow", h.eyebrow, { max: 80 })}
@@ -600,31 +633,21 @@ function drawSettingsForm() {
         ${settingsField("Hero card title", "hero.cardTitle", h.cardTitle, { max: 80 })}
         ${settingsField("Hero card text", "hero.cardText", h.cardText, { max: 180 })}
       </div>
-    </section>
-    <section>
+    `)}
+    ${settingsPanel("stats", `
       <h2>Homepage Stats</h2>
       <div class="form-grid compact">
         ${settingsField("Years", "stats.years", st.years, { max: 12 })}
         ${settingsField("Satisfaction", "stats.satisfaction", st.satisfaction, { max: 12 })}
         ${settingsField("Properties sold", "stats.properties", st.properties, { max: 12 })}
       </div>
-    </section>
-    <section>
-      <div class="section-head">
-        <div>
-          <h2>Associated With Trusted Names</h2>
-          <p>Brand logos shown in the homepage sliding Associations section.</p>
-        </div>
-        <button class="btn btn-secondary btn-sm" type="button" data-partner-add>Add brand logo</button>
-      </div>
-      <div class="partner-grid" id="partnerGrid">${partners.length ? partners.map((p, i) => partnerEditor(p, i, partners.length)).join("") : `<div class="panel empty-state"><b>No logos yet</b>Add a logo to show it in the Associations slider.</div>`}</div>
-    </section>
-    <section>
+    `)}
+    ${settingsPanel("videos", `
       <h2>Client Video Covers</h2>
       <p>Edit the cover text shown before visitors play each video. The current two videos use EarthZ because clients say that name in the videos.</p>
       <div class="advisor-grid">${[0, 1].map(i => videoCoverEditor(clientVideos[i] || {}, i)).join("")}</div>
-    </section>
-    <section>
+    `)}
+    ${settingsPanel("seo", `
       <h2>SEO Optimization</h2>
       <div class="notice">These fields control how the homepage appears in Google and when the website link is shared on WhatsApp, LinkedIn or other social platforms.</div>
       <div class="form-grid">
@@ -640,17 +663,24 @@ function drawSettingsForm() {
         ${settingsField("Twitter/X title", "seo.twitterTitle", seo.twitterTitle || seo.ogTitle || seo.title, { max: 90 })}
         ${settingsField("Twitter/X description", "seo.twitterDescription", seo.twitterDescription || seo.ogDescription || seo.description, { full: true, area: true, rows: 2, max: 220 })}
       </div>
-    </section>
-    <section>
-      <div class="section-head">
-        <div>
-          <h2>Our Expert Teams</h2>
-          <p>Team members shown on the homepage, in this order.</p>
-        </div>
-        <button class="btn btn-secondary btn-sm" type="button" data-team-add>Add team member</button>
+    `)}
+    ${settingsPanel("social", `
+      <h2>Social Media</h2>
+      <p>Add your accounts when ready. Choose a platform to use its logo, then enable Show on website. Blank or disabled accounts stay hidden.</p>
+      <div id="socialEditor"></div>
+      <button type="button" class="btn btn-secondary" id="addSocial">Add social account</button>
+    `)}
+    ${settingsPanel("maintenance", `
+      <div class="maintenance-panel${maintenance.enabled ? " is-on" : ""}">
+      <h2>Maintenance Mode</h2>
+      <div class="notice">${maintenance.enabled ? "The public website is paused. Admin access stays available so you can turn it back on." : "Turn this on when you want visitors to see a temporary maintenance page instead of the website."}</div>
+      <div class="form-grid">
+        ${settingsCheckbox("Pause the public website", "maintenance.enabled", maintenance.enabled, "Visitors will see a maintenance page. Admin panel and admin APIs continue working.")}
+        ${settingsField("Maintenance heading", "maintenance.title", maintenance.title || "Website under maintenance", { full: true, max: 90 })}
+        ${settingsField("Maintenance message", "maintenance.message", maintenance.message || "We are making a few updates and will be back online shortly. For urgent property advice, please contact us directly.", { full: true, area: true, rows: 3, max: 300 })}
       </div>
-      <div class="advisor-grid">${team.length ? team.map((m, i) => advisorEditor(m, i, team.length)).join("") : `<div class="panel empty-state"><b>No team members yet</b>Add a team member to show them on the homepage.</div>`}</div>
-    </section>
+      </div>
+    `)}
     <div class="form-foot settings-foot"><span class="note-err" id="settingsErr" role="alert"></span><button class="btn btn-primary" id="settingsBtn" type="submit">Save website details</button></div>
   </form>`;
   window.mountSocialEditor(document.getElementById("socialEditor"), s.social || []);
@@ -660,6 +690,7 @@ function drawSettingsForm() {
   $("#settingsForm").onsubmit = saveSettingsForm;
   $("#settingsForm").addEventListener("click", onSettingsFormClick);
   $("#settingsForm").addEventListener("change", onSettingsFormChange);
+  switchSettingsPanel(activeSettingsPanel);
 }
 
 function normalizeContactDefaults() {
@@ -768,6 +799,11 @@ function collectSettings(form, opts = {}) {
 
 function onSettingsFormClick(e) {
   const form = e.currentTarget;
+  const nav = e.target.closest("[data-settings-nav]");
+  if (nav) {
+    switchSettingsPanel(nav.dataset.settingsNav);
+    return;
+  }
   const add = e.target.closest("[data-partner-add]");
   const remove = e.target.closest("[data-partner-remove]");
   const move = e.target.closest("[data-partner-move]");
