@@ -61,12 +61,14 @@ const DEFAULT_SITE_SETTINGS = {
   clientVideos: [
     {
       src: "assets/client-videos/client-testimonial-1.mp4",
+      cover: "",
       kicker: "",
       title: "Mr. Padam jeet ji",
       subtitle: ""
     },
     {
       src: "assets/client-videos/client-testimonial-2.mp4",
+      cover: "",
       kicker: "Client testimonial",
       title: "EarthZ client testimonial",
       subtitle: "Client feedback, shared in their own words"
@@ -212,7 +214,8 @@ function cleanClientVideos(videos = []) {
   return DEFAULT_SITE_SETTINGS.clientVideos.map((def, index) => {
     const item = input[index] || {};
     return {
-      src: def.src,
+      src: text(item.src || def.src, 600),
+      cover: text(item.cover || def.cover, 600),
       kicker: text(item.kicker || def.kicker, 60),
       title: text(item.title || def.title, 120),
       subtitle: text(item.subtitle || def.subtitle, 160)

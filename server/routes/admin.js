@@ -151,6 +151,19 @@ router.post("/settings/logo-upload", logoUpload, async (req, res) => {
   }
 });
 
+const settingsMediaUpload = makeUpload(config.limits.adminUploadMb).single("file");
+router.post("/settings/media-upload", settingsMediaUpload, async (req, res) => {
+  try {
+    if (!req.file) throw new UserError("Choose a video or cover image to upload.");
+    const requestedKind = ["image", "video"].includes(req.body && req.body.kind) ? req.body.kind : undefined;
+    const kind = await check(req.file, { kind: requestedKind, maxMb: config.limits.adminUploadMb, label: requestedKind === "image" ? "The cover image" : requestedKind === "video" ? "The video" : "The file" });
+    const uploaded = await media.uploadFile(req.file, kind, "settings");
+    res.status(201).json({ type: kind, url: uploaded.url });
+  } finally {
+    cleanup(req);
+  }
+});
+
 /* ---------- Reviews ---------- */
 
 function adminReview(r) {

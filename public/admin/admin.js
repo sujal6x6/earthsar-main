@@ -502,13 +502,26 @@ function advisorEditor(member, i, total) {
 }
 
 function videoCoverEditor(video, i) {
+  const src = video.src || `assets/client-videos/client-testimonial-${i + 1}.mp4`;
+  const cover = video.cover || "";
   return `<section class="settings-advisor settings-video">
     <h3>Review video ${i + 1}</h3>
-    <p>Video file: ${esc(video.src || `assets/client-videos/client-testimonial-${i + 1}.mp4`)}</p>
+    <div class="settings-video-preview">
+      <div class="settings-video-thumb">${cover ? `<img src="${esc(cover)}" alt="">` : `<span>Cover preview</span>`}</div>
+      <p><b>Video file:</b> <span>${esc(src)}</span></p>
+    </div>
     <div class="form-grid">
+      ${settingsField("Video path or URL", `clientVideos.${i}.src`, src, { full: true, max: 600, hint: "Upload a video below, paste a local path, or use a full video URL." })}
+      ${settingsField("Cover image path or URL", `clientVideos.${i}.cover`, cover, { full: true, max: 600, hint: "Optional image shown before visitors play the video." })}
       ${settingsField("Small label", `clientVideos.${i}.kicker`, video.kicker || "Client testimonial", { max: 60 })}
       ${settingsField("Cover title", `clientVideos.${i}.title`, video.title, { full: true, max: 120 })}
       ${settingsField("Cover subtitle", `clientVideos.${i}.subtitle`, video.subtitle, { full: true, max: 160, hint: "Use EarthZ here when the client says EarthZ in the video." })}
+      <div class="fld full video-upload-grid" data-video-editor="${i}">
+        <label>Uploads</label>
+        <label class="drop video-upload"><input type="file" accept="video/mp4,video/webm,video/quicktime" data-video-file><span class="dic" style="color:var(--heading)">${icon("i-video")}</span><span><b>Upload video</b><span>MP4, MOV or WebM, up to ${state.me.limits.adminUploadMb} MB</span></span></label>
+        <label class="drop video-cover-upload"><input type="file" accept="image/*" data-video-cover-file><span class="dic" style="color:var(--heading)">${icon("i-gal")}</span><span><b>Upload cover image</b><span>JPG, PNG, WebP or AVIF, up to ${state.me.limits.adminUploadMb} MB</span></span></label>
+        <button class="btn btn-plain btn-sm" type="button" data-video-cover-remove>Remove cover</button>
+      </div>
     </div>
   </section>`;
 }
@@ -815,6 +828,8 @@ function collectSettings(form, opts = {}) {
     },
     team: collectTeam(form),
     clientVideos: [0, 1].map(i => ({
+      src: settingsValue(form, `clientVideos.${i}.src`),
+      cover: settingsValue(form, `clientVideos.${i}.cover`),
       kicker: settingsValue(form, `clientVideos.${i}.kicker`),
       title: settingsValue(form, `clientVideos.${i}.title`),
       subtitle: settingsValue(form, `clientVideos.${i}.subtitle`)
@@ -841,6 +856,17 @@ function onSettingsFormClick(e) {
   const addTeam = e.target.closest("[data-team-add]");
   const removeTeam = e.target.closest("[data-team-remove]");
   const moveTeam = e.target.closest("[data-team-move]");
+  const removeCover = e.target.closest("[data-video-cover-remove]");
+  if (removeCover) {
+    const box = removeCover.closest("[data-video-editor]");
+    const i = box ? box.dataset.videoEditor : "";
+    const input = $(`[data-key="clientVideos.${i}.cover"]`, form);
+    const preview = box && $(".settings-video-thumb", box.closest(".settings-video"));
+    if (input) input.value = "";
+    if (preview) preview.innerHTML = "<span>Cover preview</span>";
+    toast("Video cover removed. Save website details to publish.");
+    return;
+  }
   if (!add && !remove && !move && !addTeam && !removeTeam && !moveTeam) return;
   let settings;
   try { settings = collectSettings(form, { validateSocial: false }); }
@@ -887,6 +913,8 @@ function onSettingsFormClick(e) {
 }
 
 async function onSettingsFormChange(e) {
+  const videoInput = e.target.closest("[data-video-file],[data-video-cover-file]");
+  if (videoInput && videoInput.files[0]) return uploadSettingsVideoMedia(videoInput);
   const input = e.target.closest("[data-partner-file]");
   if (!input || !input.files[0]) return;
   const row = input.closest("[data-partner]");
@@ -910,6 +938,37 @@ async function onSettingsFormChange(e) {
   input.disabled = false;
   input.value = "";
   if (label) label.textContent = original || "Choose logo image";
+}
+
+async function uploadSettingsVideoMedia(input) {
+  const editor = input.closest("[data-video-editor]");
+  const i = editor ? editor.dataset.videoEditor : "";
+  const isCover = input.matches("[data-video-cover-file]");
+  const target = $(`[data-key="clientVideos.${i}.${isCover ? "cover" : "src"}"]`, $("#settingsForm"));
+  const card = input.closest(".settings-video");
+  const preview = card && $(".settings-video-thumb", card);
+  const label = input.closest(".drop") && $("b", input.closest(".drop"));
+  const original = label ? label.textContent : "";
+  const fd = new FormData();
+  fd.append("file", input.files[0]);
+  fd.append("kind", isCover ? "image" : "video");
+  input.disabled = true;
+  if (label) label.textContent = "Uploading...";
+  try {
+    const d = await upload("/settings/media-upload", fd, () => {});
+    if (target) target.value = d.url || "";
+    if (isCover && preview) preview.innerHTML = d.url ? `<img src="${esc(d.url)}" alt="">` : "<span>Cover preview</span>";
+    if (!isCover && card) {
+      const text = $(".settings-video-preview p span", card);
+      if (text) text.textContent = d.url || "";
+    }
+    toast(isCover ? "Video cover uploaded." : "Video uploaded.");
+  } catch (err) {
+    toast(err.message);
+  }
+  input.disabled = false;
+  input.value = "";
+  if (label) label.textContent = original || (isCover ? "Upload cover image" : "Upload video");
 }
 
 async function saveSettingsForm(e) {

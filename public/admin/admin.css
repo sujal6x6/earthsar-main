@@ -201,6 +201,13 @@ body.adm{background:var(--neutral);min-height:100vh;overflow-x:hidden}
 .settings-advisor{border:1px solid var(--line);border-radius:10px;background:var(--soft-blue);padding:16px;display:grid;gap:12px}
 .settings-advisor h3{font-size:16px}
 .settings-video p{font-size:13px;color:var(--muted);word-break:break-word}
+.settings-video-preview{display:grid;grid-template-columns:110px minmax(0,1fr);gap:12px;align-items:center}
+.settings-video-preview p{margin:0}
+.settings-video-thumb{aspect-ratio:9/12;border:1px dashed var(--line-strong);border-radius:8px;background:var(--surface);display:grid;place-items:center;overflow:hidden;color:var(--faint);font-size:13px;text-align:center;padding:8px}
+.settings-video-thumb img{width:100%;height:100%;object-fit:cover}
+.video-upload-grid{display:grid;grid-template-columns:1fr 1fr auto;gap:10px;align-items:end}
+.video-upload-grid>label:first-child{grid-column:1/-1}
+.video-upload-grid .drop{height:100%}
 .partner-grid{display:grid;gap:12px}
 .settings-partner{border:1px solid var(--line);border-radius:10px;background:var(--soft-blue);padding:14px;display:grid;gap:12px}
 .partner-head{display:flex;justify-content:space-between;gap:12px;align-items:center}
@@ -219,7 +226,7 @@ body.adm{background:var(--neutral);min-height:100vh;overflow-x:hidden}
 .signout-box{grid-column:1/-1;grid-template-columns:1fr auto;align-items:center}
 .signout-box h3,.signout-box p{margin:0}
 .compact-foot{margin-top:0;padding-top:12px;gap:10px}
-@media (max-width:900px){.advisor-grid,.settings-form .form-grid.compact{grid-template-columns:1fr}}
+@media (max-width:900px){.advisor-grid,.settings-form .form-grid.compact{grid-template-columns:1fr}.video-upload-grid{grid-template-columns:1fr}.settings-video-preview{grid-template-columns:86px minmax(0,1fr)}}
 @media (max-width:760px){.partner-edit{grid-template-columns:1fr}.partner-preview{max-width:180px}}
 @media (max-width:700px){.settings-grid{grid-template-columns:1fr}.settings-form{padding:12px;gap:12px}.settings-menu{top:8px;margin:-2px -2px 0}.settings-menu button{padding:8px 10px;font-size:13px}.settings-panel{min-height:0;max-height:calc(100vh - 245px);padding-right:2px}.settings-form .section-head{align-items:flex-start}.settings-form .section-head .btn{width:100%;justify-content:center}.account-grid{grid-template-columns:1fr}.account-box{padding:12px}.signout-box{grid-template-columns:1fr}.compact-foot .btn,.settings-foot .btn{width:100%;justify-content:center}}
 

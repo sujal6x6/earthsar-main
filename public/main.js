@@ -11,15 +11,16 @@ const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
 const safeUrl=u=>{try{const x=new URL(u);return /^https?:$/.test(x.protocol)?x.href:""}catch(e){return ""}};
 const CLIENT_VIDEO_DEFAULTS=[
-  {src:"assets/client-videos/client-testimonial-1.mp4",kicker:"",title:"Mr. Padam jeet ji",subtitle:""},
-  {src:"assets/client-videos/client-testimonial-2.mp4",kicker:"Client testimonial",title:"EarthZ client testimonial",subtitle:"Client feedback, shared in their own words"}
+  {src:"assets/client-videos/client-testimonial-1.mp4",cover:"",kicker:"",title:"Mr. Padam jeet ji",subtitle:""},
+  {src:"assets/client-videos/client-testimonial-2.mp4",cover:"",kicker:"Client testimonial",title:"EarthZ client testimonial",subtitle:"Client feedback, shared in their own words"}
 ];
 function normalizeClientVideos(videos){
   const input=Array.isArray(videos)?videos:[];
   return CLIENT_VIDEO_DEFAULTS.map((def,i)=>{
     const item=input[i]||{};
     return {
-      src:def.src,
+      src:String(item.src||def.src||"").trim(),
+      cover:String(item.cover||def.cover||"").trim(),
       kicker:String(item.kicker||def.kicker||"").trim(),
       title:String(item.title||def.title||"").trim(),
       subtitle:String(item.subtitle||def.subtitle||"").trim()
@@ -272,6 +273,24 @@ function videoSrc(path){
   if(/^https?:\/\//i.test(clean)||clean.startsWith("/"))return clean;
   return `/${clean}`;
 }
+function ensureVideoCoverImage(cover,url){
+  if(!cover)return;
+  let img=$(".client-video-cover-img",cover);
+  if(!url){
+    if(img)img.remove();
+    cover.classList.remove("has-image");
+    return;
+  }
+  if(!img){
+    img=document.createElement("img");
+    img.className="client-video-cover-img";
+    img.alt="";
+    img.loading="lazy";
+    cover.prepend(img);
+  }
+  if(img.getAttribute("src")!==url)img.setAttribute("src",url);
+  cover.classList.add("has-image");
+}
 function renderClientVideos(){
   const videos=normalizeClientVideos(S.clientVideos);
   S.clientVideos=videos;
@@ -283,8 +302,12 @@ function renderClientVideos(){
     const video=$("video",card);
     const src=videoSrc(v.src);
     if(video&&src&&video.getAttribute("src")!==src)video.setAttribute("src",src);
+    if(video)video.poster=videoSrc(v.cover)||"";
     const cover=$(".client-video-cover",card);
-    if(cover)cover.setAttribute("aria-label",`Play ${v.title||"client testimonial"}`);
+    if(cover){
+      cover.setAttribute("aria-label",`Play ${v.title||"client testimonial"}`);
+      ensureVideoCoverImage(cover,videoSrc(v.cover));
+    }
     const fields={kicker:hideKicker?"":v.kicker,title:v.title,subtitle:v.subtitle};
     Object.entries(fields).forEach(([key,value])=>{
       const el=$(`[data-video-field="${key}"]`,card);

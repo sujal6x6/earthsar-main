@@ -64,12 +64,14 @@ window.earthsarConfig = {
   clientVideos: [
     {
       src: "assets/client-videos/client-testimonial-1.mp4",
+      cover: "",
       kicker: "",
       title: "Mr. Padam jeet ji",
       subtitle: ""
     },
     {
       src: "assets/client-videos/client-testimonial-2.mp4",
+      cover: "",
       kicker: "Client testimonial",
       title: "EarthZ client testimonial",
       subtitle: "Client feedback, shared in their own words"
