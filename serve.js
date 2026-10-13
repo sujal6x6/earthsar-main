@@ -32,7 +32,7 @@ const server = http.createServer((req, res) => {
           whatsapp: "+91 890 176 0000",
           email: "earthzgroup@gmail.com",
           address: "DLF Corporate Greens, Tower No. 4, 11th Floor, Office No. 1118, Sector 74A, Gurugram, Haryana",
-          hours: "Mon-Sun, 10:00 am to 7:00 pm IST"
+          hours: "Monday to Sunday, 10:00 am to 7:00 pm IST"
         },
         hero: {
           eyebrow: "Real estate advisory",

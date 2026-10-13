@@ -633,7 +633,7 @@ function drawSettingsForm() {
     ${settingsPanel("team", `
       <div class="section-head">
         <div>
-          <h2>Our Expert Teams</h2>
+          <h2>Our Expert Team</h2>
           <p>Team members shown on the homepage, in this order.</p>
         </div>
         <button class="btn btn-secondary btn-sm" type="button" data-team-add>Add team member</button>

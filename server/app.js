@@ -162,7 +162,7 @@ h1{margin:0;color:var(--blue);font-size:clamp(28px,5vw,42px);line-height:1.08}p{
 </head>
 <body>
 <main>
-<div class="brand" aria-label="earthsar"><img src="/assets/earthsar-logo.png" alt="earthsar - Smart Advisors In Real Estate"></div>
+<div class="brand" aria-label="earthsar"><img src="/assets/earthsar-logo.png" alt="earthsar - Smart Advisors in Real Estate"></div>
 <h1>${escapeHtml(title)}</h1>
 <p>${escapeHtml(message)}</p>
 ${phone || email ? `<div class="contact">${phone ? `<a href="tel:${escapeHtml(phone.replace(/\s+/g, ""))}">${escapeHtml(phone)}</a>` : ""}${email ? `<a href="mailto:${escapeHtml(email)}">${escapeHtml(email)}</a>` : ""}</div>` : ""}
