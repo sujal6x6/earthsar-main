@@ -245,8 +245,7 @@ function renderContact(){
 let carTimer=null;
 function renderPartners(){
   const box=$("#partners");clearInterval(carTimer);
-  const partners=S.partners.filter(p=>p.visible!==false);
-  if(!partners.length){
+  if(!S.partners.length){
     box.innerHTML=`<div class="empty"><b>Partner logos will appear here</b>Our network is being updated.</div>`;return}
   /* Build a single tile markup */
   const tile=p=>{
@@ -255,7 +254,7 @@ function renderPartners(){
   };
 
   /* Single row, duplicated for seamless loop */
-  const all=partners.map(tile).join("");
+  const all=S.partners.map(tile).join("");
   box.innerHTML=`<div class="marquee-track" aria-label="Associated companies">${all}${all}</div>`;
 }
 

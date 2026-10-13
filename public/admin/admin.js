@@ -10,18 +10,17 @@ const main = $("#main");
 const state = { me: null, stats: null, reviews: [], gallery: [], enquiries: [], settings: null };
 const SETTINGS_SECTIONS = [
   ["brands", "Trusted brands"],
-  ["team", "Expert Team"],
+  ["team", "Expert teams"],
   ["contact", "Contact"],
   ["hero", "Hero"],
-  ["seo", "SEO"],
   ["stats", "Stats"],
   ["videos", "Videos"],
+  ["seo", "SEO"],
   ["social", "Social"],
   ["maintenance", "Maintenance"],
   ["account", "Account"]
 ];
 let activeSettingsPanel = "brands";
-let activePartnerEditor = 0;
 
 function toast(msg) { const t = $("#toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove("show"), 3000); }
 
@@ -491,7 +490,7 @@ main.addEventListener("focusout", async e => {
 
 /* ================= SETTINGS ================= */
 async function pageSettings() {
-  main.innerHTML = `<div class="ph settings-head"><div><h1>Website Settings</h1><p>Manage your website content, people, brands and SEO.</p></div><a class="btn btn-secondary" href="/" target="_blank" rel="noopener">${icon("i-eye")} Preview Website</a></div>
+  main.innerHTML = `<div class="ph"><div><h1>Website Settings</h1><p>Edit contact details, homepage content, advisor cards and SEO metadata.</p></div><a class="btn btn-secondary" href="/" target="_blank" rel="noopener">View website</a></div>
     <div id="settingsBox"><div class="loading">Loading website settings...</div></div>`;
   try {
     state.settings = (await api("GET", "/settings")).settings;
@@ -505,11 +504,10 @@ function settingsField(label, name, value, opts = {}) {
   const hint = opts.hint ? `<div class="hint">${esc(opts.hint)}</div>` : "";
   const cls = opts.full ? "fld full" : "fld";
   const inputName = name.replace(/[^\w-]/g, "_");
-  const id = `settings_${inputName}`;
   const field = opts.area
-    ? `<textarea id="${esc(id)}" name="${esc(inputName)}" data-key="${esc(name)}" rows="${opts.rows || 3}" maxlength="${opts.max || 300}" autocomplete="off">${esc(value || "")}</textarea>`
-    : `<input id="${esc(id)}" name="${esc(inputName)}" data-key="${esc(name)}" type="${opts.type || "text"}" maxlength="${opts.max || 300}" value="${esc(value || "")}" autocomplete="off" data-lpignore="true">`;
-  return `<div class="${cls}"><label for="${esc(id)}">${esc(label)}</label>${field}${hint}</div>`;
+    ? `<textarea name="${esc(inputName)}" data-key="${esc(name)}" rows="${opts.rows || 3}" maxlength="${opts.max || 300}" autocomplete="off">${esc(value || "")}</textarea>`
+    : `<input name="${esc(inputName)}" data-key="${esc(name)}" type="${opts.type || "text"}" maxlength="${opts.max || 300}" value="${esc(value || "")}" autocomplete="off" data-lpignore="true">`;
+  return `<div class="${cls}"><label>${esc(label)}</label>${field}${hint}</div>`;
 }
 
 function settingsCheckbox(label, name, checked, hint = "") {
@@ -517,8 +515,7 @@ function settingsCheckbox(label, name, checked, hint = "") {
 }
 
 function settingsSelect(label, name, value, options, hint = "") {
-  const id = `settings_${name.replace(/[^\w-]/g, "_")}`;
-  return `<div class="fld"><label for="${esc(id)}">${esc(label)}</label><select id="${esc(id)}" data-key="${esc(name)}">${options.map(([val, text]) => `<option value="${esc(val)}" ${value === val ? "selected" : ""}>${esc(text)}</option>`).join("")}</select>${hint ? `<div class="hint">${esc(hint)}</div>` : ""}</div>`;
+  return `<div class="fld"><label>${esc(label)}</label><select data-key="${esc(name)}">${options.map(([val, text]) => `<option value="${esc(val)}" ${value === val ? "selected" : ""}>${esc(text)}</option>`).join("")}</select>${hint ? `<div class="hint">${esc(hint)}</div>` : ""}</div>`;
 }
 
 function advisorEditor(member, i, total) {
@@ -590,55 +587,27 @@ function videoCoverEditor(video, i, total) {
 
 function partnerEditor(partner, i, total) {
   const logo = partner.logo || "";
-  const visible = partner.visible !== false;
-  const open = i === activePartnerEditor;
-  const website = partner.website || "";
-  const title = partner.name || `Brand ${i + 1}`;
-  const hiddenFields = open ? "" : `
-    <input type="hidden" data-key="partners.${i}.name" value="${esc(partner.name || "")}">
-    <input type="hidden" data-key="partners.${i}.website" value="${esc(website)}">
-    <input type="hidden" data-key="partners.${i}.logo" value="${esc(logo)}">
-    <input type="hidden" data-key="partners.${i}.visible" value="${visible ? "true" : "false"}">`;
-  return `<section class="brand-card${open ? " is-open" : ""}" data-partner="${i}">
-    ${hiddenFields}
-    <div class="brand-summary">
-      <button class="brand-main" type="button" data-partner-edit aria-expanded="${open ? "true" : "false"}" aria-controls="brand-editor-${i}">
-        <span class="brand-logo-preview">${logo ? `<img src="${esc(logo)}" alt="">` : `<span>${esc((title || "B").slice(0, 1).toUpperCase())}</span>`}</span>
-        <span class="brand-copy"><strong>${esc(title)}</strong><small>${esc(website || "No website URL")}</small></span>
-      </button>
-      <span class="brand-status ${visible ? "is-visible" : "is-hidden"}"><i></i>${visible ? "Visible" : "Hidden"}</span>
-      <details class="brand-menu">
-        <summary aria-label="Brand actions">...</summary>
-        <div class="brand-menu-panel">
-          <button type="button" data-partner-edit>Edit</button>
-          <button type="button" data-partner-visible>${visible ? "Hide" : "Show"}</button>
-          <button type="button" data-partner-move="-1" ${i === 0 ? "disabled" : ""}>Move up</button>
-          <button type="button" data-partner-move="1" ${i === total - 1 ? "disabled" : ""}>Move down</button>
-          <button type="button" data-partner-remove>Delete</button>
-        </div>
-      </details>
+  return `<section class="settings-partner" data-partner="${i}">
+    <div class="partner-head">
+      <h3>Logo ${i + 1}</h3>
+      <div class="partner-actions">
+        <button class="icon-btn" type="button" data-partner-move="-1" ${i === 0 ? "disabled" : ""} aria-label="Move logo up">${icon("i-up")}</button>
+        <button class="icon-btn" type="button" data-partner-move="1" ${i === total - 1 ? "disabled" : ""} aria-label="Move logo down">${icon("i-down")}</button>
+        <button class="icon-btn" type="button" data-partner-remove aria-label="Remove logo">${icon("i-x")}</button>
+      </div>
     </div>
-    ${open ? `<div class="brand-editor" id="brand-editor-${i}">
-      <div class="brand-editor-grid">
+    <div class="partner-edit">
+      <div class="partner-preview">${logo ? `<img src="${esc(logo)}" alt="">` : `<span>Logo preview</span>`}</div>
+      <div class="form-grid">
         ${settingsField("Brand name", `partners.${i}.name`, partner.name, { max: 120 })}
-        ${settingsField("Website URL", `partners.${i}.website`, website, { type: "url", max: 600 })}
-        <div class="fld full logo-field">
-          <label>Logo</label>
-          <div class="logo-edit-row">
-            <div class="partner-preview">${logo ? `<img src="${esc(logo)}" alt="">` : `<span>Logo preview</span>`}</div>
-            <label class="btn btn-secondary btn-sm partner-upload"><input type="file" accept="image/*" data-partner-file><span>${logo ? "Change logo" : "Upload logo"}</span></label>
-          </div>
-        </div>
+        ${settingsField("Website link", `partners.${i}.website`, partner.website, { type: "url", max: 600 })}
         ${settingsField("Logo path or URL", `partners.${i}.logo`, logo, { full: true, max: 600, hint: "Use a path like icons/logo.png or a full https:// image URL." })}
         <div class="fld full">
-          <label class="check compact-check"><input type="checkbox" data-key="partners.${i}.visible" ${visible ? "checked" : ""}><span>Show this brand on the website</span></label>
+          <label>Upload logo</label>
+          <label class="drop partner-upload"><input type="file" accept="image/*" data-partner-file><span class="dic" style="color:var(--heading)">${icon("i-gal")}</span><span><b>Choose logo image</b><span>JPG, PNG, WebP or AVIF, up to ${state.me.limits.adminUploadMb} MB</span></span></label>
         </div>
       </div>
-      <div class="brand-editor-actions">
-        <button class="btn btn-plain btn-sm" type="button" data-partner-cancel>Cancel</button>
-        <button class="btn btn-primary btn-sm" type="submit">Save Changes</button>
-      </div>
-    </div>` : ""}
+    </div>
   </section>`;
 }
 
@@ -726,10 +695,10 @@ function drawSettingsForm() {
     ${settingsPanel("brands", `
       <div class="section-head">
         <div>
-          <h2>Trusted brands</h2>
-          <p>Logos displayed in the homepage associations slider.</p>
+          <h2>Associated With Trusted Names</h2>
+          <p>Brand logos shown in the homepage sliding Associations section.</p>
         </div>
-        <button class="btn btn-primary btn-sm" type="button" data-partner-add>${icon("i-plus")} Add brand</button>
+        <button class="btn btn-secondary btn-sm" type="button" data-partner-add>Add brand logo</button>
       </div>
       <div class="partner-grid" id="partnerGrid">${partners.length ? partners.map((p, i) => partnerEditor(p, i, partners.length)).join("") : `<div class="panel empty-state"><b>No logos yet</b>Add a logo to show it in the Associations slider.</div>`}</div>
     `)}
@@ -851,21 +820,14 @@ function settingsChecked(form, name) {
   const el = $(`[data-key="${name}"]`, form);
   return Boolean(el && el.checked);
 }
-function keyedValue(row, key) {
-  const el = $(`[data-key="${key}"]`, row);
-  if (!el) return "";
-  if (el.type === "checkbox") return el.checked ? "true" : "false";
-  return el.value.trim();
-}
 
 function collectPartners(form) {
   return $$("[data-partner]", form).map(row => {
     const i = row.dataset.partner;
     return {
-      name: keyedValue(row, `partners.${i}.name`),
-      logo: keyedValue(row, `partners.${i}.logo`),
-      website: keyedValue(row, `partners.${i}.website`),
-      visible: keyedValue(row, `partners.${i}.visible`) !== "false"
+      name: settingsValue(form, `partners.${i}.name`),
+      logo: settingsValue(form, `partners.${i}.logo`),
+      website: settingsValue(form, `partners.${i}.website`)
     };
   }).filter(p => p.name || p.logo || p.website);
 }
@@ -968,9 +930,6 @@ function onSettingsFormClick(e) {
     switchSettingsPanel(nav.dataset.settingsNav);
     return;
   }
-  const editPartner = e.target.closest("[data-partner-edit]");
-  const cancelPartner = e.target.closest("[data-partner-cancel]");
-  const togglePartner = e.target.closest("[data-partner-visible]");
   const add = e.target.closest("[data-partner-add]");
   const remove = e.target.closest("[data-partner-remove]");
   const move = e.target.closest("[data-partner-move]");
@@ -996,42 +955,24 @@ function onSettingsFormClick(e) {
     toast("Video cover removed. Save website details to publish.");
     return;
   }
-  if (cancelPartner) {
-    activePartnerEditor = -1;
-    drawSettingsForm();
-    return;
-  }
-  if (!editPartner && !togglePartner && !add && !remove && !move && !addTeam && !removeTeam && !moveTeam && !addVideo && !removeVideo && !moveVideo) return;
+  if (!add && !remove && !move && !addTeam && !removeTeam && !moveTeam && !addVideo && !removeVideo && !moveVideo) return;
   let settings;
   try { settings = collectSettings(form, { validateSocial: false }); }
   catch (ex) { toast(ex.message); return; }
   const partners = settings.partners.slice();
   const team = settings.team.slice();
   const clientVideos = settings.clientVideos.slice();
-  if (editPartner) {
-    const row = e.target.closest("[data-partner]");
-    activePartnerEditor = row ? Number(row.dataset.partner) : -1;
-  } else if (togglePartner) {
-    const row = e.target.closest("[data-partner]");
-    const i = row ? Number(row.dataset.partner) : -1;
-    if (i >= 0 && partners[i]) partners[i].visible = partners[i].visible === false;
-    activePartnerEditor = i;
-  } else if (add) {
+  if (add) {
     partners.push({ name: "", logo: "", website: "" });
-    activePartnerEditor = partners.length - 1;
   } else if (remove || move) {
     const row = e.target.closest("[data-partner]");
     const i = row ? Number(row.dataset.partner) : -1;
-    if (remove && i >= 0) {
-      partners.splice(i, 1);
-      activePartnerEditor = Math.min(i, partners.length - 1);
-    }
+    if (remove && i >= 0) partners.splice(i, 1);
     if (move && i >= 0) {
       const to = i + Number(move.dataset.partnerMove);
       if (to >= 0 && to < partners.length) {
         const [item] = partners.splice(i, 1);
         partners.splice(to, 0, item);
-        activePartnerEditor = to;
       }
     }
   } else if (addTeam) {
@@ -1067,10 +1008,10 @@ function onSettingsFormClick(e) {
   state.settings = settings;
   drawSettingsForm();
   setTimeout(() => {
-    const rows = addTeam ? $$(".settings-advisor[data-team-member]") : addVideo ? $$(".settings-video[data-client-video]") : $$(".brand-card[data-partner]");
+    const rows = addTeam ? $$(".settings-advisor[data-team-member]") : addVideo ? $$(".settings-video[data-client-video]") : $$(".settings-partner");
     const list = addTeam ? team : addVideo ? clientVideos : partners;
     const target = rows[Math.min(list.length - 1, Math.max(0, list.length - 1))];
-    if ((add || editPartner || addTeam || addVideo) && target) target.scrollIntoView({ block: "nearest" });
+    if ((add || addTeam || addVideo) && target) target.scrollIntoView({ block: "nearest" });
   }, 0);
 }
 
@@ -1083,7 +1024,7 @@ async function onSettingsFormChange(e) {
   const i = row ? row.dataset.partner : "";
   const logoInput = $(`[data-key="partners.${i}.logo"]`, row);
   const preview = $(".partner-preview", row);
-  const label = $(".partner-upload span", row);
+  const label = $(".partner-upload b", row);
   const original = label ? label.textContent : "";
   const fd = new FormData();
   fd.append("file", input.files[0]);

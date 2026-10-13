@@ -237,8 +237,8 @@ test("website settings can manage associated partner logos and more team members
   const settings = {
     ...baseSettings,
     partners: [
-      { name: "Acme Realty", logo: r.data.logo, website: "https://example.com", visible: true },
-      { name: "Text Only Partner", logo: "", website: "", visible: true }
+      { name: "Acme Realty", logo: r.data.logo, website: "https://example.com" },
+      { name: "Text Only Partner", logo: "", website: "" }
     ],
     team: [
       ...baseSettings.team,
