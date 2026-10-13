@@ -551,11 +551,18 @@ function advisorEditor(member, i, total) {
   </section>`;
 }
 
-function videoCoverEditor(video, i) {
-  const src = video.src || `assets/client-videos/client-testimonial-${i + 1}.mp4`;
+function videoCoverEditor(video, i, total) {
+  const src = video.src || (i < 2 ? `assets/client-videos/client-testimonial-${i + 1}.mp4` : "");
   const cover = video.cover || "";
-  return `<section class="settings-advisor settings-video">
-    <h3>Review video ${i + 1}</h3>
+  return `<section class="settings-advisor settings-video" data-client-video="${i}">
+    <div class="partner-head">
+      <h3>Review video ${i + 1}</h3>
+      <div class="partner-actions">
+        <button class="icon-btn" type="button" data-video-move="-1" ${i === 0 ? "disabled" : ""} aria-label="Move review video up">${icon("i-up")}</button>
+        <button class="icon-btn" type="button" data-video-move="1" ${i === total - 1 ? "disabled" : ""} aria-label="Move review video down">${icon("i-down")}</button>
+        <button class="icon-btn" type="button" data-video-remove aria-label="Remove review video">${icon("i-x")}</button>
+      </div>
+    </div>
     <div class="settings-video-preview">
       <div class="settings-video-thumb">${cover ? `<img src="${esc(cover)}" alt="">` : `<span>Cover preview</span>`}</div>
       <p><b>Video file:</b> <span>${esc(src)}</span></p>
@@ -736,9 +743,14 @@ function drawSettingsForm() {
       </div>
     `)}
     ${settingsPanel("videos", `
-      <h2>Client Video Covers</h2>
-      <p>Edit the cover text shown before visitors play each video. The current two videos use EarthZ because clients say that name in the videos.</p>
-      <div class="advisor-grid">${[0, 1].map(i => videoCoverEditor(clientVideos[i] || {}, i)).join("")}</div>
+      <div class="section-head">
+        <div>
+          <h2>Client Video Covers</h2>
+          <p>Edit the uploaded videos, their cover text and where each video appears.</p>
+        </div>
+        <button class="btn btn-secondary btn-sm" type="button" data-video-add>Add video</button>
+      </div>
+      <div class="advisor-grid">${clientVideos.length ? clientVideos.map((video, i) => videoCoverEditor(video || {}, i, clientVideos.length)).join("") : `<div class="panel empty-state"><b>No videos yet</b>Add a video to show it on the website.</div>`}</div>
     `)}
     ${settingsPanel("seo", `
       <h2>SEO Optimization</h2>
@@ -840,6 +852,20 @@ function collectTeam(form) {
   }).filter(member => member.name || member.role || member.experience || member.photo || member.bio || Object.values(member.social).some(Boolean));
 }
 
+function collectClientVideos(form) {
+  return $$("[data-client-video]", form).map(row => {
+    const i = row.dataset.clientVideo;
+    return {
+      src: settingsValue(form, `clientVideos.${i}.src`),
+      cover: settingsValue(form, `clientVideos.${i}.cover`),
+      placement: settingsValue(form, `clientVideos.${i}.placement`) === "review-media" ? "review-media" : "testimonials",
+      kicker: settingsValue(form, `clientVideos.${i}.kicker`),
+      title: settingsValue(form, `clientVideos.${i}.title`),
+      subtitle: settingsValue(form, `clientVideos.${i}.subtitle`)
+    };
+  }).filter(video => video.src || video.cover || video.title || video.subtitle || video.kicker);
+}
+
 function collectSettings(form, opts = {}) {
   normalizeContactDefaults();
   const validateSocial = opts.validateSocial !== false;
@@ -886,14 +912,7 @@ function collectSettings(form, opts = {}) {
       twitterDescription: settingsValue(form, "seo.twitterDescription")
     },
     team: collectTeam(form),
-    clientVideos: [0, 1].map(i => ({
-      src: settingsValue(form, `clientVideos.${i}.src`),
-      cover: settingsValue(form, `clientVideos.${i}.cover`),
-      placement: settingsValue(form, `clientVideos.${i}.placement`) === "review-media" ? "review-media" : "testimonials",
-      kicker: settingsValue(form, `clientVideos.${i}.kicker`),
-      title: settingsValue(form, `clientVideos.${i}.title`),
-      subtitle: settingsValue(form, `clientVideos.${i}.subtitle`)
-    })).concat(Array.isArray(state.settings && state.settings.clientVideos) ? state.settings.clientVideos.slice(2) : [])
+    clientVideos: collectClientVideos(form)
   };
   if (validateSocial) settings.social = window.readSocialEditor(document.getElementById("socialEditor"));
   else {
@@ -916,6 +935,9 @@ function onSettingsFormClick(e) {
   const addTeam = e.target.closest("[data-team-add]");
   const removeTeam = e.target.closest("[data-team-remove]");
   const moveTeam = e.target.closest("[data-team-move]");
+  const addVideo = e.target.closest("[data-video-add]");
+  const removeVideo = e.target.closest("[data-video-remove]");
+  const moveVideo = e.target.closest("[data-video-move]");
   const removeCover = e.target.closest("[data-video-cover-remove]");
   if (removeCover) {
     const box = removeCover.closest("[data-video-editor]");
@@ -927,12 +949,13 @@ function onSettingsFormClick(e) {
     toast("Video cover removed. Save website details to publish.");
     return;
   }
-  if (!add && !remove && !move && !addTeam && !removeTeam && !moveTeam) return;
+  if (!add && !remove && !move && !addTeam && !removeTeam && !moveTeam && !addVideo && !removeVideo && !moveVideo) return;
   let settings;
   try { settings = collectSettings(form, { validateSocial: false }); }
   catch (ex) { toast(ex.message); return; }
   const partners = settings.partners.slice();
   const team = settings.team.slice();
+  const clientVideos = settings.clientVideos.slice();
   if (add) {
     partners.push({ name: "", logo: "", website: "" });
   } else if (remove || move) {
@@ -948,7 +971,7 @@ function onSettingsFormClick(e) {
     }
   } else if (addTeam) {
     team.push({ name: "", role: "", experience: "", photo: "", bio: "", showSocial: false, social: {} });
-  } else {
+  } else if (removeTeam || moveTeam) {
     const row = e.target.closest("[data-team-member]");
     const i = row ? Number(row.dataset.teamMember) : -1;
     if (removeTeam && i >= 0) team.splice(i, 1);
@@ -959,16 +982,30 @@ function onSettingsFormClick(e) {
         team.splice(to, 0, item);
       }
     }
+  } else if (addVideo) {
+    clientVideos.push({ src: "", cover: "", placement: "testimonials", kicker: "Client testimonial", title: "", subtitle: "" });
+  } else {
+    const row = e.target.closest("[data-client-video]");
+    const i = row ? Number(row.dataset.clientVideo) : -1;
+    if (removeVideo && i >= 0) clientVideos.splice(i, 1);
+    if (moveVideo && i >= 0) {
+      const to = i + Number(moveVideo.dataset.videoMove);
+      if (to >= 0 && to < clientVideos.length) {
+        const [item] = clientVideos.splice(i, 1);
+        clientVideos.splice(to, 0, item);
+      }
+    }
   }
   settings.partners = partners;
   settings.team = team;
+  settings.clientVideos = clientVideos;
   state.settings = settings;
   drawSettingsForm();
   setTimeout(() => {
-    const rows = addTeam ? $$(".settings-advisor[data-team-member]") : $$(".settings-partner");
-    const list = addTeam ? team : partners;
+    const rows = addTeam ? $$(".settings-advisor[data-team-member]") : addVideo ? $$(".settings-video[data-client-video]") : $$(".settings-partner");
+    const list = addTeam ? team : addVideo ? clientVideos : partners;
     const target = rows[Math.min(list.length - 1, Math.max(0, list.length - 1))];
-    if ((add || addTeam) && target) target.scrollIntoView({ block: "nearest" });
+    if ((add || addTeam || addVideo) && target) target.scrollIntoView({ block: "nearest" });
   }, 0);
 }
 
