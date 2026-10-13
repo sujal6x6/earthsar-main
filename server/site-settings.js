@@ -209,7 +209,8 @@ function cleanPartners(partners = []) {
     .map(partner => ({
       name: text(partner.name, 120),
       logo: text(partner.logo, 600),
-      website: text(partner.website, 600)
+      website: text(partner.website, 600),
+      visible: partner.visible !== false && partner.visible !== "false" && partner.visible !== 0 && partner.visible !== "0"
     }))
     .filter(partner => partner.name || partner.logo || partner.website);
 }
