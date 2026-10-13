@@ -179,11 +179,12 @@ function clean_team($team) {
     foreach ($team as $member) {
         if (is_array($member) && isset($member['name'])) {
             $clean[] = [
-                'id' => text($member['id'] ?? uniqid('t'), 20),
-                'name' => text($member['name'], 100),
-                'role' => text($member['role'] ?? '', 100),
-                'bio' => text($member['bio'] ?? '', 300),
-                'image' => (isset($member['image']) && is_array($member['image'])) ? $member['image'] : null
+                'name' => text($member['name'], 120),
+                'role' => text($member['role'] ?? '', 120),
+                'experience' => text($member['experience'] ?? '', 160),
+                'bio' => text($member['bio'] ?? '', 3000),
+                'photo' => text($member['photo'] ?? '', 300),
+                'linkedin' => text($member['linkedin'] ?? '', 300)
             ];
         }
     }

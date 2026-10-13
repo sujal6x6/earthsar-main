@@ -222,7 +222,7 @@ test("gallery: add by link, upload, hide, reorder, delete", async () => {
   assert.equal(destroyed.length, before + 1, "uploaded files are deleted from local storage");
 });
 
-test("website settings can manage associated partner logos", async () => {
+test("website settings can manage associated partner logos and more team members", async () => {
   let r = await call("GET", "/api/admin/settings", { headers: ADMIN });
   assert.equal(r.status, 200);
   const baseSettings = r.data.settings;
@@ -239,14 +239,27 @@ test("website settings can manage associated partner logos", async () => {
     partners: [
       { name: "Acme Realty", logo: r.data.logo, website: "https://example.com" },
       { name: "Text Only Partner", logo: "", website: "" }
+    ],
+    team: [
+      ...baseSettings.team,
+      {
+        name: "Priya Mehra",
+        role: "Senior Advisor",
+        experience: "12 years in real estate",
+        photo: "assets/priya-mehra.jpg",
+        bio: "Focused on residential advisory and client relationships."
+      }
     ]
   };
   r = await call("PATCH", "/api/admin/settings", { body: { settings }, headers: ADMIN });
   assert.equal(r.status, 200);
   assert.deepEqual(r.data.settings.partners, settings.partners);
+  assert.equal(r.data.settings.team.length, baseSettings.team.length + 1);
+  assert.equal(r.data.settings.team.at(-1).name, "Priya Mehra");
 
   const pub = await call("GET", "/api/settings");
   assert.deepEqual(pub.data.settings.partners, settings.partners);
+  assert.equal(pub.data.settings.team.at(-1).role, "Senior Advisor");
 });
 
 test("enquiries are saved and can be marked as handled", async () => {

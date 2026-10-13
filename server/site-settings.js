@@ -176,7 +176,7 @@ function cleanMaintenance(maintenance = {}) {
 }
 
 function cleanTeam(team = []) {
-  return (Array.isArray(team) ? team : []).slice(0, 5).map(member => ({
+  return (Array.isArray(team) ? team : []).slice(0, 20).map(member => ({
     name: text(member.name, 120),
     role: text(member.role, 120),
     experience: text(member.experience, 160),

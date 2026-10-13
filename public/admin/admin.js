@@ -498,10 +498,17 @@ function settingsCheckbox(label, name, checked, hint = "") {
   return `<div class="fld full"><label class="check maintenance-check"><input type="checkbox" data-key="${esc(name)}" ${checked ? "checked" : ""}><span>${esc(label)}</span></label>${hint ? `<div class="hint">${esc(hint)}</div>` : ""}</div>`;
 }
 
-function advisorEditor(member, i) {
-  const title = `Advisor ${i + 1}`;
-  return `<section class="settings-advisor">
-    <h3>${title}</h3>
+function advisorEditor(member, i, total) {
+  const title = `Team member ${i + 1}`;
+  return `<section class="settings-advisor" data-team-member="${i}">
+    <div class="partner-head">
+      <h3>${title}</h3>
+      <div class="partner-actions">
+        <button class="icon-btn" type="button" data-team-move="-1" ${i === 0 ? "disabled" : ""} aria-label="Move team member up">${icon("i-up")}</button>
+        <button class="icon-btn" type="button" data-team-move="1" ${i === total - 1 ? "disabled" : ""} aria-label="Move team member down">${icon("i-down")}</button>
+        <button class="icon-btn" type="button" data-team-remove aria-label="Remove team member">${icon("i-x")}</button>
+      </div>
+    </div>
     <div class="form-grid">
       ${settingsField("Name", `team.${i}.name`, member.name, { max: 120 })}
       ${settingsField("Role", `team.${i}.role`, member.role, { max: 120 })}
@@ -605,10 +612,10 @@ function drawSettingsForm() {
     <section>
       <div class="section-head">
         <div>
-          <h2>Associated Logos</h2>
+          <h2>Associated With Trusted Names</h2>
           <p>Brand logos shown in the homepage sliding Associations section.</p>
         </div>
-        <button class="btn btn-secondary btn-sm" type="button" data-partner-add>Add logo</button>
+        <button class="btn btn-secondary btn-sm" type="button" data-partner-add>Add brand logo</button>
       </div>
       <div class="partner-grid" id="partnerGrid">${partners.length ? partners.map((p, i) => partnerEditor(p, i, partners.length)).join("") : `<div class="panel empty-state"><b>No logos yet</b>Add a logo to show it in the Associations slider.</div>`}</div>
     </section>
@@ -635,8 +642,14 @@ function drawSettingsForm() {
       </div>
     </section>
     <section>
-      <h2>Advisor Profiles</h2>
-      <div class="advisor-grid">${[0, 1, 2, 3, 4].map(i => advisorEditor(team[i] || {}, i)).join("")}</div>
+      <div class="section-head">
+        <div>
+          <h2>Our Expert Teams</h2>
+          <p>Team members shown on the homepage, in this order.</p>
+        </div>
+        <button class="btn btn-secondary btn-sm" type="button" data-team-add>Add team member</button>
+      </div>
+      <div class="advisor-grid">${team.length ? team.map((m, i) => advisorEditor(m, i, team.length)).join("") : `<div class="panel empty-state"><b>No team members yet</b>Add a team member to show them on the homepage.</div>`}</div>
     </section>
     <div class="form-foot settings-foot"><span class="note-err" id="settingsErr" role="alert"></span><button class="btn btn-primary" id="settingsBtn" type="submit">Save website details</button></div>
   </form>`;
@@ -680,8 +693,22 @@ function collectPartners(form) {
   }).filter(p => p.name || p.logo || p.website);
 }
 
-function collectSettings(form) {
+function collectTeam(form) {
+  return $$("[data-team-member]", form).map(row => {
+    const i = row.dataset.teamMember;
+    return {
+      name: settingsValue(form, `team.${i}.name`),
+      role: settingsValue(form, `team.${i}.role`),
+      experience: settingsValue(form, `team.${i}.experience`),
+      photo: settingsValue(form, `team.${i}.photo`),
+      bio: settingsValue(form, `team.${i}.bio`)
+    };
+  }).filter(member => member.name || member.role || member.experience || member.photo || member.bio);
+}
+
+function collectSettings(form, opts = {}) {
   normalizeContactDefaults();
+  const validateSocial = opts.validateSocial !== false;
   const settings = {
     maintenance: {
       enabled: settingsChecked(form, "maintenance.enabled"),
@@ -724,20 +751,18 @@ function collectSettings(form) {
       twitterTitle: settingsValue(form, "seo.twitterTitle"),
       twitterDescription: settingsValue(form, "seo.twitterDescription")
     },
-    team: [0, 1, 2, 3, 4].map(i => ({
-      name: settingsValue(form, `team.${i}.name`),
-      role: settingsValue(form, `team.${i}.role`),
-      experience: settingsValue(form, `team.${i}.experience`),
-      photo: settingsValue(form, `team.${i}.photo`),
-      bio: settingsValue(form, `team.${i}.bio`)
-    })),
+    team: collectTeam(form),
     clientVideos: [0, 1].map(i => ({
       kicker: settingsValue(form, `clientVideos.${i}.kicker`),
       title: settingsValue(form, `clientVideos.${i}.title`),
       subtitle: settingsValue(form, `clientVideos.${i}.subtitle`)
     }))
   };
-  settings.social = window.readSocialEditor(document.getElementById("socialEditor"));
+  if (validateSocial) settings.social = window.readSocialEditor(document.getElementById("socialEditor"));
+  else {
+    try { settings.social = window.readSocialEditor(document.getElementById("socialEditor")); }
+    catch { settings.social = state.settings && state.settings.social || []; }
+  }
   return settings;
 }
 
@@ -746,14 +771,18 @@ function onSettingsFormClick(e) {
   const add = e.target.closest("[data-partner-add]");
   const remove = e.target.closest("[data-partner-remove]");
   const move = e.target.closest("[data-partner-move]");
-  if (!add && !remove && !move) return;
+  const addTeam = e.target.closest("[data-team-add]");
+  const removeTeam = e.target.closest("[data-team-remove]");
+  const moveTeam = e.target.closest("[data-team-move]");
+  if (!add && !remove && !move && !addTeam && !removeTeam && !moveTeam) return;
   let settings;
-  try { settings = collectSettings(form); }
+  try { settings = collectSettings(form, { validateSocial: false }); }
   catch (ex) { toast(ex.message); return; }
   const partners = settings.partners.slice();
+  const team = settings.team.slice();
   if (add) {
     partners.push({ name: "", logo: "", website: "" });
-  } else {
+  } else if (remove || move) {
     const row = e.target.closest("[data-partner]");
     const i = row ? Number(row.dataset.partner) : -1;
     if (remove && i >= 0) partners.splice(i, 1);
@@ -764,14 +793,29 @@ function onSettingsFormClick(e) {
         partners.splice(to, 0, item);
       }
     }
+  } else if (addTeam) {
+    team.push({ name: "", role: "", experience: "", photo: "", bio: "" });
+  } else {
+    const row = e.target.closest("[data-team-member]");
+    const i = row ? Number(row.dataset.teamMember) : -1;
+    if (removeTeam && i >= 0) team.splice(i, 1);
+    if (moveTeam && i >= 0) {
+      const to = i + Number(moveTeam.dataset.teamMove);
+      if (to >= 0 && to < team.length) {
+        const [item] = team.splice(i, 1);
+        team.splice(to, 0, item);
+      }
+    }
   }
   settings.partners = partners;
+  settings.team = team;
   state.settings = settings;
   drawSettingsForm();
   setTimeout(() => {
-    const rows = $$(".settings-partner");
-    const target = rows[Math.min(partners.length - 1, Math.max(0, partners.length - 1))];
-    if (add && target) target.scrollIntoView({ block: "nearest" });
+    const rows = addTeam ? $$(".settings-advisor[data-team-member]") : $$(".settings-partner");
+    const list = addTeam ? team : partners;
+    const target = rows[Math.min(list.length - 1, Math.max(0, list.length - 1))];
+    if ((add || addTeam) && target) target.scrollIntoView({ block: "nearest" });
   }, 0);
 }
 
