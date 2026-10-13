@@ -578,6 +578,7 @@ function videoCoverEditor(video, i, total) {
         <label>Uploads</label>
         <label class="drop video-upload"><input type="file" accept="video/mp4,video/webm,video/quicktime" data-video-file><span class="dic" style="color:var(--heading)">${icon("i-video")}</span><span><b>Upload video</b><span>MP4, MOV or WebM, up to ${state.me.limits.adminUploadMb} MB</span></span></label>
         <label class="drop video-cover-upload"><input type="file" accept="image/*" data-video-cover-file><span class="dic" style="color:var(--heading)">${icon("i-gal")}</span><span><b>Upload cover image</b><span>JPG, PNG, WebP or AVIF, up to ${state.me.limits.adminUploadMb} MB</span></span></label>
+        <button class="btn btn-secondary btn-sm" type="button" data-video-cover-capture>Use video frame</button>
         <button class="btn btn-plain btn-sm" type="button" data-video-cover-remove>Remove cover</button>
       </div>
     </div>
@@ -938,7 +939,12 @@ function onSettingsFormClick(e) {
   const addVideo = e.target.closest("[data-video-add]");
   const removeVideo = e.target.closest("[data-video-remove]");
   const moveVideo = e.target.closest("[data-video-move]");
+  const captureCover = e.target.closest("[data-video-cover-capture]");
   const removeCover = e.target.closest("[data-video-cover-remove]");
+  if (captureCover) {
+    captureVideoCover(captureCover);
+    return;
+  }
   if (removeCover) {
     const box = removeCover.closest("[data-video-editor]");
     const i = box ? box.dataset.videoEditor : "";
@@ -1066,6 +1072,75 @@ async function uploadSettingsVideoMedia(input) {
   input.disabled = false;
   input.value = "";
   if (label) label.textContent = original || (isCover ? "Upload cover image" : "Upload video");
+}
+
+function waitForVideoEvent(video, event, timeoutMs = 10000) {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => cleanup(new Error("The video took too long to load.")), timeoutMs);
+    const cleanup = err => {
+      clearTimeout(timer);
+      video.removeEventListener(event, onEvent);
+      video.removeEventListener("error", onError);
+      err ? reject(err) : resolve();
+    };
+    const onEvent = () => cleanup();
+    const onError = () => cleanup(new Error("The video could not be loaded for cover capture."));
+    video.addEventListener(event, onEvent, { once: true });
+    video.addEventListener("error", onError, { once: true });
+  });
+}
+
+function canvasBlob(canvas, type = "image/jpeg", quality = 0.86) {
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error("The cover image could not be created.")), type, quality);
+  });
+}
+
+async function captureVideoCover(button) {
+  const card = button.closest(".settings-video");
+  const form = $("#settingsForm");
+  const editor = card && $("[data-video-editor]", card);
+  const i = editor ? editor.dataset.videoEditor : "";
+  const srcInput = $(`[data-key="clientVideos.${i}.src"]`, form);
+  const coverInput = $(`[data-key="clientVideos.${i}.cover"]`, form);
+  const preview = card && $(".settings-video-thumb", card);
+  const src = srcInput ? srcInput.value.trim() : "";
+  if (!src) { toast("Add or upload a video first."); return; }
+  const original = button.textContent;
+  button.disabled = true;
+  button.textContent = "Creating cover...";
+  const video = document.createElement("video");
+  video.crossOrigin = "anonymous";
+  video.muted = true;
+  video.playsInline = true;
+  video.preload = "metadata";
+  try {
+    video.src = src;
+    video.load();
+    if (video.readyState < 1) await waitForVideoEvent(video, "loadedmetadata");
+    const duration = Number.isFinite(video.duration) && video.duration > 0 ? video.duration : 3;
+    video.currentTime = Math.min(Math.max(duration * 0.18, 0.1), Math.max(duration - 0.1, 0.1), 2);
+    await waitForVideoEvent(video, "seeked");
+    const canvas = document.createElement("canvas");
+    canvas.width = video.videoWidth || 720;
+    canvas.height = video.videoHeight || 1280;
+    canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
+    const blob = await canvasBlob(canvas);
+    const fd = new FormData();
+    fd.append("kind", "image");
+    fd.append("file", blob, `video-cover-${Date.now()}.jpg`);
+    const d = await upload("/settings/media-upload", fd, () => {});
+    if (coverInput) coverInput.value = d.url || "";
+    if (preview) preview.innerHTML = d.url ? `<img src="${esc(d.url)}" alt="">` : "<span>Cover preview</span>";
+    toast("Cover image created from the video. Save website details to publish.");
+  } catch (err) {
+    toast(err.message || "The video frame could not be used as a cover.");
+  } finally {
+    video.removeAttribute("src");
+    video.load();
+    button.disabled = false;
+    button.textContent = original;
+  }
 }
 
 async function saveSettingsForm(e) {
