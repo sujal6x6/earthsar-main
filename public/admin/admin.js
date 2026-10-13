@@ -486,6 +486,7 @@ function settingsSelect(label, name, value, options, hint = "") {
 
 function advisorEditor(member, i, total) {
   const title = `Team member ${i + 1}`;
+  const social = member.social || {};
   return `<section class="settings-advisor" data-team-member="${i}">
     <div class="partner-head">
       <h3>${title}</h3>
@@ -501,6 +502,17 @@ function advisorEditor(member, i, total) {
       ${settingsField("Experience / headline", `team.${i}.experience`, member.experience, { full: true, max: 160 })}
       ${settingsField("Photo path", `team.${i}.photo`, member.photo, { full: true, max: 300, hint: "Use an existing file path such as assets/naveen-sharma.jpg." })}
       ${settingsField("Full bio", `team.${i}.bio`, member.bio, { full: true, area: true, rows: 8, max: 3000 })}
+      <div class="fld full team-social-box">
+        <h4>Social profile icons</h4>
+        ${settingsCheckbox("Show social icons on this member's public profile", `team.${i}.showSocial`, member.showSocial, "Keep this off until the links are approved by admin.")}
+        <div class="form-grid compact">
+          ${settingsField("LinkedIn", `team.${i}.social.linkedin`, social.linkedin || member.linkedin, { type: "url", max: 600 })}
+          ${settingsField("Instagram", `team.${i}.social.instagram`, social.instagram, { type: "url", max: 600 })}
+          ${settingsField("Facebook", `team.${i}.social.facebook`, social.facebook, { type: "url", max: 600 })}
+          ${settingsField("X / Twitter", `team.${i}.social.x`, social.x, { type: "url", max: 600 })}
+          ${settingsField("YouTube", `team.${i}.social.youtube`, social.youtube, { type: "url", max: 600 })}
+        </div>
+      </div>
     </div>
   </section>`;
 }
@@ -777,13 +789,21 @@ function collectTeam(form) {
   return $$("[data-team-member]", form).map(row => {
     const i = row.dataset.teamMember;
     return {
+      showSocial: settingsChecked(form, `team.${i}.showSocial`),
       name: settingsValue(form, `team.${i}.name`),
       role: settingsValue(form, `team.${i}.role`),
       experience: settingsValue(form, `team.${i}.experience`),
       photo: settingsValue(form, `team.${i}.photo`),
-      bio: settingsValue(form, `team.${i}.bio`)
+      bio: settingsValue(form, `team.${i}.bio`),
+      social: {
+        linkedin: settingsValue(form, `team.${i}.social.linkedin`),
+        instagram: settingsValue(form, `team.${i}.social.instagram`),
+        facebook: settingsValue(form, `team.${i}.social.facebook`),
+        x: settingsValue(form, `team.${i}.social.x`),
+        youtube: settingsValue(form, `team.${i}.social.youtube`)
+      }
     };
-  }).filter(member => member.name || member.role || member.experience || member.photo || member.bio);
+  }).filter(member => member.name || member.role || member.experience || member.photo || member.bio || Object.values(member.social).some(Boolean));
 }
 
 function collectSettings(form, opts = {}) {
@@ -893,7 +913,7 @@ function onSettingsFormClick(e) {
       }
     }
   } else if (addTeam) {
-    team.push({ name: "", role: "", experience: "", photo: "", bio: "" });
+    team.push({ name: "", role: "", experience: "", photo: "", bio: "", showSocial: false, social: {} });
   } else {
     const row = e.target.closest("[data-team-member]");
     const i = row ? Number(row.dataset.teamMember) : -1;

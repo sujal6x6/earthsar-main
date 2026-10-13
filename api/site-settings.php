@@ -184,12 +184,20 @@ function clean_team($team) {
     foreach ($team as $member) {
         if (is_array($member) && isset($member['name'])) {
             $clean[] = [
+                'showSocial' => ($member['showSocial'] ?? false) === true || ($member['showSocial'] ?? '') === 'true' || ($member['showSocial'] ?? null) === 1 || ($member['showSocial'] ?? '') === '1',
                 'name' => text($member['name'], 120),
                 'role' => text($member['role'] ?? '', 120),
                 'experience' => text($member['experience'] ?? '', 160),
                 'bio' => text($member['bio'] ?? '', 3000),
                 'photo' => text($member['photo'] ?? '', 300),
-                'linkedin' => text($member['linkedin'] ?? '', 300)
+                'linkedin' => text($member['linkedin'] ?? '', 300),
+                'social' => [
+                    'linkedin' => text($member['social']['linkedin'] ?? ($member['linkedin'] ?? ''), 600),
+                    'instagram' => text($member['social']['instagram'] ?? '', 600),
+                    'facebook' => text($member['social']['facebook'] ?? '', 600),
+                    'x' => text($member['social']['x'] ?? '', 600),
+                    'youtube' => text($member['social']['youtube'] ?? '', 600)
+                ]
             ];
         }
     }

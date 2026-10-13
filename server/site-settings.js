@@ -181,14 +181,25 @@ function cleanMaintenance(maintenance = {}) {
 }
 
 function cleanTeam(team = []) {
-  return (Array.isArray(team) ? team : []).slice(0, 20).map(member => ({
+  return (Array.isArray(team) ? team : []).slice(0, 20).map(member => {
+    member = member || {};
+    return {
+    showSocial: member.showSocial === true || member.showSocial === "true" || member.showSocial === 1 || member.showSocial === "1",
     name: text(member.name, 120),
     role: text(member.role, 120),
     experience: text(member.experience, 160),
     bio: text(member.bio, 3000),
     photo: text(member.photo, 300),
-    linkedin: text(member.linkedin, 300)
-  }));
+    linkedin: text(member.linkedin, 300),
+    social: {
+      linkedin: text((member.social && member.social.linkedin) || member.linkedin, 600),
+      instagram: text(member.social && member.social.instagram, 600),
+      facebook: text(member.social && member.social.facebook, 600),
+      x: text(member.social && member.social.x, 600),
+      youtube: text(member.social && member.social.youtube, 600)
+    }
+  };
+  });
 }
 
 function cleanPartners(partners = []) {

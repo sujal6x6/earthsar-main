@@ -301,6 +301,14 @@ p{margin:0}
 .member .div{display:none}
 .member .xp{width:fit-content;font-size:13.5px;color:var(--accent-text);font-weight:800;background:var(--soft-orange);border:1px solid rgba(240,120,10,.22);border-radius:999px;padding:5px 10px}
 .member p{color:var(--muted);font-size:14.5px;line-height:1.6;margin-top:12px;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden}
+.team-social{display:flex;flex-wrap:wrap;gap:10px;margin:4px 0 18px}
+.team-social.compact{margin:12px 0 16px;gap:8px}
+.team-social a{width:42px;height:42px;border-radius:12px;border:1px solid var(--line);background:linear-gradient(180deg,#fff,var(--soft-blue));display:grid;place-items:center;box-shadow:0 8px 18px rgba(0,45,100,.08);transition:transform .18s,border-color .18s,box-shadow .18s}
+.team-social.compact a{width:34px;height:34px;border-radius:10px}
+.team-social a:hover{transform:translateY(-2px);border-color:var(--es-orange);box-shadow:0 12px 24px rgba(240,120,10,.12)}
+.team-social a:focus-visible{outline:3px solid rgba(240,120,10,.38);outline-offset:3px}
+.team-social img{width:21px;height:21px;object-fit:contain}
+.team-social.compact img{width:18px;height:18px}
 .member-read{width:100%;margin-top:auto;justify-content:center;background:var(--es-blue);border-color:var(--es-blue);color:#fff;box-shadow:0 8px 18px rgba(0,75,175,.12)}
 .member-read:hover{background:var(--es-blue-d);border-color:var(--es-blue-d);color:#fff;box-shadow:0 10px 22px rgba(0,75,175,.16)}
 .member .li{display:inline-flex;align-items:center;gap:8px;margin-top:auto;padding-top:16px;font-weight:600;font-size:14.5px}

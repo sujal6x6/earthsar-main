@@ -338,6 +338,29 @@ function settingsVideoMedia(){
 }
 
 /* ================= TEAM ================= */
+const TEAM_SOCIAL=[
+  ["linkedin","LinkedIn"],
+  ["instagram","Instagram"],
+  ["facebook","Facebook"],
+  ["x","X"],
+  ["youtube","YouTube"]
+];
+function safeSocialUrl(u){
+  const raw=String(u||"").trim();
+  if(!/^https:\/\//i.test(raw)||/[\s\\]/.test(raw))return "";
+  try{const x=new URL(raw);return x.hostname.includes(".")&&!x.username&&!x.password?x.href:""}catch(e){return ""}
+}
+function teamSocialLinks(m){
+  if(!m||!m.showSocial)return [];
+  const social=Object.assign({},m.social||{});
+  if(!social.linkedin&&m.linkedin)social.linkedin=m.linkedin;
+  return TEAM_SOCIAL.map(([key,label])=>({key,label,url:safeSocialUrl(social[key])})).filter(item=>item.url);
+}
+function teamSocialHtml(m,compact=false){
+  const links=teamSocialLinks(m);
+  if(!links.length)return "";
+  return `<nav class="team-social${compact?" compact":""}" aria-label="${esc(m.name||"Team member")} social links">${links.map(item=>`<a href="${esc(item.url)}" target="_blank" rel="noopener noreferrer" title="${esc(item.label)}" aria-label="${esc(item.label)} profile opens in a new tab"><img src="/assets/social/${esc(item.key)}.svg" alt=""></a>`).join("")}</nav>`;
+}
 function initials(n){return String(n||"?").trim().split(/\s+/).slice(0,2).map(w=>w[0]).join("").toUpperCase()}
 function orderedTeam(team){
   const order=["naveen","bhaskar","neha","dushyant","juber"];
@@ -354,12 +377,11 @@ function renderTeam(){
     $$(".member.ph .ini svg",g).forEach(s=>{s.style.width="64px";s.style.height="64px";s.style.color="var(--heading)"});return}
   S.team=orderedTeam(S.team);
   g.innerHTML=S.team.map((m,idx)=>{
-    return `<article class="card card-hover member reveal in"><div class="member-photo">${m.photo?`<img src="${esc(m.photo)}" alt="${esc(m.name)}" loading="lazy">`:`<span class="ini">${esc(initials(m.name))}</span>`}</div><div class="member-body"><h3>${esc(m.name)}</h3><div class="role">${esc(m.role)}</div><div class="div"></div><button class="btn btn-secondary member-read" type="button" data-team="${idx}">Read more</button></div></article>`;
+    return `<article class="card card-hover member reveal in"><div class="member-photo">${m.photo?`<img src="${esc(m.photo)}" alt="${esc(m.name)}" loading="lazy">`:`<span class="ini">${esc(initials(m.name))}</span>`}</div><div class="member-body"><h3>${esc(m.name)}</h3><div class="role">${esc(m.role)}</div>${teamSocialHtml(m,true)}<div class="div"></div><button class="btn btn-secondary member-read" type="button" data-team="${idx}">Read more</button></div></article>`;
   }).join("");
 }
 function openTeamModal(i){
   const m=S.team[i];if(!m)return;
-  const li=safeUrl(m.linkedin);
   const bio=m.bio?String(m.bio).split(/\n{2,}/).map(p=>{
     const text=String(p).trim();
     return /^Beyond Real Estate$/i.test(text)?`<h4>${esc(text)}</h4>`:`<p>${esc(text)}</p>`;
@@ -369,8 +391,8 @@ function openTeamModal(i){
     <div class="advisor-modal-photo">${m.photo?`<img src="${esc(m.photo)}" alt="${esc(m.name)}">`:`<span class="ini">${esc(initials(m.name))}</span>`}</div>
     <div class="advisor-modal-copy">
       ${m.experience?`<div class="xp">${esc(m.experience)}</div>`:""}
+      ${teamSocialHtml(m)}
       ${bio}
-      ${li?`<a class="li" href="${esc(li)}" target="_blank" rel="noopener noreferrer">${icon("i-in")}LinkedIn</a>`:""}
     </div>
   </div>`,"advisor-profile");
 }
