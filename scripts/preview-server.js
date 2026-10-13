@@ -45,6 +45,25 @@ let siteSettings = {
     twitterTitle: "earthsar | Real Estate Advisory in Gurugram & Delhi NCR",
     twitterDescription: "Transparent real estate advisory for homes, investments, commercial property, selling and leasing across key Indian markets and Dubai."
   },
+  partners: [
+    { name: "Max Estates", logo: "icons/partners/max-estates.png", website: "https://www.maxestates.in/" },
+    { name: "TARC", logo: "icons/partners/tarc.jpg", website: "https://www.tarc.in/" },
+    { name: "Oberoi Realty", logo: "icons/partners/oberoi-realty.png", website: "https://www.oberoirealty.com/" },
+    { name: "Birla Estates", logo: "icons/partners/birla-estates.png", website: "https://www.birlaestates.com/" },
+    { name: "Hero Homes", logo: "icons/partners/hero-homes.webp", website: "https://www.herohomes.in/" },
+    { name: "Aarize", logo: "icons/partners/aarize.jpg", website: "https://aarizegroup.com/" },
+    { name: "SS Group", logo: "icons/partners/ss-group.jpg", website: "https://ssgroup-india.com/" },
+    { name: "NeoLiv", logo: "icons/partners/neoliv.jpg", website: "https://neoliv.in/" },
+    { name: "Vianaar", logo: "icons/partners/vianaar.jpg", website: "https://vianaar.com/" },
+    { name: "Prestige Group", logo: "icons/partners/prestige-group.jpg", website: "https://www.prestigeconstructions.com/" },
+    { name: "Lodha", logo: "icons/partners/lodha.png", website: "https://www.lodhagroup.in/" },
+    { name: "L&T Realty", logo: "icons/partners/lt-realty.webp", website: "https://www.lntrealty.com/" },
+    { name: "Ashiana Amarah", logo: "icons/partners/ashiana-amarah.png", website: "https://www.ashianahousing.com/" },
+    { name: "Eldeco Group", logo: "icons/partners/eldeco-group.png", website: "https://www.eldecogroup.com/" },
+    { name: "Sobha Realty", logo: "icons/partners/sobha-realty.jpg", website: "https://www.sobharealty.com/" },
+    { name: "County Group", logo: "icons/partners/county-group.jpg", website: "https://www.countygroup.in/" },
+    { name: "Shapoorji Pallonji", logo: "icons/partners/shapoorji-pallonji.jpg", website: "https://shapoorji.in/" }
+  ],
   clientVideos: [
     {
       src: "assets/client-videos/client-testimonial-1.mp4",

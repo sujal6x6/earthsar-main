@@ -40,22 +40,23 @@ const DEFAULT_SITE_SETTINGS = {
     message: "We are making a few updates and will be back online shortly. For urgent property advice, please contact us directly."
   },
   partners: [
-    { name: "Partner 1", logo: "icons/011.png", website: "" },
-    { name: "Partner 2", logo: "icons/011111.png", website: "" },
-    { name: "Partner 3", logo: "icons/4444444444.png", website: "" },
-    { name: "Partner 4", logo: "icons/777777777.png", website: "" },
-    { name: "Partner 5", logo: "icons/Untitled-design-1.png", website: "" },
-    { name: "Partner 6", logo: "icons/Untitled-design-10-1.png", website: "" },
-    { name: "Partner 7", logo: "icons/Untitled-design-10.png", website: "" },
-    { name: "Partner 8", logo: "icons/Untitled-design-11.png", website: "" },
-    { name: "Partner 9", logo: "icons/Untitled-design-2.png", website: "" },
-    { name: "Partner 10", logo: "icons/Untitled-design-3.png", website: "" },
-    { name: "Partner 11", logo: "icons/Untitled-design-4.png", website: "" },
-    { name: "Partner 12", logo: "icons/Untitled-design-5.png", website: "" },
-    { name: "Partner 13", logo: "icons/Untitled-design-6.png", website: "" },
-    { name: "Partner 14", logo: "icons/Untitled-design-7.png", website: "" },
-    { name: "Partner 15", logo: "icons/Untitled-design-8.png", website: "" },
-    { name: "Partner 16", logo: "icons/Untitled-design-9.png", website: "" }
+    { name: "Max Estates", logo: "icons/partners/max-estates.png", website: "https://www.maxestates.in/" },
+    { name: "TARC", logo: "icons/partners/tarc.jpg", website: "https://www.tarc.in/" },
+    { name: "Oberoi Realty", logo: "icons/partners/oberoi-realty.png", website: "https://www.oberoirealty.com/" },
+    { name: "Birla Estates", logo: "icons/partners/birla-estates.png", website: "https://www.birlaestates.com/" },
+    { name: "Hero Homes", logo: "icons/partners/hero-homes.webp", website: "https://www.herohomes.in/" },
+    { name: "Aarize", logo: "icons/partners/aarize.jpg", website: "https://aarizegroup.com/" },
+    { name: "SS Group", logo: "icons/partners/ss-group.jpg", website: "https://ssgroup-india.com/" },
+    { name: "NeoLiv", logo: "icons/partners/neoliv.jpg", website: "https://neoliv.in/" },
+    { name: "Vianaar", logo: "icons/partners/vianaar.jpg", website: "https://vianaar.com/" },
+    { name: "Prestige Group", logo: "icons/partners/prestige-group.jpg", website: "https://www.prestigeconstructions.com/" },
+    { name: "Lodha", logo: "icons/partners/lodha.png", website: "https://www.lodhagroup.in/" },
+    { name: "L&T Realty", logo: "icons/partners/lt-realty.webp", website: "https://www.lntrealty.com/" },
+    { name: "Ashiana Amarah", logo: "icons/partners/ashiana-amarah.png", website: "https://www.ashianahousing.com/" },
+    { name: "Eldeco Group", logo: "icons/partners/eldeco-group.png", website: "https://www.eldecogroup.com/" },
+    { name: "Sobha Realty", logo: "icons/partners/sobha-realty.jpg", website: "https://www.sobharealty.com/" },
+    { name: "County Group", logo: "icons/partners/county-group.jpg", website: "https://www.countygroup.in/" },
+    { name: "Shapoorji Pallonji", logo: "icons/partners/shapoorji-pallonji.jpg", website: "https://shapoorji.in/" }
   ],
   clientVideos: [
     {
@@ -198,6 +199,14 @@ function cleanPartners(partners = []) {
     .filter(partner => partner.name || partner.logo || partner.website);
 }
 
+function isPlaceholderPartners(partners = []) {
+  const list = Array.isArray(partners) ? partners : [];
+  return list.length > 0 && list.every((partner, index) => {
+    const name = text(partner && partner.name, 120);
+    return name === `Partner ${index + 1}`;
+  });
+}
+
 function cleanClientVideos(videos = []) {
   const input = Array.isArray(videos) ? videos : [];
   return DEFAULT_SITE_SETTINGS.clientVideos.map((def, index) => {
@@ -212,6 +221,8 @@ function cleanClientVideos(videos = []) {
 }
 
 function sanitizeSiteSettings(input = {}) {
+  const savedPartners = input.partners && input.partners.length ? input.partners : null;
+  const partnerSource = savedPartners && !isPlaceholderPartners(savedPartners) ? savedPartners : DEFAULT_SITE_SETTINGS.partners;
   return {
     social: require("../public/social-links").clean(input.social),
     stats: cleanStats({ ...DEFAULT_SITE_SETTINGS.stats, ...(input.stats || {}) }),
@@ -219,7 +230,7 @@ function sanitizeSiteSettings(input = {}) {
     hero: cleanHero({ ...DEFAULT_SITE_SETTINGS.hero, ...(input.hero || {}) }),
     seo: cleanSeo({ ...DEFAULT_SITE_SETTINGS.seo, ...(input.seo || {}) }),
     maintenance: cleanMaintenance({ ...DEFAULT_SITE_SETTINGS.maintenance, ...(input.maintenance || {}) }),
-    partners: cleanPartners(input.partners && input.partners.length ? input.partners : DEFAULT_SITE_SETTINGS.partners),
+    partners: cleanPartners(partnerSource),
     clientVideos: cleanClientVideos(input.clientVideos && input.clientVideos.length ? input.clientVideos : DEFAULT_SITE_SETTINGS.clientVideos),
     team: cleanTeam(input.team && input.team.length ? input.team : DEFAULT_SITE_SETTINGS.team)
   };
