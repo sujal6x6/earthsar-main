@@ -266,7 +266,7 @@ async function pageGallery() {
                 <option value="testimonials">Video Testimonials section</option>
                 <option value="review-media">Client review media section</option>
               </select>
-              <div class="hint">This choice appears for video uploads. Photos continue to the website media gallery.</div>
+              <div class="hint">Choose this before uploading a video. Photo uploads will still be saved in Website Media.</div>
             </div>
             <div class="fld" data-for="link"><label for="g-type">Type</label><select id="g-type"><option value="">Detect from link</option><option value="image">Photo</option><option value="video">Video</option></select></div>
             <div class="fld"><label for="g-title">Title <span class="opt">(optional)</span></label><input id="g-title" maxlength="120" placeholder="e.g. Handover at Emaar Palm Heights"></div>
@@ -295,7 +295,7 @@ async function pageGallery() {
       const f = $("#g-file").files[0];
       const placement = $("#g-video-placement");
       const isVideo = !!(f && f.type.startsWith("video/"));
-      if (placement) placement.hidden = !isVideo;
+      if (placement) placement.hidden = false;
       if (!f) { box.innerHTML = "Preview"; return; }
       objUrl = URL.createObjectURL(f);
       box.innerHTML = isVideo ? `<video src="${objUrl}" muted playsinline></video>` : `<img src="${objUrl}" alt="">`;
