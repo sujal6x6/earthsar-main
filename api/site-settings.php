@@ -34,6 +34,24 @@ $DEFAULT_SITE_SETTINGS = [
         'title' => 'Website under maintenance',
         'message' => 'We are making a few updates and will be back online shortly. For urgent property advice, please contact us directly.'
     ],
+    'partners' => [
+        ['name' => 'Partner 1', 'logo' => 'icons/011.png', 'website' => ''],
+        ['name' => 'Partner 2', 'logo' => 'icons/011111.png', 'website' => ''],
+        ['name' => 'Partner 3', 'logo' => 'icons/4444444444.png', 'website' => ''],
+        ['name' => 'Partner 4', 'logo' => 'icons/777777777.png', 'website' => ''],
+        ['name' => 'Partner 5', 'logo' => 'icons/Untitled-design-1.png', 'website' => ''],
+        ['name' => 'Partner 6', 'logo' => 'icons/Untitled-design-10-1.png', 'website' => ''],
+        ['name' => 'Partner 7', 'logo' => 'icons/Untitled-design-10.png', 'website' => ''],
+        ['name' => 'Partner 8', 'logo' => 'icons/Untitled-design-11.png', 'website' => ''],
+        ['name' => 'Partner 9', 'logo' => 'icons/Untitled-design-2.png', 'website' => ''],
+        ['name' => 'Partner 10', 'logo' => 'icons/Untitled-design-3.png', 'website' => ''],
+        ['name' => 'Partner 11', 'logo' => 'icons/Untitled-design-4.png', 'website' => ''],
+        ['name' => 'Partner 12', 'logo' => 'icons/Untitled-design-5.png', 'website' => ''],
+        ['name' => 'Partner 13', 'logo' => 'icons/Untitled-design-6.png', 'website' => ''],
+        ['name' => 'Partner 14', 'logo' => 'icons/Untitled-design-7.png', 'website' => ''],
+        ['name' => 'Partner 15', 'logo' => 'icons/Untitled-design-8.png', 'website' => ''],
+        ['name' => 'Partner 16', 'logo' => 'icons/Untitled-design-9.png', 'website' => '']
+    ],
     'clientVideos' => [
         [
             'src' => 'assets/client-videos/client-testimonial-1.mp4',
@@ -190,6 +208,24 @@ function clean_social($items) {
     return $clean;
 }
 
+function clean_partners($partners) {
+    if (!is_array($partners)) return [];
+
+    $clean = [];
+    foreach (array_slice($partners, 0, 50) as $partner) {
+        if (!is_array($partner)) continue;
+        $item = [
+            'name' => text($partner['name'] ?? '', 120),
+            'logo' => text($partner['logo'] ?? '', 600),
+            'website' => text($partner['website'] ?? '', 600)
+        ];
+        if ($item['name'] || $item['logo'] || $item['website']) {
+            $clean[] = $item;
+        }
+    }
+    return $clean;
+}
+
 function clean_client_videos($videos) {
     global $DEFAULT_SITE_SETTINGS;
     if (!is_array($videos)) return $DEFAULT_SITE_SETTINGS['clientVideos'];
@@ -218,6 +254,7 @@ function sanitize_site_settings($input) {
         'stats' => clean_stats($input['stats'] ?? null),
         'seo' => clean_seo($input['seo'] ?? null),
         'maintenance' => clean_maintenance($input['maintenance'] ?? null),
+        'partners' => clean_partners(!empty($input['partners']) ? $input['partners'] : $DEFAULT_SITE_SETTINGS['partners']),
         'clientVideos' => clean_client_videos($input['clientVideos'] ?? null),
         'team' => clean_team($input['team'] ?? null)
     ];

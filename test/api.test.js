@@ -73,7 +73,7 @@ function reviewForm(extra = {}) {
 }
 
 test.before(async () => {
-  await pool.query("DROP TABLE IF EXISTS admins, reviews, gallery_items, enquiries");
+  await pool.query("DROP TABLE IF EXISTS admins, reviews, gallery_items, enquiries, site_settings");
   server = await start();
   base = `http://127.0.0.1:${server.address().port}`;
   await query("INSERT INTO admins (email, name, password_hash) VALUES (?, 'Test', ?)", ["admin@test.local", await hashPassword("correct-horse-battery")]);
@@ -220,6 +220,33 @@ test("gallery: add by link, upload, hide, reorder, delete", async () => {
   assert.equal(destroyed.length, before, "linked files stay where they are hosted");
   await call("DELETE", `/api/admin/gallery/${uploaded.id}`, { headers: ADMIN });
   assert.equal(destroyed.length, before + 1, "uploaded files are deleted from local storage");
+});
+
+test("website settings can manage associated partner logos", async () => {
+  let r = await call("GET", "/api/admin/settings", { headers: ADMIN });
+  assert.equal(r.status, 200);
+  const baseSettings = r.data.settings;
+  assert.ok(r.data.settings.partners.length >= 1, "default partners are available");
+
+  const fd = new FormData();
+  fd.append("file", file(500, "image/png"), "acme.png");
+  r = await call("POST", "/api/admin/settings/logo-upload", { form: fd, headers: ADMIN });
+  assert.equal(r.status, 201);
+  assert.match(r.data.logo, /^\/uploads\/logos\/f\d+\.jpg$/);
+
+  const settings = {
+    ...baseSettings,
+    partners: [
+      { name: "Acme Realty", logo: r.data.logo, website: "https://example.com" },
+      { name: "Text Only Partner", logo: "", website: "" }
+    ]
+  };
+  r = await call("PATCH", "/api/admin/settings", { body: { settings }, headers: ADMIN });
+  assert.equal(r.status, 200);
+  assert.deepEqual(r.data.settings.partners, settings.partners);
+
+  const pub = await call("GET", "/api/settings");
+  assert.deepEqual(pub.data.settings.partners, settings.partners);
 });
 
 test("enquiries are saved and can be marked as handled", async () => {

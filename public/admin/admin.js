@@ -524,8 +524,34 @@ function videoCoverEditor(video, i) {
   </section>`;
 }
 
+function partnerEditor(partner, i, total) {
+  const logo = partner.logo || "";
+  return `<section class="settings-partner" data-partner="${i}">
+    <div class="partner-head">
+      <h3>Logo ${i + 1}</h3>
+      <div class="partner-actions">
+        <button class="icon-btn" type="button" data-partner-move="-1" ${i === 0 ? "disabled" : ""} aria-label="Move logo up">${icon("i-up")}</button>
+        <button class="icon-btn" type="button" data-partner-move="1" ${i === total - 1 ? "disabled" : ""} aria-label="Move logo down">${icon("i-down")}</button>
+        <button class="icon-btn" type="button" data-partner-remove aria-label="Remove logo">${icon("i-x")}</button>
+      </div>
+    </div>
+    <div class="partner-edit">
+      <div class="partner-preview">${logo ? `<img src="${esc(logo)}" alt="">` : `<span>Logo preview</span>`}</div>
+      <div class="form-grid">
+        ${settingsField("Brand name", `partners.${i}.name`, partner.name, { max: 120 })}
+        ${settingsField("Website link", `partners.${i}.website`, partner.website, { type: "url", max: 600 })}
+        ${settingsField("Logo path or URL", `partners.${i}.logo`, logo, { full: true, max: 600, hint: "Use a path like icons/logo.png or a full https:// image URL." })}
+        <div class="fld full">
+          <label>Upload logo</label>
+          <label class="drop partner-upload"><input type="file" accept="image/*" data-partner-file><span class="dic" style="color:var(--heading)">${icon("i-gal")}</span><span><b>Choose logo image</b><span>JPG, PNG, WebP or AVIF, up to ${state.me.limits.adminUploadMb} MB</span></span></label>
+        </div>
+      </div>
+    </div>
+  </section>`;
+}
+
 function drawSettingsForm() {
-  const s = state.settings || {}, c = s.contact || {}, st = s.stats || {}, h = s.hero || {}, seo = s.seo || {}, maintenance = s.maintenance || {}, team = s.team || [], clientVideos = s.clientVideos || [];
+  const s = state.settings || {}, c = s.contact || {}, st = s.stats || {}, h = s.hero || {}, seo = s.seo || {}, maintenance = s.maintenance || {}, team = s.team || [], clientVideos = s.clientVideos || [], partners = s.partners || [];
   const phone = c.phone || c.whatsapp || "+91 79820 08930";
   const whatsapp = c.whatsapp || c.phone || "+91 79820 08930";
   const email = c.email || "info@earthsar.in";
@@ -577,6 +603,16 @@ function drawSettingsForm() {
       </div>
     </section>
     <section>
+      <div class="section-head">
+        <div>
+          <h2>Associated Logos</h2>
+          <p>Brand logos shown in the homepage sliding Associations section.</p>
+        </div>
+        <button class="btn btn-secondary btn-sm" type="button" data-partner-add>Add logo</button>
+      </div>
+      <div class="partner-grid" id="partnerGrid">${partners.length ? partners.map((p, i) => partnerEditor(p, i, partners.length)).join("") : `<div class="panel empty-state"><b>No logos yet</b>Add a logo to show it in the Associations slider.</div>`}</div>
+    </section>
+    <section>
       <h2>Client Video Covers</h2>
       <p>Edit the cover text shown before visitors play each video. The current two videos use EarthZ because clients say that name in the videos.</p>
       <div class="advisor-grid">${[0, 1].map(i => videoCoverEditor(clientVideos[i] || {}, i)).join("")}</div>
@@ -609,6 +645,8 @@ function drawSettingsForm() {
   setTimeout(normalizeContactDefaults, 80);
   setTimeout(normalizeContactDefaults, 350);
   $("#settingsForm").onsubmit = saveSettingsForm;
+  $("#settingsForm").addEventListener("click", onSettingsFormClick);
+  $("#settingsForm").addEventListener("change", onSettingsFormChange);
 }
 
 function normalizeContactDefaults() {
@@ -631,10 +669,18 @@ function settingsChecked(form, name) {
   return Boolean(el && el.checked);
 }
 
-async function saveSettingsForm(e) {
-  e.preventDefault();
-  const form = e.currentTarget, btn = $("#settingsBtn"), err = $("#settingsErr");
-  err.textContent = "";
+function collectPartners(form) {
+  return $$("[data-partner]", form).map(row => {
+    const i = row.dataset.partner;
+    return {
+      name: settingsValue(form, `partners.${i}.name`),
+      logo: settingsValue(form, `partners.${i}.logo`),
+      website: settingsValue(form, `partners.${i}.website`)
+    };
+  }).filter(p => p.name || p.logo || p.website);
+}
+
+function collectSettings(form) {
   normalizeContactDefaults();
   const settings = {
     maintenance: {
@@ -664,6 +710,7 @@ async function saveSettingsForm(e) {
       satisfaction: settingsValue(form, "stats.satisfaction"),
       properties: settingsValue(form, "stats.properties")
     },
+    partners: collectPartners(form),
     seo: {
       title: settingsValue(form, "seo.title"),
       description: settingsValue(form, "seo.description"),
@@ -690,7 +737,76 @@ async function saveSettingsForm(e) {
       subtitle: settingsValue(form, `clientVideos.${i}.subtitle`)
     }))
   };
-  try { settings.social = window.readSocialEditor(document.getElementById("socialEditor")); }
+  settings.social = window.readSocialEditor(document.getElementById("socialEditor"));
+  return settings;
+}
+
+function onSettingsFormClick(e) {
+  const form = e.currentTarget;
+  const add = e.target.closest("[data-partner-add]");
+  const remove = e.target.closest("[data-partner-remove]");
+  const move = e.target.closest("[data-partner-move]");
+  if (!add && !remove && !move) return;
+  let settings;
+  try { settings = collectSettings(form); }
+  catch (ex) { toast(ex.message); return; }
+  const partners = settings.partners.slice();
+  if (add) {
+    partners.push({ name: "", logo: "", website: "" });
+  } else {
+    const row = e.target.closest("[data-partner]");
+    const i = row ? Number(row.dataset.partner) : -1;
+    if (remove && i >= 0) partners.splice(i, 1);
+    if (move && i >= 0) {
+      const to = i + Number(move.dataset.partnerMove);
+      if (to >= 0 && to < partners.length) {
+        const [item] = partners.splice(i, 1);
+        partners.splice(to, 0, item);
+      }
+    }
+  }
+  settings.partners = partners;
+  state.settings = settings;
+  drawSettingsForm();
+  setTimeout(() => {
+    const rows = $$(".settings-partner");
+    const target = rows[Math.min(partners.length - 1, Math.max(0, partners.length - 1))];
+    if (add && target) target.scrollIntoView({ block: "nearest" });
+  }, 0);
+}
+
+async function onSettingsFormChange(e) {
+  const input = e.target.closest("[data-partner-file]");
+  if (!input || !input.files[0]) return;
+  const row = input.closest("[data-partner]");
+  const i = row ? row.dataset.partner : "";
+  const logoInput = $(`[data-key="partners.${i}.logo"]`, row);
+  const preview = $(".partner-preview", row);
+  const label = $(".partner-upload b", row);
+  const original = label ? label.textContent : "";
+  const fd = new FormData();
+  fd.append("file", input.files[0]);
+  input.disabled = true;
+  if (label) label.textContent = "Uploading...";
+  try {
+    const d = await upload("/settings/logo-upload", fd, () => {});
+    if (logoInput) logoInput.value = d.logo || "";
+    if (preview) preview.innerHTML = d.logo ? `<img src="${esc(d.logo)}" alt="">` : `<span>Logo preview</span>`;
+    toast("Logo uploaded.");
+  } catch (err) {
+    toast(err.message);
+  }
+  input.disabled = false;
+  input.value = "";
+  if (label) label.textContent = original || "Choose logo image";
+}
+
+async function saveSettingsForm(e) {
+  e.preventDefault();
+  const form = e.currentTarget, btn = $("#settingsBtn"), err = $("#settingsErr");
+  err.textContent = "";
+  let settings;
+  try { settings = collectSettings(form); }
   catch (ex) { err.textContent = ex.message; return; }
   btn.disabled = true;
   try {

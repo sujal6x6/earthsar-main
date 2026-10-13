@@ -39,6 +39,24 @@ const DEFAULT_SITE_SETTINGS = {
     title: "Website under maintenance",
     message: "We are making a few updates and will be back online shortly. For urgent property advice, please contact us directly."
   },
+  partners: [
+    { name: "Partner 1", logo: "icons/011.png", website: "" },
+    { name: "Partner 2", logo: "icons/011111.png", website: "" },
+    { name: "Partner 3", logo: "icons/4444444444.png", website: "" },
+    { name: "Partner 4", logo: "icons/777777777.png", website: "" },
+    { name: "Partner 5", logo: "icons/Untitled-design-1.png", website: "" },
+    { name: "Partner 6", logo: "icons/Untitled-design-10-1.png", website: "" },
+    { name: "Partner 7", logo: "icons/Untitled-design-10.png", website: "" },
+    { name: "Partner 8", logo: "icons/Untitled-design-11.png", website: "" },
+    { name: "Partner 9", logo: "icons/Untitled-design-2.png", website: "" },
+    { name: "Partner 10", logo: "icons/Untitled-design-3.png", website: "" },
+    { name: "Partner 11", logo: "icons/Untitled-design-4.png", website: "" },
+    { name: "Partner 12", logo: "icons/Untitled-design-5.png", website: "" },
+    { name: "Partner 13", logo: "icons/Untitled-design-6.png", website: "" },
+    { name: "Partner 14", logo: "icons/Untitled-design-7.png", website: "" },
+    { name: "Partner 15", logo: "icons/Untitled-design-8.png", website: "" },
+    { name: "Partner 16", logo: "icons/Untitled-design-9.png", website: "" }
+  ],
   clientVideos: [
     {
       src: "assets/client-videos/client-testimonial-1.mp4",
@@ -168,6 +186,18 @@ function cleanTeam(team = []) {
   }));
 }
 
+function cleanPartners(partners = []) {
+  const list = Array.isArray(partners) ? partners : [];
+  return list
+    .slice(0, 50)
+    .map(partner => ({
+      name: text(partner.name, 120),
+      logo: text(partner.logo, 600),
+      website: text(partner.website, 600)
+    }))
+    .filter(partner => partner.name || partner.logo || partner.website);
+}
+
 function cleanClientVideos(videos = []) {
   const input = Array.isArray(videos) ? videos : [];
   return DEFAULT_SITE_SETTINGS.clientVideos.map((def, index) => {
@@ -189,6 +219,7 @@ function sanitizeSiteSettings(input = {}) {
     hero: cleanHero({ ...DEFAULT_SITE_SETTINGS.hero, ...(input.hero || {}) }),
     seo: cleanSeo({ ...DEFAULT_SITE_SETTINGS.seo, ...(input.seo || {}) }),
     maintenance: cleanMaintenance({ ...DEFAULT_SITE_SETTINGS.maintenance, ...(input.maintenance || {}) }),
+    partners: cleanPartners(input.partners && input.partners.length ? input.partners : DEFAULT_SITE_SETTINGS.partners),
     clientVideos: cleanClientVideos(input.clientVideos && input.clientVideos.length ? input.clientVideos : DEFAULT_SITE_SETTINGS.clientVideos),
     team: cleanTeam(input.team && input.team.length ? input.team : DEFAULT_SITE_SETTINGS.team)
   };

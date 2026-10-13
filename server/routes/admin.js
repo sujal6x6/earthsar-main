@@ -139,6 +139,18 @@ router.patch("/settings", async (req, res) => {
   res.json({ settings });
 });
 
+const logoUpload = makeUpload(config.limits.adminUploadMb).single("file");
+router.post("/settings/logo-upload", logoUpload, async (req, res) => {
+  try {
+    if (!req.file) throw new UserError("Choose a logo image to upload.");
+    check(req.file, { kind: "image", maxMb: config.limits.adminUploadMb, label: "The logo" });
+    const uploaded = await media.uploadFile(req.file, "image", "logos");
+    res.status(201).json({ logo: uploaded.url });
+  } finally {
+    cleanup(req);
+  }
+});
+
 /* ---------- Reviews ---------- */
 
 function adminReview(r) {

@@ -180,6 +180,8 @@ body.adm{background:var(--neutral);min-height:100vh;overflow-x:hidden}
 .settings-form{padding:24px;margin-bottom:16px;display:grid;gap:26px}
 .settings-form section{display:grid;gap:14px}
 .settings-form h2{font-size:20px}
+.settings-form .section-head{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;flex-wrap:wrap}
+.settings-form .section-head p{color:var(--muted);margin-top:4px}
 .settings-form .form-grid.compact{grid-template-columns:repeat(3,minmax(0,1fr))}
 .settings-form input,.settings-form textarea{background:var(--surface)}
 .settings-form textarea{resize:vertical;min-height:74px}
@@ -191,10 +193,19 @@ body.adm{background:var(--neutral);min-height:100vh;overflow-x:hidden}
 .settings-advisor{border:1px solid var(--line);border-radius:10px;background:var(--soft-blue);padding:16px;display:grid;gap:12px}
 .settings-advisor h3{font-size:16px}
 .settings-video p{font-size:13px;color:var(--muted);word-break:break-word}
+.partner-grid{display:grid;gap:12px}
+.settings-partner{border:1px solid var(--line);border-radius:10px;background:var(--soft-blue);padding:14px;display:grid;gap:12px}
+.partner-head{display:flex;justify-content:space-between;gap:12px;align-items:center}
+.partner-head h3{font-size:16px}
+.partner-actions{display:flex;gap:6px}
+.partner-edit{display:grid;grid-template-columns:140px minmax(0,1fr);gap:14px;align-items:start}
+.partner-preview{aspect-ratio:4/3;border:1px dashed var(--line-strong);border-radius:8px;background:var(--surface);display:grid;place-items:center;overflow:hidden;color:var(--faint);font-size:13px;text-align:center;padding:8px}
+.partner-preview img{max-width:100%;max-height:100%;object-fit:contain}
 .settings-foot{border-top:1px solid var(--line);padding-top:18px}
 .acc-card{padding:24px;max-width:520px;display:grid;gap:16px}
 .acc-card h2{font-size:20px}
 @media (max-width:900px){.advisor-grid,.settings-form .form-grid.compact{grid-template-columns:1fr}}
+@media (max-width:760px){.partner-edit{grid-template-columns:1fr}.partner-preview{max-width:180px}}
 @media (max-width:700px){.settings-grid{grid-template-columns:1fr}}
 
 /* ---------- dialog & viewer ---------- */

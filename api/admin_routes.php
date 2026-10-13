@@ -150,6 +150,22 @@ function admin_patch_settings() {
     _json_out(['settings' => $settings]);
 }
 
+function admin_upload_logo() {
+    global $config;
+    if (empty($_FILES['file']) || $_FILES['file']['error'] !== UPLOAD_ERR_OK) {
+        _json_out(['error' => 'Choose a logo image to upload.'], 400);
+    }
+    $kind = media_check_type($_FILES['file'], $config['ADMIN_UPLOAD_MAX_MB']);
+    if ($kind !== 'image') {
+        _json_out(['error' => 'The logo must be a JPG, PNG, WebP or HEIC image.'], 400);
+    }
+    $uploaded = upload_file($_FILES['file'], 'image', 'logos');
+    if (!$uploaded) {
+        _json_out(['error' => 'The upload could not be saved. Check the file and try again.'], 502);
+    }
+    _json_out(['logo' => $uploaded['url']], 201);
+}
+
 /* ---------- Reviews ---------- */
 
 function _admin_review_format($r) {

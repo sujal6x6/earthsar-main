@@ -112,6 +112,8 @@ try {
             admin_get_settings();
         } elseif ($method === 'PATCH' && $path === '/api/admin/settings') {
             admin_patch_settings();
+        } elseif ($method === 'POST' && $path === '/api/admin/settings/logo-upload') {
+            admin_upload_logo();
         } elseif ($method === 'GET' && $path === '/api/admin/reviews') {
             admin_get_reviews();
         } elseif ($method === 'PATCH' && preg_match('#^/api/admin/reviews/(\d+)$#', $path, $matches)) {
