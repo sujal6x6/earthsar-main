@@ -224,8 +224,10 @@ function isPlaceholderPartners(partners = []) {
 
 function cleanClientVideos(videos = []) {
   const input = Array.isArray(videos) ? videos : [];
-  return DEFAULT_SITE_SETTINGS.clientVideos.map((def, index) => {
-    const item = input[index] || {};
+  const source = input.length ? input : DEFAULT_SITE_SETTINGS.clientVideos;
+  const cleaned = source.slice(0, 20).map((item, index) => {
+    const def = DEFAULT_SITE_SETTINGS.clientVideos[index] || {};
+    item = item || {};
     return {
       src: text(item.src || def.src, 600),
       cover: text(item.cover || def.cover, 600),
@@ -234,7 +236,14 @@ function cleanClientVideos(videos = []) {
       title: text(item.title || def.title, 120),
       subtitle: text(item.subtitle || def.subtitle, 160)
     };
+  }).filter(video => video.src || video.title || video.cover);
+  const hasVideo = def => cleaned.some(video => {
+    const src = String(video.src || "");
+    const title = String(video.title || "");
+    return src.includes(def.src) || (def.title && title.toLowerCase() === def.title.toLowerCase());
   });
+  const requiredDefaults = DEFAULT_SITE_SETTINGS.clientVideos.filter(def => !hasVideo(def));
+  return [...requiredDefaults, ...cleaned].slice(0, 20);
 }
 
 function sanitizeSiteSettings(input = {}) {

@@ -124,12 +124,25 @@ async function readSiteSettings() {
   return sanitizeSiteSettings(saved);
 }
 
+function mergeSettingsPatch(current, incoming) {
+  const next = { ...current };
+  const b = incoming && typeof incoming === "object" ? incoming : {};
+  for (const key of ["stats", "contact", "hero", "seo", "maintenance"]) {
+    if (Object.prototype.hasOwnProperty.call(b, key)) next[key] = { ...(current[key] || {}), ...(b[key] || {}) };
+  }
+  for (const key of ["social", "partners", "clientVideos", "team"]) {
+    if (Object.prototype.hasOwnProperty.call(b, key)) next[key] = b[key];
+  }
+  return next;
+}
+
 router.get("/settings", async (req, res) => {
   res.json({ settings: await readSiteSettings() });
 });
 
 router.patch("/settings", async (req, res) => {
-  const settings = sanitizeSiteSettings(req.body && req.body.settings);
+  const current = await readSiteSettings();
+  const settings = sanitizeSiteSettings(mergeSettingsPatch(current, req.body && req.body.settings));
   await query(
     `INSERT INTO site_settings (setting_key, setting_value)
      VALUES ('site', ?)

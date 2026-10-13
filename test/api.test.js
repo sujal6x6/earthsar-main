@@ -262,6 +262,36 @@ test("website settings can manage associated partner logos and more team members
   assert.equal(pub.data.settings.team.at(-1).role, "Senior Advisor");
 });
 
+test("video-only settings updates preserve existing team and testimonial data", async () => {
+  let r = await call("GET", "/api/admin/settings", { headers: ADMIN });
+  assert.equal(r.status, 200);
+  const before = r.data.settings;
+  assert.ok(before.team.some(member => member.name === "Priya Mehra"), "custom team member exists before video update");
+  assert.match(before.clientVideos[0].title, /Padam jeet/i);
+
+  r = await call("PATCH", "/api/admin/settings", {
+    body: {
+      settings: {
+        clientVideos: [
+          ...before.clientVideos,
+          {
+            src: "/uploads/settings/f99.mp4",
+            placement: "testimonials",
+            kicker: "Client testimonial",
+            title: "New client video",
+            subtitle: "Uploaded from media"
+          }
+        ]
+      }
+    },
+    headers: ADMIN
+  });
+  assert.equal(r.status, 200);
+  assert.ok(r.data.settings.team.some(member => member.name === "Priya Mehra"), "team data survives video upload");
+  assert.match(r.data.settings.clientVideos[0].title, /Padam jeet/i, "first testimonial is preserved");
+  assert.equal(r.data.settings.clientVideos.at(-1).title, "New client video");
+});
+
 test("enquiries are saved and can be marked as handled", async () => {
   let r = await call("POST", "/api/enquiries", { body: { name: "Ravi", phone: "98" } });
   assert.equal(r.status, 400);

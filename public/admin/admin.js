@@ -352,21 +352,16 @@ async function pageGallery() {
 
 async function saveUploadedVideoPlacement(url, placement, title, caption) {
   const settings = state.settings || (await api("GET", "/settings")).settings || {};
-  const videos = Array.isArray(settings.clientVideos) ? settings.clientVideos.slice(0, 2) : [{}, {}];
-  while (videos.length < 2) videos.push({});
   const target = placement === "review-media" ? "review-media" : "testimonials";
-  const fallbackIndex = target === "review-media" ? 1 : 0;
-  let index = videos.findIndex(v => v && v.placement === target);
-  if (index < 0) index = fallbackIndex;
-  const current = videos[index] || {};
-  videos[index] = {
-    ...current,
+  const videos = Array.isArray(settings.clientVideos) ? settings.clientVideos.slice() : [];
+  videos.push({
     src: url,
+    cover: "",
     placement: target,
-    kicker: current.kicker || "Client testimonial",
-    title: title || current.title || "Client video",
-    subtitle: caption || current.subtitle || ""
-  };
+    kicker: "Client testimonial",
+    title: title || "Client video",
+    subtitle: caption || ""
+  });
   const next = { ...settings, clientVideos: videos };
   state.settings = (await api("PATCH", "/settings", { settings: next })).settings;
 }
@@ -898,7 +893,7 @@ function collectSettings(form, opts = {}) {
       kicker: settingsValue(form, `clientVideos.${i}.kicker`),
       title: settingsValue(form, `clientVideos.${i}.title`),
       subtitle: settingsValue(form, `clientVideos.${i}.subtitle`)
-    }))
+    })).concat(Array.isArray(state.settings && state.settings.clientVideos) ? state.settings.clientVideos.slice(2) : [])
   };
   if (validateSocial) settings.social = window.readSocialEditor(document.getElementById("socialEditor"));
   else {

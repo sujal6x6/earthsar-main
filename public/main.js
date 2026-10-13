@@ -16,8 +16,10 @@ const CLIENT_VIDEO_DEFAULTS=[
 ];
 function normalizeClientVideos(videos){
   const input=Array.isArray(videos)?videos:[];
-  return CLIENT_VIDEO_DEFAULTS.map((def,i)=>{
-    const item=input[i]||{};
+  const source=input.length?input:CLIENT_VIDEO_DEFAULTS;
+  const cleaned=source.slice(0,20).map((item,i)=>{
+    const def=CLIENT_VIDEO_DEFAULTS[i]||{};
+    item=item||{};
     return {
       src:String(item.src||def.src||"").trim(),
       cover:String(item.cover||def.cover||"").trim(),
@@ -26,7 +28,9 @@ function normalizeClientVideos(videos){
       title:String(item.title||def.title||"").trim(),
       subtitle:String(item.subtitle||def.subtitle||"").trim()
     };
-  });
+  }).filter(v=>v.src||v.title||v.cover);
+  const hasVideo=def=>cleaned.some(v=>(v.src||"").includes(def.src)||((v.title||"").toLowerCase()===String(def.title||"").toLowerCase()));
+  return CLIENT_VIDEO_DEFAULTS.filter(def=>!hasVideo(def)).concat(cleaned).slice(0,20);
 }
 function toast(msg){const t=$("#toast");t.textContent=msg;t.classList.add("show");clearTimeout(toast._t);toast._t=setTimeout(()=>t.classList.remove("show"),3200)}
 $("#yr").textContent=new Date().getFullYear();
@@ -298,29 +302,26 @@ function renderClientVideos(){
   const shown=videos.filter(v=>v.placement!=="review-media"&&v.src);
   const section=$("#client-videos");
   if(section)section.hidden=!shown.length;
-  $$(".client-video-card").forEach((card,i)=>{
-    const v=videos[i];
-    if(!v||v.placement==="review-media"||!v.src){card.hidden=true;return}
-    card.hidden=false;
+  const grid=$("[data-client-video-carousel]");
+  if(!grid)return;
+  grid.innerHTML=shown.map((v,i)=>{
+    const src=videoSrc(v.src),cover=videoSrc(v.cover);
     const hideKicker=i===0||/padam\s+jeet/i.test(v.title||"")||/client-testimonial-1/i.test(v.src||"");
-    card.dataset.videoIndex=String(i);
-    const video=$("video",card);
-    const src=videoSrc(v.src);
-    if(video&&src&&video.getAttribute("src")!==src)video.setAttribute("src",src);
-    if(video)video.poster=videoSrc(v.cover)||"";
-    const cover=$(".client-video-cover",card);
-    if(cover){
-      cover.setAttribute("aria-label",`Play ${v.title||"client testimonial"}`);
-      ensureVideoCoverImage(cover,videoSrc(v.cover));
-    }
-    const fields={kicker:hideKicker?"":v.kicker,title:v.title,subtitle:v.subtitle};
-    Object.entries(fields).forEach(([key,value])=>{
-      const el=$(`[data-video-field="${key}"]`,card);
-      if(!el)return;
-      el.textContent=value;
-      el.hidden=!value;
-    });
-  });
+    const kicker=hideKicker?"":v.kicker;
+    return `<article class="client-video-card" data-video-index="${i}">
+      <div class="client-video-frame">
+        <video src="${esc(src)}"${cover?` poster="${esc(cover)}"`:""} preload="metadata" playsinline muted loop></video>
+        <button class="client-video-cover${cover?" has-image":""}" type="button" aria-label="Play ${esc(v.title||"client testimonial")}">
+          ${cover?`<img class="client-video-cover-img" src="${esc(cover)}" alt="" loading="lazy">`:""}
+          <span class="client-video-kicker" data-video-field="kicker"${kicker?"":" hidden"}>${esc(kicker)}</span>
+          <span class="client-video-title" data-video-field="title"${v.title?"":" hidden"}>${esc(v.title)}</span>
+          <span class="client-video-subtitle" data-video-field="subtitle"${v.subtitle?"":" hidden"}>${esc(v.subtitle)}</span>
+          <span class="client-video-play">${icon("i-play")}</span>
+        </button>
+      </div>
+    </article>`;
+  }).join("");
+  setTimeout(initClientVideos,0);
 }
 
 function settingsVideoMedia(){
@@ -691,7 +692,9 @@ document.addEventListener("ended",e=>{
 function initClientVideos(){
   const grid=$("[data-client-video-carousel]");
   if(!grid)return;
+  if(grid._clientVideoCleanup)grid._clientVideoCleanup();
   const cards=$$(".client-video-card",grid);
+  const cleanups=[];
   cards.forEach(card=>{
     const video=$("video",card);
     if(!video)return;
@@ -710,6 +713,7 @@ function initClientVideos(){
       });
     },{threshold:.45});
     cards.forEach(card=>videoIO.observe(card));
+    cleanups.push(()=>videoIO.disconnect());
   }else{
     cards.forEach(card=>{const video=$("video",card);if(video&&!reduce)video.play().catch(()=>{})});
   }
@@ -731,12 +735,15 @@ function initClientVideos(){
       scrollToCard(index);
     },3600);
   };
-  ["pointerdown","focusin","touchstart"].forEach(type=>grid.addEventListener(type,stop,{passive:true}));
-  grid.addEventListener("scroll",()=>{if(!mobile.matches)return;clearTimeout(grid._swipeT);grid._swipeT=setTimeout(()=>{const mid=grid.getBoundingClientRect().left+grid.clientWidth/2;let best=0,dist=Infinity;cards.forEach((card,i)=>{const r=card.getBoundingClientRect(),d=Math.abs(r.left+r.width/2-mid);if(d<dist){dist=d;best=i}});index=best;start()},260)},{passive:true});
+  ["pointerdown","focusin","touchstart"].forEach(type=>{grid.addEventListener(type,stop,{passive:true});cleanups.push(()=>grid.removeEventListener(type,stop))});
+  const onScroll=()=>{if(!mobile.matches)return;clearTimeout(grid._swipeT);grid._swipeT=setTimeout(()=>{const mid=grid.getBoundingClientRect().left+grid.clientWidth/2;let best=0,dist=Infinity;cards.forEach((card,i)=>{const r=card.getBoundingClientRect(),d=Math.abs(r.left+r.width/2-mid);if(d<dist){dist=d;best=i}});index=best;start()},260)};
+  grid.addEventListener("scroll",onScroll,{passive:true});
+  cleanups.push(()=>grid.removeEventListener("scroll",onScroll));
   mobile.addEventListener("change",start);
+  cleanups.push(()=>mobile.removeEventListener("change",start));
+  grid._clientVideoCleanup=()=>{stop();clearTimeout(grid._swipeT);cleanups.forEach(fn=>fn())};
   start();
 }
-initClientVideos();
 
 /* ================= ENQUIRY ================= */
 $("#enqForm").onsubmit=async e=>{
