@@ -1090,6 +1090,31 @@ function waitForVideoEvent(video, event, timeoutMs = 10000) {
   });
 }
 
+function seekVideo(video, time, timeoutMs = 10000) {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => cleanup(new Error("The video frame could not be selected.")), timeoutMs);
+    const cleanup = err => {
+      clearTimeout(timer);
+      video.removeEventListener("seeked", onSeeked);
+      video.removeEventListener("error", onError);
+      err ? reject(err) : resolve();
+    };
+    const onSeeked = () => cleanup();
+    const onError = () => cleanup(new Error("The video could not be loaded for cover capture."));
+    video.addEventListener("seeked", onSeeked, { once: true });
+    video.addEventListener("error", onError, { once: true });
+    try { video.currentTime = time; } catch (err) { cleanup(err); }
+  });
+}
+
+function mediaUrlForBrowser(src) {
+  try {
+    return new URL(src, location.origin).href;
+  } catch {
+    return src;
+  }
+}
+
 function canvasBlob(canvas, type = "image/jpeg", quality = 0.86) {
   return new Promise((resolve, reject) => {
     canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error("The cover image could not be created.")), type, quality);
@@ -1110,20 +1135,34 @@ async function captureVideoCover(button) {
   button.disabled = true;
   button.textContent = "Creating cover...";
   const video = document.createElement("video");
-  video.crossOrigin = "anonymous";
+  const videoUrl = mediaUrlForBrowser(src);
+  if (new URL(videoUrl, location.origin).origin !== location.origin) video.crossOrigin = "anonymous";
   video.muted = true;
   video.playsInline = true;
-  video.preload = "metadata";
+  video.preload = "auto";
+  video.style.cssText = "position:fixed;left:-9999px;top:-9999px;width:1px;height:1px;opacity:0;pointer-events:none";
+  document.body.appendChild(video);
   try {
-    video.src = src;
+    video.src = videoUrl;
     video.load();
     if (video.readyState < 1) await waitForVideoEvent(video, "loadedmetadata");
     const duration = Number.isFinite(video.duration) && video.duration > 0 ? video.duration : 3;
-    video.currentTime = Math.min(Math.max(duration * 0.18, 0.1), Math.max(duration - 0.1, 0.1), 2);
-    await waitForVideoEvent(video, "seeked");
+    const targetTime = Math.min(Math.max(duration * 0.18, 0.1), Math.max(duration - 0.1, 0.1), 2);
+    try {
+      await seekVideo(video, targetTime);
+    } catch {
+      try {
+        await video.play();
+        await waitForVideoEvent(video, "timeupdate", 3000);
+        video.pause();
+      } catch {
+        if (video.readyState < 2) await waitForVideoEvent(video, "loadeddata", 3000);
+      }
+    }
+    if (!video.videoWidth || !video.videoHeight) throw new Error("The video frame could not be read.");
     const canvas = document.createElement("canvas");
-    canvas.width = video.videoWidth || 720;
-    canvas.height = video.videoHeight || 1280;
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
     canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
     const blob = await canvasBlob(canvas);
     const fd = new FormData();
@@ -1138,6 +1177,7 @@ async function captureVideoCover(button) {
   } finally {
     video.removeAttribute("src");
     video.load();
+    video.remove();
     button.disabled = false;
     button.textContent = original;
   }
