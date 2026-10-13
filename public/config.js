@@ -65,6 +65,7 @@ window.earthsarConfig = {
     {
       src: "assets/client-videos/client-testimonial-1.mp4",
       cover: "",
+      placement: "testimonials",
       kicker: "",
       title: "Mr. Padam jeet ji",
       subtitle: ""
@@ -72,6 +73,7 @@ window.earthsarConfig = {
     {
       src: "assets/client-videos/client-testimonial-2.mp4",
       cover: "",
+      placement: "testimonials",
       kicker: "Client testimonial",
       title: "EarthZ client testimonial",
       subtitle: "Client feedback, shared in their own words"

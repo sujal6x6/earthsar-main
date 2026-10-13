@@ -11,8 +11,8 @@ const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
 const safeUrl=u=>{try{const x=new URL(u);return /^https?:$/.test(x.protocol)?x.href:""}catch(e){return ""}};
 const CLIENT_VIDEO_DEFAULTS=[
-  {src:"assets/client-videos/client-testimonial-1.mp4",cover:"",kicker:"",title:"Mr. Padam jeet ji",subtitle:""},
-  {src:"assets/client-videos/client-testimonial-2.mp4",cover:"",kicker:"Client testimonial",title:"EarthZ client testimonial",subtitle:"Client feedback, shared in their own words"}
+  {src:"assets/client-videos/client-testimonial-1.mp4",cover:"",placement:"testimonials",kicker:"",title:"Mr. Padam jeet ji",subtitle:""},
+  {src:"assets/client-videos/client-testimonial-2.mp4",cover:"",placement:"testimonials",kicker:"Client testimonial",title:"EarthZ client testimonial",subtitle:"Client feedback, shared in their own words"}
 ];
 function normalizeClientVideos(videos){
   const input=Array.isArray(videos)?videos:[];
@@ -21,6 +21,7 @@ function normalizeClientVideos(videos){
     return {
       src:String(item.src||def.src||"").trim(),
       cover:String(item.cover||def.cover||"").trim(),
+      placement:item.placement==="review-media"?"review-media":"testimonials",
       kicker:String(item.kicker||def.kicker||"").trim(),
       title:String(item.title||def.title||"").trim(),
       subtitle:String(item.subtitle||def.subtitle||"").trim()
@@ -143,7 +144,7 @@ async function loadSiteSettings(){
     if(Array.isArray(x.team))S.team=x.team;
     if(Array.isArray(x.clientVideos))S.clientVideos=normalizeClientVideos(x.clientVideos);
     applySEO(x.seo);
-    renderHeroContent();renderHero();renderStats();renderContact();renderPartners();renderTeam();renderClientVideos();
+    renderHeroContent();renderHero();renderStats();renderContact();renderPartners();renderTeam();renderClientVideos();renderClientMedia();
   }catch(e){}
 }
 
@@ -294,9 +295,13 @@ function ensureVideoCoverImage(cover,url){
 function renderClientVideos(){
   const videos=normalizeClientVideos(S.clientVideos);
   S.clientVideos=videos;
+  const shown=videos.filter(v=>v.placement!=="review-media"&&v.src);
+  const section=$("#client-videos");
+  if(section)section.hidden=!shown.length;
   $$(".client-video-card").forEach((card,i)=>{
     const v=videos[i];
-    if(!v)return;
+    if(!v||v.placement==="review-media"||!v.src){card.hidden=true;return}
+    card.hidden=false;
     const hideKicker=i===0||/padam\s+jeet/i.test(v.title||"")||/client-testimonial-1/i.test(v.src||"");
     card.dataset.videoIndex=String(i);
     const video=$("video",card);
@@ -316,6 +321,20 @@ function renderClientVideos(){
       el.hidden=!value;
     });
   });
+}
+
+function settingsVideoMedia(){
+  return normalizeClientVideos(S.clientVideos)
+    .filter(v=>v.placement==="review-media"&&v.src)
+    .map(v=>({
+      type:"video",
+      url:videoSrc(v.src),
+      full:videoSrc(v.src),
+      embed:"",
+      thumb:videoSrc(v.cover),
+      title:v.title||"Client video",
+      source:"Client review media"
+    }));
 }
 
 /* ================= TEAM ================= */
@@ -472,7 +491,7 @@ function renderGallery(){
     capFn:m=>m.title?`<b>${esc(m.title)}</b>`:"",featureFirst:true});
 }
 function renderClientMedia(){
-  const all=S.reviews.flatMap(reviewMedia);
+  const all=[...settingsVideoMedia(),...S.reviews.flatMap(reviewMedia)];
   const sec=$("#client-media");
   if(!all.length){
     if(sec)sec.hidden=true;
@@ -488,7 +507,7 @@ function renderClientMedia(){
   renderTabs($("#cmTabs"),all,S.cmFilter,f=>{S.cmFilter=f;S.cmAll=false;renderClientMedia()});
   const list=S.cmFilter==="all"?all:all.filter(m=>m.type===S.cmFilter);
   renderGrid({grid:$("#cmGrid"),more:$("#cmMore"),list,showAll:S.cmAll,setAll:v=>{S.cmAll=v;renderClientMedia()},
-    capFn:m=>`<b>${esc(m.review.name)}</b>${stars(+m.review.rating,"sm")}`});
+    capFn:m=>m.review?`<b>${esc(m.review.name)}</b>${stars(+m.review.rating,"sm")}`:`<b>${esc(m.title||"Client video")}</b>`});
 }
 
 async function loadDynamic(){

@@ -62,6 +62,7 @@ const DEFAULT_SITE_SETTINGS = {
     {
       src: "assets/client-videos/client-testimonial-1.mp4",
       cover: "",
+      placement: "testimonials",
       kicker: "",
       title: "Mr. Padam jeet ji",
       subtitle: ""
@@ -69,6 +70,7 @@ const DEFAULT_SITE_SETTINGS = {
     {
       src: "assets/client-videos/client-testimonial-2.mp4",
       cover: "",
+      placement: "testimonials",
       kicker: "Client testimonial",
       title: "EarthZ client testimonial",
       subtitle: "Client feedback, shared in their own words"
@@ -216,6 +218,7 @@ function cleanClientVideos(videos = []) {
     return {
       src: text(item.src || def.src, 600),
       cover: text(item.cover || def.cover, 600),
+      placement: item.placement === "review-media" ? "review-media" : "testimonials",
       kicker: text(item.kicker || def.kicker, 60),
       title: text(item.title || def.title, 120),
       subtitle: text(item.subtitle || def.subtitle, 160)

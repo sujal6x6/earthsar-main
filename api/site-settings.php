@@ -57,6 +57,7 @@ $DEFAULT_SITE_SETTINGS = [
         [
             'src' => 'assets/client-videos/client-testimonial-1.mp4',
             'cover' => '',
+            'placement' => 'testimonials',
             'kicker' => '',
             'title' => 'Mr. Padam jeet ji',
             'subtitle' => ''
@@ -64,6 +65,7 @@ $DEFAULT_SITE_SETTINGS = [
         [
             'src' => 'assets/client-videos/client-testimonial-2.mp4',
             'cover' => '',
+            'placement' => 'testimonials',
             'kicker' => 'Client testimonial',
             'title' => 'EarthZ client testimonial',
             'subtitle' => 'Client feedback, shared in their own words'
@@ -249,6 +251,7 @@ function clean_client_videos($videos) {
         $clean[] = [
             'src' => text($item['src'] ?? $default['src'], 600),
             'cover' => text($item['cover'] ?? $default['cover'], 600),
+            'placement' => (($item['placement'] ?? '') === 'review-media') ? 'review-media' : 'testimonials',
             'kicker' => text($item['kicker'] ?? $default['kicker'], 60),
             'title' => text($item['title'] ?? $default['title'], 120),
             'subtitle' => text($item['subtitle'] ?? $default['subtitle'], 160)

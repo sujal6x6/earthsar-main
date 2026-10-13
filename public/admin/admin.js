@@ -480,6 +480,10 @@ function settingsCheckbox(label, name, checked, hint = "") {
   return `<div class="fld full"><label class="check maintenance-check"><input type="checkbox" data-key="${esc(name)}" ${checked ? "checked" : ""}><span>${esc(label)}</span></label>${hint ? `<div class="hint">${esc(hint)}</div>` : ""}</div>`;
 }
 
+function settingsSelect(label, name, value, options, hint = "") {
+  return `<div class="fld"><label>${esc(label)}</label><select data-key="${esc(name)}">${options.map(([val, text]) => `<option value="${esc(val)}" ${value === val ? "selected" : ""}>${esc(text)}</option>`).join("")}</select>${hint ? `<div class="hint">${esc(hint)}</div>` : ""}</div>`;
+}
+
 function advisorEditor(member, i, total) {
   const title = `Team member ${i + 1}`;
   return `<section class="settings-advisor" data-team-member="${i}">
@@ -513,6 +517,7 @@ function videoCoverEditor(video, i) {
     <div class="form-grid">
       ${settingsField("Video path or URL", `clientVideos.${i}.src`, src, { full: true, max: 600, hint: "Upload a video below, paste a local path, or use a full video URL." })}
       ${settingsField("Cover image path or URL", `clientVideos.${i}.cover`, cover, { full: true, max: 600, hint: "Optional image shown before visitors play the video." })}
+      ${settingsSelect("Show this video in", `clientVideos.${i}.placement`, video.placement === "review-media" ? "review-media" : "testimonials", [["testimonials", "Video Testimonials section"], ["review-media", "Client review media section"]], "Choose where this uploaded video should appear on the homepage.")}
       ${settingsField("Small label", `clientVideos.${i}.kicker`, video.kicker || "Client testimonial", { max: 60 })}
       ${settingsField("Cover title", `clientVideos.${i}.title`, video.title, { full: true, max: 120 })}
       ${settingsField("Cover subtitle", `clientVideos.${i}.subtitle`, video.subtitle, { full: true, max: 160, hint: "Use EarthZ here when the client says EarthZ in the video." })}
@@ -830,6 +835,7 @@ function collectSettings(form, opts = {}) {
     clientVideos: [0, 1].map(i => ({
       src: settingsValue(form, `clientVideos.${i}.src`),
       cover: settingsValue(form, `clientVideos.${i}.cover`),
+      placement: settingsValue(form, `clientVideos.${i}.placement`) === "review-media" ? "review-media" : "testimonials",
       kicker: settingsValue(form, `clientVideos.${i}.kicker`),
       title: settingsValue(form, `clientVideos.${i}.title`),
       subtitle: settingsValue(form, `clientVideos.${i}.subtitle`)
