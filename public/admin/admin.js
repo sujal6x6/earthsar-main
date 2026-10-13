@@ -260,6 +260,14 @@ async function pageGallery() {
             <div class="fld full" data-for="upload" hidden>
               <label>File</label><label class="drop"><input type="file" id="g-file" accept="image/*,video/mp4,video/webm,video/quicktime"><span class="dic" style="color:var(--heading)">${icon("i-gal")}</span><span><b id="g-file-l">Choose a photo or video</b><span>Up to ${state.me.limits.adminUploadMb} MB. It is saved on your hosting storage.</span></span></label>
             </div>
+            <div class="fld full" id="g-video-placement" data-for="upload" hidden>
+              <label for="g-placement">Show uploaded video in</label>
+              <select id="g-placement">
+                <option value="testimonials">Video Testimonials section</option>
+                <option value="review-media">Client review media section</option>
+              </select>
+              <div class="hint">This choice appears for video uploads. Photos continue to the website media gallery.</div>
+            </div>
             <div class="fld" data-for="link"><label for="g-type">Type</label><select id="g-type"><option value="">Detect from link</option><option value="image">Photo</option><option value="video">Video</option></select></div>
             <div class="fld"><label for="g-title">Title <span class="opt">(optional)</span></label><input id="g-title" maxlength="120" placeholder="e.g. Handover at Emaar Palm Heights"></div>
             <div class="fld full"><label for="g-cap">Caption <span class="opt">(optional)</span></label><input id="g-cap" maxlength="500" placeholder="Shown when the photo or video is opened"></div>
@@ -285,9 +293,12 @@ async function pageGallery() {
     const box = $("#gPrev"); if (objUrl) { URL.revokeObjectURL(objUrl); objUrl = ""; }
     if (mode === "upload") {
       const f = $("#g-file").files[0];
+      const placement = $("#g-video-placement");
+      const isVideo = !!(f && f.type.startsWith("video/"));
+      if (placement) placement.hidden = !isVideo;
       if (!f) { box.innerHTML = "Preview"; return; }
       objUrl = URL.createObjectURL(f);
-      box.innerHTML = f.type.startsWith("video/") ? `<video src="${objUrl}" muted playsinline></video>` : `<img src="${objUrl}" alt="">`;
+      box.innerHTML = isVideo ? `<video src="${objUrl}" muted playsinline></video>` : `<img src="${objUrl}" alt="">`;
       return;
     }
     const u = $("#g-url").value.trim();
@@ -318,18 +329,46 @@ async function pageGallery() {
         if (f.size > state.me.limits.adminUploadMb * 1024 * 1024) throw new Error(`That file is larger than ${state.me.limits.adminUploadMb} MB.`);
         const fd = new FormData(); fd.append("title", title); fd.append("caption", caption); fd.append("published", published); fd.append("file", f);
         const prog = $("#gProg"), bar = $("i", prog); prog.classList.add("show"); bar.style.width = "2%"; btn.textContent = "Uploading…";
-        try { item = (await upload("/gallery/upload", fd, p => { bar.style.width = Math.round(p * 90) + "%"; if (p >= 1) btn.textContent = "Saving file…"; })).item; }
-        finally { prog.classList.remove("show"); btn.textContent = "Add to gallery"; }
+        try {
+          if (f.type.startsWith("video/")) {
+            fd.append("kind", "video");
+            const uploaded = await upload("/settings/media-upload", fd, p => { bar.style.width = Math.round(p * 90) + "%"; if (p >= 1) btn.textContent = "Saving video…"; });
+            await saveUploadedVideoPlacement(uploaded.url, $("#g-placement").value, title, caption);
+          } else {
+            item = (await upload("/gallery/upload", fd, p => { bar.style.width = Math.round(p * 90) + "%"; if (p >= 1) btn.textContent = "Saving file…"; })).item;
+          }
+        } finally { prog.classList.remove("show"); btn.textContent = "Add to website media"; }
       }
-      state.gallery.unshift(item); drawGallery(); refreshStats();
+      if (item) { state.gallery.unshift(item); drawGallery(); refreshStats(); }
       $("#addForm").reset(); $("#g-file-l").textContent = "Choose a photo or video"; preview();
-      toast(item.published ? "Added to the gallery." : "Added. It is hidden until you show it.");
+      toast(item ? (item.published ? "Added to the gallery." : "Added. It is hidden until you show it.") : "Video added to the selected section.");
     } catch (err) { $("#gErr").textContent = err.message; }
     btn.disabled = false;
   };
 
   try { state.gallery = (await api("GET", "/gallery")).items; drawGallery(); }
   catch (err) { $("#glist").innerHTML = `<div class="panel empty-state"><b>The gallery could not be loaded</b>${esc(err.message)}</div>`; }
+}
+
+async function saveUploadedVideoPlacement(url, placement, title, caption) {
+  const settings = state.settings || (await api("GET", "/settings")).settings || {};
+  const videos = Array.isArray(settings.clientVideos) ? settings.clientVideos.slice(0, 2) : [{}, {}];
+  while (videos.length < 2) videos.push({});
+  const target = placement === "review-media" ? "review-media" : "testimonials";
+  const fallbackIndex = target === "review-media" ? 1 : 0;
+  let index = videos.findIndex(v => v && v.placement === target);
+  if (index < 0) index = fallbackIndex;
+  const current = videos[index] || {};
+  videos[index] = {
+    ...current,
+    src: url,
+    placement: target,
+    kicker: current.kicker || "Client testimonial",
+    title: title || current.title || "Client video",
+    subtitle: caption || current.subtitle || ""
+  };
+  const next = { ...settings, clientVideos: videos };
+  state.settings = (await api("PATCH", "/settings", { settings: next })).settings;
 }
 
 function drawGallery(editId) {
