@@ -2,9 +2,24 @@
 const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
+const os = require("os");
 
 const PUBLIC_DIR = path.join(__dirname, "..", "public");
-const UPLOAD_DIR = path.join(PUBLIC_DIR, "uploads");
+const LEGACY_UPLOAD_DIR = path.join(PUBLIC_DIR, "uploads");
+// Production releases are replaceable; the account home survives a Git deployment.
+const UPLOAD_DIR = path.resolve(process.env.UPLOAD_DIR || (process.env.NODE_ENV === "production"
+  ? path.join(os.homedir(), ".earthsar", "uploads") : LEGACY_UPLOAD_DIR));
+let migration;
+function preserveUploads() {
+  if (!migration) migration = (async () => {
+    if (UPLOAD_DIR === LEGACY_UPLOAD_DIR) return;
+    await fs.promises.mkdir(UPLOAD_DIR, { recursive: true });
+    if (fs.existsSync(LEGACY_UPLOAD_DIR)) {
+      await fs.promises.cp(LEGACY_UPLOAD_DIR, UPLOAD_DIR, { recursive: true, force: false, errorOnExist: false });
+    }
+  })().catch(err => { migration = null; throw err; });
+  return migration;
+}
 
 const EXT_BY_TYPE = {
   "image/jpeg": ".jpg",
@@ -37,6 +52,8 @@ function safeExt(file) {
 
 /* Store a temp upload under public/uploads. Returns {type,url,publicId}. */
 async function uploadFile(file, kind, subfolder) {
+  safeExt(file);
+  await preserveUploads();
   const dir = path.join(UPLOAD_DIR, subfolder);
   await fs.promises.mkdir(dir, { recursive: true });
   const name = `${Date.now()}-${crypto.randomBytes(8).toString("hex")}${safeExt(file)}`;
@@ -57,12 +74,15 @@ async function destroy(items) {
     list.map(async item => {
       const url = item.publicId || item.url || "";
       if (!url.startsWith("/uploads/")) return;
-      const file = path.join(PUBLIC_DIR, url);
+      const file = path.join(UPLOAD_DIR, url.slice("/uploads/".length));
       const rel = path.relative(UPLOAD_DIR, file);
       if (rel.startsWith("..") || path.isAbsolute(rel)) return;
       await fs.promises.unlink(file).catch(err => {
         if (err.code !== "ENOENT") console.warn("Local media delete failed for", url, err.message);
       });
+      if (UPLOAD_DIR !== LEGACY_UPLOAD_DIR) {
+        await fs.promises.unlink(path.join(LEGACY_UPLOAD_DIR, url.slice("/uploads/".length))).catch(() => {});
+      }
     })
   );
 }
@@ -125,6 +145,8 @@ function present(item) {
 }
 
 module.exports = {
+  UPLOAD_DIR,
+  preserveUploads,
   isConfigured,
   storageName,
   uploadFile,

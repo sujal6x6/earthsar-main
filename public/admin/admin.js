@@ -568,6 +568,8 @@ function videoCoverEditor(video, i, total) {
       <div class="settings-video-thumb">${cover ? `<img src="${esc(cover)}" alt="">` : `<span>Cover preview</span>`}</div>
       <p><b>Video file:</b> <span>${esc(src)}</span></p>
     </div>
+    <p class="note-err" data-video-health role="status"></p>
+    <video class="settings-video-player" src="${esc(mediaUrlForBrowser(src))}" controls playsinline preload="none"></video>
     <div class="form-grid">
       ${settingsField("Video path or URL", `clientVideos.${i}.src`, src, { full: true, max: 600, hint: "Upload a video below, paste a local path, or use a full video URL." })}
       ${settingsField("Cover image path or URL", `clientVideos.${i}.cover`, cover, { full: true, max: 600, hint: "Optional image shown before visitors play the video." })}
@@ -803,6 +805,7 @@ function drawSettingsForm() {
     <div class="form-foot settings-foot"><span class="note-err" id="settingsErr" role="alert"></span><button class="btn btn-primary" id="settingsBtn" type="submit">Save website details</button></div>
   </form>`;
   window.mountSocialEditor(document.getElementById("socialEditor"), s.social || []);
+  $$(".settings-video").forEach(checkVideoFiles);
   normalizeContactDefaults();
   setTimeout(normalizeContactDefaults, 80);
   setTimeout(normalizeContactDefaults, 350);
@@ -811,6 +814,19 @@ function drawSettingsForm() {
   $("#settingsForm").addEventListener("change", onSettingsFormChange);
   bindAccountButtons();
   switchSettingsPanel(activeSettingsPanel);
+}
+
+async function checkVideoFiles(card) {
+  const img = $(".settings-video-thumb img", card);
+  if (img) img.onerror = () => { img.parentElement.textContent = "Cover file missing. Upload a cover or use a video frame."; };
+  const input = $('[data-key$=".src"]', card), note = $("[data-video-health]", card);
+  if (!input || !note || !input.value.trim()) return;
+  const url = new URL(mediaUrlForBrowser(input.value.trim()));
+  if (url.origin !== location.origin) return;
+  try {
+    const response = await fetch(url.href, { method: "HEAD", cache: "no-store" });
+    note.textContent = response.ok && /^video\//i.test(response.headers.get("content-type") || "") ? "" : "Video file missing or unavailable. Re-upload the original video and save website details.";
+  } catch { note.textContent = "Video could not be checked. Check your connection or re-upload the original file."; }
 }
 
 function normalizeContactDefaults() {
@@ -1087,6 +1103,9 @@ async function uploadSettingsVideoMedia(input) {
     if (!isCover && card) {
       const text = $(".settings-video-preview p span", card);
       if (text) text.textContent = d.url || "";
+      const player = $(".settings-video-player", card);
+      if (player) player.src = mediaUrlForBrowser(d.url || "");
+      checkVideoFiles(card);
     }
     toast(isCover ? "Video cover uploaded." : "Video uploaded.");
   } catch (err) {

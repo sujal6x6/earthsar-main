@@ -305,12 +305,12 @@ function renderClientVideos(){
   const grid=$("[data-client-video-carousel]");
   if(!grid)return;
   grid.innerHTML=shown.map((v,i)=>{
-    const src=videoSrc(v.src),cover=videoSrc(v.cover);
+    const src=videoSrc(v.src),bundledCover=/^\/?assets\/client-videos\/client-testimonial-[12]\.mp4$/.test(v.src)?videoSrc(v.src).replace(/\.mp4$/,'.jpg'):"",cover=videoSrc(v.cover)||bundledCover;
     const hideKicker=i===0||/padam\s+jeet/i.test(v.title||"")||/client-testimonial-1/i.test(v.src||"");
     const kicker=hideKicker?"":v.kicker;
-    return `<article class="client-video-card" data-video-index="${i}">
+    return `<article class="client-video-card" data-video-index="${i}" data-fallback-cover="${esc(bundledCover)}">
       <div class="client-video-frame">
-        <video src="${esc(src)}"${cover?` poster="${esc(cover)}"`:""} preload="metadata" playsinline muted loop></video>
+        <video src="${esc(src)}"${cover?` poster="${esc(cover)}"`:""} preload="metadata" playsinline></video>
         <button class="client-video-cover${cover?" has-image":""}" type="button" aria-label="Play ${esc(v.title||"client testimonial")}">
           ${cover?`<img class="client-video-cover-img" src="${esc(cover)}" alt="" loading="lazy">`:""}
           <span class="client-video-kicker" data-video-field="kicker"${kicker?"":" hidden"}>${esc(kicker)}</span>
@@ -318,6 +318,7 @@ function renderClientVideos(){
           <span class="client-video-subtitle" data-video-field="subtitle"${v.subtitle?"":" hidden"}>${esc(v.subtitle)}</span>
           <span class="client-video-play">${icon("i-play")}</span>
         </button>
+        <p class="client-video-status" role="status" hidden></p>
       </div>
     </article>`;
   }).join("");
@@ -670,11 +671,18 @@ document.addEventListener("click",e=>{
   const card=cover.closest(".client-video-card");
   const video=card&&card.querySelector("video");
   if(!video)return;
-  card.classList.add("is-playing");
+  $$(".client-video-card video").forEach(other=>{if(other!==video)other.pause()});
   video.controls=true;
   video.muted=false;
   video.loop=false;
-  video.play().catch(()=>card.classList.remove("is-playing"));
+  if(video.ended)video.currentTime=0;
+  card.classList.add("is-playing");
+  const status=$(".client-video-status",card);status.hidden=true;
+  video.play().catch(()=>{
+    card.classList.remove("is-playing");
+    status.textContent="This video is currently unavailable. Please try again later.";
+    status.hidden=false;
+  });
 });
 document.addEventListener("ended",e=>{
   const video=e.target;
@@ -684,8 +692,7 @@ document.addEventListener("ended",e=>{
       card.classList.remove("is-playing");
       video.controls=false;
       video.muted=true;
-      video.loop=true;
-      if(!reduce)video.play().catch(()=>{});
+      video.loop=false;
     }
   }
 },true);
@@ -699,23 +706,35 @@ function initClientVideos(){
     const video=$("video",card);
     if(!video)return;
     video.controls=false;
-    video.muted=true;
-    video.loop=true;
+    video.loop=false;
     video.playsInline=true;
+    const cover=$(".client-video-cover",card),img=$(".client-video-cover-img",card);
+    const coverFailed=()=>{
+      const fallback=card.dataset.fallbackCover;
+      if(fallback&&img&&img.getAttribute("src")!==fallback){img.src=fallback;video.poster=fallback;return}
+      if(img)img.remove();
+      if(cover)cover.classList.remove("has-image");
+      video.removeAttribute("poster");
+    };
+    if(img){img.addEventListener("error",coverFailed);if(img.complete&&!img.naturalWidth)coverFailed()}
+    const videoFailed=()=>{
+      card.classList.remove("is-playing");
+      const status=$(".client-video-status",card);
+      status.textContent="This video is currently unavailable. Please try again later.";
+      status.hidden=false;
+    };
+    video.addEventListener("error",videoFailed);
+    if(video.error)videoFailed();
   });
   if("IntersectionObserver" in window){
     const videoIO=new IntersectionObserver(entries=>{
       entries.forEach(entry=>{
         const card=entry.target,video=$("video",card);
-        if(!video||card.classList.contains("is-playing"))return;
-        if(entry.isIntersecting&&!reduce)video.play().catch(()=>{});
-        else video.pause();
+        if(video&&!entry.isIntersecting)video.pause();
       });
     },{threshold:.45});
     cards.forEach(card=>videoIO.observe(card));
     cleanups.push(()=>videoIO.disconnect());
-  }else{
-    cards.forEach(card=>{const video=$("video",card);if(video&&!reduce)video.play().catch(()=>{})});
   }
   const mobile=matchMedia("(max-width:760px)");
   let timer=null,index=0;

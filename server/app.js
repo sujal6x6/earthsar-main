@@ -10,6 +10,7 @@ const { migrate } = require("./db");
 const { query } = require("./db");
 const { bootstrapAdmin } = require("./auth");
 const { sanitizeSiteSettings } = require("./site-settings");
+const mediaStorage = require("./media");
 
 const app = express();
 const PUBLIC = path.join(__dirname, "..", "public");
@@ -228,12 +229,14 @@ app.use("/admin", (req, res, next) => {
   next();
 });
 app.get(["/", "/index.html"], sendIndex);
-app.use("/uploads", (req, res, next) => {
+app.use("/uploads", async (req, res, next) => {
   if (!/\.(?:jpe?g|png|webp|gif|heic|heif|avif|mp4|webm|mov|m4v|3gp)$/i.test(req.path)) return res.sendStatus(404);
   res.set("Content-Security-Policy", "default-src 'none'; sandbox");
   res.set("X-Content-Type-Options", "nosniff");
-  next();
+  try { await mediaStorage.preserveUploads(); next(); } catch (err) { next(err); }
 });
+app.use("/uploads", express.static(mediaStorage.UPLOAD_DIR, { dotfiles: "deny", fallthrough: true }));
+app.use("/uploads", (req, res) => res.status(404).type("text").send("Media file not found."));
 app.use(
   express.static(PUBLIC, {
     extensions: ["html"],

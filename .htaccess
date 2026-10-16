@@ -38,4 +38,5 @@ RewriteCond public/$1 -f
 RewriteRule ^(.*)$ public/$1 [L]
 
 # 6. SPA / Homepage catch-all -> index.php (injects dynamic SEO meta tags)
+RewriteRule ^(?:public/)?uploads(?:/|$) - [R=404,L]
 RewriteRule ^ index.php [L]

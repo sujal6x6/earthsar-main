@@ -79,7 +79,7 @@ All accounts start hidden (the default list is empty). Facebook, Instagram, Link
 
 RERA registration details are editable under **Admin → Website Settings → RERA Registration**. Update the registration number, official HTTPS certificate verification link and profile office address, then click **Save website details**. The block appears at the end of the About page. Switch off **Show registration details** or clear the number to remove it; leave the verification URL blank to hide only the link. Existing sites receive the supplied EARTHSAR registration as the default until it is edited. Both Node and PHP backends store these fields in the existing site settings record.
 
-Uploaded files are saved locally under `public/uploads/reviews` and `public/uploads/gallery`.
+Node production uploads are stored outside the Git checkout in `~/.earthsar/uploads` so replacing a release does not delete videos and covers. Set `UPLOAD_DIR` to an absolute persistent directory to override this location (required for container hosts with ephemeral home directories). The app copies existing `public/uploads` files there without overwriting saved files when media is first served or uploaded. URLs remain `/uploads/...` and support video byte-range requests. Development and PHP hosting use `public/uploads`; preserve that directory across PHP deployments. Files already removed by a previous deployment must be recovered from backup or re-uploaded in Admin → Website Settings → Videos. The admin now reports missing video files and provides a playback preview.
 
 **Adding a gallery item by link:** paste a direct HTTPS image/video URL in *Admin → Gallery → Paste a link*. YouTube and Vimeo links work for videos too.
 

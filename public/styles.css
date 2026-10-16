@@ -423,6 +423,7 @@ p{margin:0}
 .client-video-play{position:relative;z-index:1;width:64px;height:64px;border-radius:50%;background:var(--es-orange);display:grid;place-items:center;box-shadow:0 12px 28px rgba(0,0,0,.28)}
 .client-video-play svg{width:24px;height:24px;margin-left:4px;color:#fff}
 .client-video-card.is-playing .client-video-cover{display:none}
+.client-video-status{position:absolute;left:12px;right:12px;top:12px;z-index:2;margin:0;padding:10px 12px;border-radius:8px;background:rgba(0,24,60,.92);color:#fff;font-size:14px;text-align:center;pointer-events:none}
 @media (max-width:760px){
   .client-video-grid{display:flex;justify-content:flex-start;gap:16px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;margin-inline:-16px;padding:4px 16px 18px;-webkit-overflow-scrolling:touch;touch-action:pan-x pan-y pinch-zoom}
   .client-video-grid::-webkit-scrollbar{display:none}
