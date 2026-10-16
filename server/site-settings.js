@@ -1,4 +1,5 @@
 const DEFAULT_SITE_SETTINGS = {
+  registration: require("../public/registration").defaults,
   stats: {
     years: "15",
     satisfaction: "100",
@@ -250,6 +251,7 @@ function sanitizeSiteSettings(input = {}) {
   const savedPartners = input.partners && input.partners.length ? input.partners : null;
   const partnerSource = savedPartners && !isPlaceholderPartners(savedPartners) ? savedPartners : DEFAULT_SITE_SETTINGS.partners;
   return {
+    registration: require("../public/registration").clean(input.registration),
     social: require("../public/social-links").clean(input.social),
     stats: cleanStats({ ...DEFAULT_SITE_SETTINGS.stats, ...(input.stats || {}) }),
     contact: cleanContact({ ...DEFAULT_SITE_SETTINGS.contact, ...(input.contact || {}) }),

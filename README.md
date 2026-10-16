@@ -77,6 +77,8 @@ All accounts start hidden (the default list is empty). Facebook, Instagram, Link
 
 ## Upload storage
 
+RERA registration details are editable under **Admin → Website Settings → RERA Registration**. Update the registration number, official HTTPS certificate verification link and profile office address, then click **Save website details**. The block appears at the end of the About page. Switch off **Show registration details** or clear the number to remove it; leave the verification URL blank to hide only the link. Existing sites receive the supplied EARTHSAR registration as the default until it is edited. Both Node and PHP backends store these fields in the existing site settings record.
+
 Uploaded files are saved locally under `public/uploads/reviews` and `public/uploads/gallery`.
 
 **Adding a gallery item by link:** paste a direct HTTPS image/video URL in *Admin → Gallery → Paste a link*. YouTube and Vimeo links work for videos too.

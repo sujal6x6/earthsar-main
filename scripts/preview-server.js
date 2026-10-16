@@ -10,6 +10,7 @@ let nextReviewId = 2;
 let nextGalleryId = 2;
 let previewAdmin = { email: "preview@earthsar.local", name: "Preview Admin" };
 let siteSettings = {
+  registration: require("../public/registration").clean(),
   stats: {
     years: "15",
     satisfaction: "100",
@@ -383,6 +384,7 @@ function adminApi(req, res, pathname, searchParams) {
   if (req.method === "PATCH" && pathname === "/api/admin/settings") {
     return readJson(req, body => {
       siteSettings = body.settings || siteSettings;
+      siteSettings.registration = require("../public/registration").clean(siteSettings.registration);
       json(res, 200, { settings: siteSettings });
     });
   }

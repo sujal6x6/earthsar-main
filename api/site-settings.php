@@ -2,6 +2,12 @@
 // site-settings.php
 
 $DEFAULT_SITE_SETTINGS = [
+    'registration' => [
+        'enabled' => true,
+        'number' => 'RC/HARERA/GGM/4875/4470/2026/910',
+        'verificationUrl' => 'https://www.hareraggm.gov.in/app/Agent_signup/Registered_certificate',
+        'office' => 'DLF Corporate Greens, Sector 74A, Gurugram'
+    ],
     'hero' => [
         'badge' => 'Since 2010',
         'heading' => 'Professional Land Surveyors',
@@ -268,6 +274,23 @@ function clean_client_videos($videos) {
     return $clean;
 }
 
+function clean_registration($input) {
+    global $DEFAULT_SITE_SETTINGS;
+    $data = array_merge($DEFAULT_SITE_SETTINGS['registration'], is_array($input) ? $input : []);
+    $url = is_string($data['verificationUrl']) ? trim($data['verificationUrl']) : '';
+    $parts = parse_url($url);
+    if (strlen($url) > 2048 || !filter_var($url, FILTER_VALIDATE_URL) ||
+        strtolower($parts['scheme'] ?? '') !== 'https' ||
+        strpos($parts['host'] ?? '', '.') === false ||
+        isset($parts['user']) || isset($parts['pass']) || preg_match('/[\s\\\\]/', $url)) $url = '';
+    return [
+        'enabled' => $data['enabled'] === true,
+        'number' => text($data['number'] ?? '', 120),
+        'verificationUrl' => $url,
+        'office' => text($data['office'] ?? '', 300)
+    ];
+}
+
 function sanitize_site_settings($input) {
     global $DEFAULT_SITE_SETTINGS;
     if (!is_array($input)) return $DEFAULT_SITE_SETTINGS;
@@ -275,6 +298,7 @@ function sanitize_site_settings($input) {
     $partner_source = ($saved_partners && !is_placeholder_partners($saved_partners)) ? $saved_partners : $DEFAULT_SITE_SETTINGS['partners'];
     
     return [
+        'registration' => clean_registration($input['registration'] ?? null),
         'social' => clean_social($input['social'] ?? []),
         'hero' => clean_hero($input['hero'] ?? null),
         'contact' => clean_contact($input['contact'] ?? null),

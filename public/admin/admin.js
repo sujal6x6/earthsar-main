@@ -12,6 +12,7 @@ const SETTINGS_SECTIONS = [
   ["brands", "Trusted brands"],
   ["team", "Expert teams"],
   ["contact", "Contact"],
+  ["registration", "RERA Registration"],
   ["hero", "Hero"],
   ["stats", "Stats"],
   ["videos", "Videos"],
@@ -690,6 +691,7 @@ function drawSettingsForm() {
   const phone = c.phone || c.whatsapp || "+91 79820 08930";
   const whatsapp = c.whatsapp || c.phone || "+91 79820 08930";
   const email = c.email || "info@earthsar.in";
+  const registration = window.EarthsarRegistration.clean(s.registration);
   $("#settingsBox").innerHTML = `<form class="panel settings-form" id="settingsForm" data-settings-version="edit-v3" novalidate>
     ${settingsMenu()}
     ${settingsPanel("brands", `
@@ -720,6 +722,16 @@ function drawSettingsForm() {
         ${settingsField("Email", "contact.email", email, { max: 255 })}
         ${settingsField("Office hours", "contact.hours", c.hours, { max: 120 })}
         ${settingsField("Office address", "contact.address", c.address, { full: true, area: true, rows: 2, max: 300 })}
+      </div>
+    `)}
+    ${settingsPanel("registration", `
+      <h2>RERA Registration</h2>
+      <p>These details appear at the end of the company profile on the About page.</p>
+      <div class="form-grid">
+        ${settingsCheckbox("Show registration details", "registration.enabled", registration.enabled)}
+        ${settingsField("Real Estate Agent Registration No.", "registration.number", registration.number, { full: true, max: 120, hint: "Clear this field to remove the registration block. Enter a number to add it again." })}
+        ${settingsField("Certificate verification link", "registration.verificationUrl", registration.verificationUrl, { full: true, type: "url", max: 2048, hint: "Use the official HTTPS verification page or certificate link. Leave blank to hide the link." })}
+        ${settingsField("Office address in company profile", "registration.office", registration.office, { full: true, area: true, rows: 2, max: 300 })}
       </div>
     `)}
     ${settingsPanel("hero", `
@@ -870,7 +882,18 @@ function collectClientVideos(form) {
 function collectSettings(form, opts = {}) {
   normalizeContactDefaults();
   const validateSocial = opts.validateSocial !== false;
+  const verificationUrl = settingsValue(form, "registration.verificationUrl");
+  if (validateSocial && verificationUrl && !window.EarthsarRegistration.safeUrl(verificationUrl)) {
+    switchSettingsPanel("registration");
+    throw new Error("Enter a valid HTTPS certificate verification link.");
+  }
   const settings = {
+    registration: {
+      enabled: settingsChecked(form, "registration.enabled"),
+      number: settingsValue(form, "registration.number"),
+      verificationUrl,
+      office: settingsValue(form, "registration.office")
+    },
     maintenance: {
       enabled: settingsChecked(form, "maintenance.enabled"),
       title: settingsValue(form, "maintenance.title") || "Website under maintenance",

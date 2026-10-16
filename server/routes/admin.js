@@ -127,7 +127,7 @@ async function readSiteSettings() {
 function mergeSettingsPatch(current, incoming) {
   const next = { ...current };
   const b = incoming && typeof incoming === "object" ? incoming : {};
-  for (const key of ["stats", "contact", "hero", "seo", "maintenance"]) {
+  for (const key of ["stats", "contact", "hero", "seo", "maintenance", "registration"]) {
     if (Object.prototype.hasOwnProperty.call(b, key)) next[key] = { ...(current[key] || {}), ...(b[key] || {}) };
   }
   for (const key of ["social", "partners", "clientVideos", "team"]) {
