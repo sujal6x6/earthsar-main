@@ -41,6 +41,22 @@ const DEFAULT_SITE_SETTINGS = {
     message: "We are making a few updates and will be back online shortly. For urgent property advice, please contact us directly."
   },
   partners: [
+    { name: "Partner 1", logo: "icons/011.png", website: "" },
+    { name: "Partner 2", logo: "icons/011111.png", website: "" },
+    { name: "Partner 3", logo: "icons/4444444444.png", website: "" },
+    { name: "Partner 4", logo: "icons/777777777.png", website: "" },
+    { name: "Partner 5", logo: "icons/Untitled-design-1.png", website: "" },
+    { name: "Partner 6", logo: "icons/Untitled-design-10-1.png", website: "" },
+    { name: "Partner 7", logo: "icons/Untitled-design-10.png", website: "" },
+    { name: "Partner 8", logo: "icons/Untitled-design-11.png", website: "" },
+    { name: "Partner 9", logo: "icons/Untitled-design-2.png", website: "" },
+    { name: "Partner 10", logo: "icons/Untitled-design-3.png", website: "" },
+    { name: "Partner 11", logo: "icons/Untitled-design-4.png", website: "" },
+    { name: "Partner 12", logo: "icons/Untitled-design-5.png", website: "" },
+    { name: "Partner 13", logo: "icons/Untitled-design-6.png", website: "" },
+    { name: "Partner 14", logo: "icons/Untitled-design-7.png", website: "" },
+    { name: "Partner 15", logo: "icons/Untitled-design-8.png", website: "" },
+    { name: "Partner 16", logo: "icons/Untitled-design-9.png", website: "" },
     { name: "Max Estates", logo: "icons/partners/max-estates.png", website: "https://www.maxestates.in/" },
     { name: "TARC", logo: "icons/partners/tarc.jpg", website: "https://www.tarc.in/" },
     { name: "Oberoi Realty", logo: "icons/partners/oberoi-realty.png", website: "https://www.oberoirealty.com/" },
@@ -249,7 +265,15 @@ function cleanClientVideos(videos = []) {
 
 function sanitizeSiteSettings(input = {}) {
   const savedPartners = input.partners && input.partners.length ? input.partners : null;
-  const partnerSource = savedPartners && !isPlaceholderPartners(savedPartners) ? savedPartners : DEFAULT_SITE_SETTINGS.partners;
+  let partnerSource = savedPartners && !isPlaceholderPartners(savedPartners) ? savedPartners : DEFAULT_SITE_SETTINGS.partners;
+  // Repair settings saved with the release that replaced the original logos.
+  const additions = DEFAULT_SITE_SETTINGS.partners.slice(16);
+  const saved = cleanPartners(partnerSource);
+  if (saved.length === additions.length && additions.every(partner => saved.some(item =>
+    item.name === partner.name && item.logo === partner.logo && item.website === partner.website
+  ))) {
+    partnerSource = [...DEFAULT_SITE_SETTINGS.partners.slice(0, 16), ...saved];
+  }
   return {
     registration: require("../public/registration").clean(input.registration),
     social: require("../public/social-links").clean(input.social),
