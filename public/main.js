@@ -372,8 +372,20 @@ function orderedTeam(team){
     return (ai<0?99:ai)-(bi<0?99:bi);
   });
 }
+const teamCropObservers=[];
+function fitTeamCrop(img){
+  if(!img.naturalWidth||!img.naturalHeight)return;
+  const frame=img.parentElement,rect=frame.getBoundingClientRect();
+  if(!rect.width||!rect.height)return;
+  const x=Number(img.dataset.cropX??50)/100,y=Number(img.dataset.cropY??18)/100,zoom=Number(img.dataset.cropZoom??100)/100;
+  const scale=Math.max(rect.width/img.naturalWidth,rect.height/img.naturalHeight)*zoom;
+  const width=img.naturalWidth*scale,height=img.naturalHeight*scale;
+  img.style.width=`${width}px`;img.style.height=`${height}px`;
+  img.style.left=`${(rect.width-width)*x}px`;img.style.top=`${(rect.height-height)*y}px`;
+}
 function renderTeam(){
   const g=$("#teamGrid");
+  teamCropObservers.forEach(observer=>observer.disconnect());teamCropObservers.length=0;
   if(!S.team.length){
     g.innerHTML=[1,2,3].map(()=>`<article class="card member ph"><div class="member-photo"><span class="ini">${icon("i-user")}</span></div><div class="member-body"><h3>Advisor name</h3><div class="role">Designation</div><div class="div"></div><p>Placeholder profile — add real team members in js/config.js.</p></div></article>`).join("");
     $$(".member.ph .ini svg",g).forEach(s=>{s.style.width="64px";s.style.height="64px";s.style.color="var(--heading)"});return}
@@ -381,9 +393,14 @@ function renderTeam(){
   g.innerHTML=S.team.map((m,idx)=>{
     const crop=m.photoCrop||{},dc=crop.desktop||{},mc=crop.mobile||{};
     const defaultY=idx===4?50:18;
-    const cropStyle=`--team-photo-desktop:${Number(dc.x??50)}% ${Number(dc.y??defaultY)}%;--team-photo-mobile:${Number(mc.x??50)}% ${Number(mc.y??defaultY)}%;--team-photo-desktop-zoom:${Number(dc.zoom??100)/100};--team-photo-mobile-zoom:${Number(mc.zoom??100)/100}`;
-    return `<article class="card card-hover member reveal in"><div class="member-photo">${m.photo?`<img src="${esc(m.photo)}" alt="${esc(m.name)}" loading="lazy" style="${cropStyle}">`:`<span class="ini">${esc(initials(m.name))}</span>`}</div><div class="member-body"><h3>${esc(m.name)}</h3><div class="role">${esc(m.role)}</div>${teamSocialHtml(m,true)}<div class="div"></div><button class="btn btn-secondary member-read" type="button" data-team="${idx}">Read more</button></div></article>`;
+    const crop=`data-crop-x="${Number(dc.x??50)}" data-crop-y="${Number(dc.y??defaultY)}" data-mobile-crop-x="${Number(mc.x??50)}" data-mobile-crop-y="${Number(mc.y??defaultY)}" data-crop-zoom="${Number(dc.zoom??100)}" data-mobile-crop-zoom="${Number(mc.zoom??100)}"`;
+    return `<article class="card card-hover member reveal in"><div class="member-photo">${m.photo?`<img src="${esc(m.photo)}" alt="${esc(m.name)}" loading="lazy" ${crop}>`:`<span class="ini">${esc(initials(m.name))}</span>`}</div><div class="member-body"><h3>${esc(m.name)}</h3><div class="role">${esc(m.role)}</div>${teamSocialHtml(m,true)}<div class="div"></div><button class="btn btn-secondary member-read" type="button" data-team="${idx}">Read more</button></div></article>`;
   }).join("");
+  $$(".member-photo img",g).forEach(img=>{
+    img.addEventListener("load",()=>fitTeamCrop(img));
+    if(img.complete)fitTeamCrop(img);
+    if(window.ResizeObserver){const observer=new ResizeObserver(()=>fitTeamCrop(img));observer.observe(img.parentElement);teamCropObservers.push(observer)}
+  });
 }
 function openTeamModal(i){
   const m=S.team[i];if(!m)return;

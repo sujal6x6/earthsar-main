@@ -8,6 +8,7 @@ const stars = n => `<span class="stars sm" aria-label="${n} out of 5 stars">${[1
 const fmt = t => t ? new Date(t).toLocaleString("en-IN", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit" }) : "";
 const main = $("#main");
 const state = { me: null, stats: null, reviews: [], gallery: [], enquiries: [], settings: null };
+let teamCropPreviewObservers = [];
 const SETTINGS_SECTIONS = [
   ["brands", "Trusted brands"],
   ["team", "Expert teams"],
@@ -542,7 +543,7 @@ function advisorEditor(member, i, total) {
       ${settingsField("Experience / headline", `team.${i}.experience`, member.experience, { full: true, max: 160 })}
       <div class="fld full"><label for="team-${i}-photo-file">Profile photo</label><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><input id="team-${i}-photo-file" type="file" accept="image/*" data-team-photo-upload="${i}" style="max-width:280px"><span class="hint" data-team-photo-status="${i}">${esc(member.photo ? "Current image: " + member.photo : "Choose an image to upload.")}</span></div><div class="hint">Up to ${state.me.limits.adminUploadMb} MB. The image will be saved to hosting storage.</div></div>
       ${settingsField("Photo path / URL", `team.${i}.photo`, member.photo, { full: true, max: 300, hint: "You can also enter an existing image path or URL." })}
-      <div class="fld full"><label>Adjust photo crop for each screen</label><div class="team-crop-grid">${cropPreview("desktop", desktop)}${cropPreview("mobile", mobile)}</div><div class="hint">Move the horizontal and vertical controls to choose which part of the photo stays visible. The previews match the site’s desktop and mobile card shapes.</div></div>
+      <div class="fld full"><label>Adjust photo crop for each screen</label><div class="team-crop-grid">${cropPreview("desktop", desktop)}${cropPreview("mobile", mobile)}</div><div class="hint">Drag the image to position it. Zoom is measured after fitting the image’s natural aspect ratio to the card: 100% fills the frame, 200% doubles that size. Desktop and mobile crops save separately.</div></div>
       ${settingsField("Full bio", `team.${i}.bio`, member.bio, { full: true, area: true, rows: 8, max: 3000 })}
       <div class="fld full team-social-box">
         <h4>Social profile icons</h4>
@@ -838,6 +839,8 @@ async function checkVideoFiles(card) {
 }
 function bindTeamPhotoUploads() {
   const form = $("#settingsForm");
+  teamCropPreviewObservers.forEach(observer => observer.disconnect());
+  teamCropPreviewObservers = [];
   $$('[data-team-member]', form).forEach(row => {
     const i = row.dataset.teamMember;
     const photoField = $(`[data-key="team.${i}.photo"]`, row);
@@ -867,9 +870,16 @@ function bindTeamPhotoUploads() {
       const preview = $(`[data-crop-preview="${cropMember}.${cropDevice}"]`, form);
       preview.style.setProperty(cropAxis === "zoom" ? "--crop-zoom" : cropAxis === "x" ? "--crop-x" : "--crop-y", cropAxis === "zoom" ? String(Number(input.value) / 100) : `${input.value}%`);
       input.nextElementSibling.value = `${input.value}%`;
+      fitAdminCropPreview(preview);
     };
   });
   $$('[data-crop-preview]', form).forEach(preview => {
+    const img = $("img", preview);
+    if (img) {
+      img.addEventListener("load", () => fitAdminCropPreview(preview));
+      if (img.complete) fitAdminCropPreview(preview);
+      if (window.ResizeObserver) { const observer = new ResizeObserver(() => fitAdminCropPreview(preview)); observer.observe(preview); teamCropPreviewObservers.push(observer); }
+    }
     let dragging = false;
     const setFocus = event => {
       const rect = preview.getBoundingClientRect();
@@ -888,6 +898,19 @@ function bindTeamPhotoUploads() {
     const stopDrag = () => { dragging = false; preview.classList.remove("dragging"); };
     preview.onpointerup = stopDrag; preview.onpointercancel = stopDrag;
   });
+  function fitAdminCropPreview(preview) {
+    const img = $("img", preview);
+    if (!img || !img.naturalWidth || !img.naturalHeight) return;
+    const rect = preview.getBoundingClientRect();
+    if (!rect.width || !rect.height) return;
+    const [member, device] = preview.dataset.cropPreview.split(".");
+    const value = axis => Number($(`[data-crop-member="${member}"][data-crop-device="${device}"][data-crop-axis="${axis}"]`, form)?.value ?? (axis === "x" ? 50 : axis === "y" ? (Number(member) === 4 ? 50 : 18) : 100));
+    const scale = Math.max(rect.width / img.naturalWidth, rect.height / img.naturalHeight) * value("zoom") / 100;
+    const width = img.naturalWidth * scale, height = img.naturalHeight * scale;
+    img.style.width = `${width}px`; img.style.height = `${height}px`;
+    img.style.left = `${(rect.width - width) * value("x") / 100}px`;
+    img.style.top = `${(rect.height - height) * value("y") / 100}px`;
+  }
   $$('[data-team-photo-upload]', $("#settingsForm")).forEach(input => {
     input.onchange = async () => {
       const file = input.files && input.files[0];
