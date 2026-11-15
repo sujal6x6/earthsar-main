@@ -567,7 +567,7 @@ async function loadHomepageData(){
     const d=await getJSON("/api/homepage");
     applySiteSettings(d.settings||{});
     S.reviews=mergeReviews(d.reviews||[]);
-    S.summary=d.summary||reviewSummary(S.reviews);
+    S.summary=reviewSummary(S.reviews);
     S.limits=d.limits||S.limits;
     S.loaded=true;
     S.gallery=d.gallery||[];
