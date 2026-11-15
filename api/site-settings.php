@@ -219,11 +219,13 @@ function clean_team($team) {
                 'photoCrop' => [
                     'desktop' => [
                         'x' => max(0, min(100, (int)($desktop_crop['x'] ?? 50))),
-                        'y' => max(0, min(100, (int)($desktop_crop['y'] ?? $default_desktop_y)))
+                        'y' => max(0, min(100, (int)($desktop_crop['y'] ?? $default_desktop_y))),
+                        'zoom' => max(100, min(300, (int)($desktop_crop['zoom'] ?? 100)))
                     ],
                     'mobile' => [
                         'x' => max(0, min(100, (int)($mobile_crop['x'] ?? 50))),
-                        'y' => max(0, min(100, (int)($mobile_crop['y'] ?? $default_desktop_y)))
+                        'y' => max(0, min(100, (int)($mobile_crop['y'] ?? $default_desktop_y))),
+                        'zoom' => max(100, min(300, (int)($mobile_crop['zoom'] ?? 100)))
                     ]
                 ],
                 'linkedin' => text($member['linkedin'] ?? '', 300),

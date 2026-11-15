@@ -523,7 +523,10 @@ function advisorEditor(member, i, total) {
   const title = `Team member ${i + 1}`;
   const social = member.social || {};
   const crop = member.photoCrop || {}, desktop = crop.desktop || {}, mobile = crop.mobile || {};
-  const cropPreview = (device, values) => `<div class="team-crop-control"><div class="team-crop-preview ${device}" data-crop-preview="${i}.${device}" style="--crop-x:${Number(values.x ?? 50)}%;--crop-y:${Number(values.y ?? (i === 4 ? 50 : 18))}%">${member.photo ? `<img src="${esc(member.photo)}" alt="">` : `<span>Upload or enter a photo to preview its crop</span>`}</div><div class="team-crop-sliders"><label>Horizontal <input type="range" min="0" max="100" value="${Number(values.x ?? 50)}" data-crop-member="${i}" data-crop-device="${device}" data-crop-axis="x"><output>${Number(values.x ?? 50)}%</output></label><label>Vertical <input type="range" min="0" max="100" value="${Number(values.y ?? (i === 4 ? 50 : 18))}" data-crop-member="${i}" data-crop-device="${device}" data-crop-axis="y"><output>${Number(values.y ?? (i === 4 ? 50 : 18))}%</output></label></div><span class="hint">${device === "desktop" ? "Desktop crop" : "Mobile crop"}</span></div>`;
+  const cropPreview = (device, values) => {
+    const x = Number(values.x ?? 50), y = Number(values.y ?? (i === 4 ? 50 : 18)), zoom = Number(values.zoom ?? 100);
+    return `<div class="team-crop-control"><div class="team-crop-preview ${device}" data-crop-preview="${i}.${device}" style="--crop-x:${x}%;--crop-y:${y}%;--crop-zoom:${zoom / 100}">${member.photo ? `<img src="${esc(member.photo)}" alt="">` : `<span>Upload or enter a photo to preview its crop</span>`}<span class="team-crop-target" aria-hidden="true"></span><span class="team-crop-instruction">Drag to reframe</span></div><div class="team-crop-sliders"><label>Horizontal <input type="range" min="0" max="100" value="${x}" data-crop-member="${i}" data-crop-device="${device}" data-crop-axis="x"><output>${x}%</output></label><label>Vertical <input type="range" min="0" max="100" value="${y}" data-crop-member="${i}" data-crop-device="${device}" data-crop-axis="y"><output>${y}%</output></label><label>Zoom <input type="range" min="100" max="300" step="1" value="${zoom}" data-crop-member="${i}" data-crop-device="${device}" data-crop-axis="zoom"><output>${zoom}%</output></label></div><span class="hint">${device === "desktop" ? "Desktop crop" : "Mobile crop"}</span></div>`;
+  };
   return `<section class="settings-advisor" data-team-member="${i}">
     <div class="partner-head">
       <h3>${title}</h3>
@@ -716,9 +719,9 @@ function drawSettingsForm() {
           <h2>Our Expert Team</h2>
           <p>Team members shown on the homepage, in this order.</p>
         </div>
-        <button class="btn btn-secondary btn-sm" type="button" data-team-add>Add team member</button>
       </div>
       <div class="advisor-grid">${team.length ? team.map((m, i) => advisorEditor(m, i, team.length)).join("") : `<div class="panel empty-state"><b>No team members yet</b>Add a team member to show them on the homepage.</div>`}</div>
+      <div class="team-add-row"><span>${team.length} of 20 team members</span><button class="btn btn-secondary" type="button" data-team-add ${team.length >= 20 ? "disabled" : ""}>Add another team member</button></div>
     `)}
     ${settingsPanel("contact", `
       <h2>Contact Details</h2>
@@ -862,9 +865,28 @@ function bindTeamPhotoUploads() {
     input.oninput = () => {
       const { cropMember, cropDevice, cropAxis } = input.dataset;
       const preview = $(`[data-crop-preview="${cropMember}.${cropDevice}"]`, form);
-      preview.style.setProperty(cropAxis === "x" ? "--crop-x" : "--crop-y", `${input.value}%`);
+      preview.style.setProperty(cropAxis === "zoom" ? "--crop-zoom" : cropAxis === "x" ? "--crop-x" : "--crop-y", cropAxis === "zoom" ? String(Number(input.value) / 100) : `${input.value}%`);
       input.nextElementSibling.value = `${input.value}%`;
     };
+  });
+  $$('[data-crop-preview]', form).forEach(preview => {
+    let dragging = false;
+    const setFocus = event => {
+      const rect = preview.getBoundingClientRect();
+      const x = Math.round(Math.max(0, Math.min(100, (event.clientX - rect.left) / rect.width * 100)));
+      const y = Math.round(Math.max(0, Math.min(100, (event.clientY - rect.top) / rect.height * 100)));
+      for (const [axis, value] of [["x", x], ["y", y]]) {
+        const control = $(`[data-crop-preview="${preview.dataset.cropPreview}"] ~ .team-crop-sliders [data-crop-axis="${axis}"]`, preview.parentElement);
+        if (control) { control.value = value; control.dispatchEvent(new Event("input", { bubbles: true })); }
+      }
+    };
+    preview.onpointerdown = event => {
+      if (!$("img", preview)) return;
+      dragging = true; preview.classList.add("dragging"); preview.setPointerCapture(event.pointerId); setFocus(event); event.preventDefault();
+    };
+    preview.onpointermove = event => { if (dragging) setFocus(event); };
+    const stopDrag = () => { dragging = false; preview.classList.remove("dragging"); };
+    preview.onpointerup = stopDrag; preview.onpointercancel = stopDrag;
   });
   $$('[data-team-photo-upload]', $("#settingsForm")).forEach(input => {
     input.onchange = async () => {
@@ -934,11 +956,13 @@ function collectTeam(form) {
       photoCrop: {
         desktop: {
           x: Number($(`[data-crop-member="${i}"][data-crop-device="desktop"][data-crop-axis="x"]`, row)?.value ?? 50),
-          y: Number($(`[data-crop-member="${i}"][data-crop-device="desktop"][data-crop-axis="y"]`, row)?.value ?? (i === 4 ? 50 : 18))
+          y: Number($(`[data-crop-member="${i}"][data-crop-device="desktop"][data-crop-axis="y"]`, row)?.value ?? (i === 4 ? 50 : 18)),
+          zoom: Number($(`[data-crop-member="${i}"][data-crop-device="desktop"][data-crop-axis="zoom"]`, row)?.value ?? 100)
         },
         mobile: {
           x: Number($(`[data-crop-member="${i}"][data-crop-device="mobile"][data-crop-axis="x"]`, row)?.value ?? 50),
-          y: Number($(`[data-crop-member="${i}"][data-crop-device="mobile"][data-crop-axis="y"]`, row)?.value ?? (i === 4 ? 50 : 18))
+          y: Number($(`[data-crop-member="${i}"][data-crop-device="mobile"][data-crop-axis="y"]`, row)?.value ?? (i === 4 ? 50 : 18)),
+          zoom: Number($(`[data-crop-member="${i}"][data-crop-device="mobile"][data-crop-axis="zoom"]`, row)?.value ?? 100)
         }
       },
       bio: settingsValue(form, `team.${i}.bio`),
@@ -1087,6 +1111,7 @@ function onSettingsFormClick(e) {
       }
     }
   } else if (addTeam) {
+    if (team.length >= 20) { toast("You can add up to 20 team members."); return; }
     team.push({ name: "", role: "", experience: "", photo: "", bio: "", showSocial: false, social: {} });
   } else if (removeTeam || moveTeam) {
     const row = e.target.closest("[data-team-member]");

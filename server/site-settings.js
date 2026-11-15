@@ -210,11 +210,13 @@ function cleanTeam(team = []) {
     photoCrop: {
       desktop: {
         x: Math.round(Math.max(0, Math.min(100, Number(member.photoCrop?.desktop?.x ?? 50) || 0))),
-        y: Math.round(Math.max(0, Math.min(100, Number(member.photoCrop?.desktop?.y ?? (index === 4 ? 50 : 18)) || 0)))
+        y: Math.round(Math.max(0, Math.min(100, Number(member.photoCrop?.desktop?.y ?? (index === 4 ? 50 : 18)) || 0))),
+        zoom: Math.round(Math.max(100, Math.min(300, Number(member.photoCrop?.desktop?.zoom ?? 100) || 100)))
       },
       mobile: {
         x: Math.round(Math.max(0, Math.min(100, Number(member.photoCrop?.mobile?.x ?? 50) || 0))),
-        y: Math.round(Math.max(0, Math.min(100, Number(member.photoCrop?.mobile?.y ?? (index === 4 ? 50 : 18)) || 0)))
+        y: Math.round(Math.max(0, Math.min(100, Number(member.photoCrop?.mobile?.y ?? (index === 4 ? 50 : 18)) || 0))),
+        zoom: Math.round(Math.max(100, Math.min(300, Number(member.photoCrop?.mobile?.zoom ?? 100) || 100)))
       }
     },
     linkedin: text(member.linkedin, 300),
