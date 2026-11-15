@@ -535,7 +535,8 @@ function advisorEditor(member, i, total) {
       ${settingsField("Name", `team.${i}.name`, member.name, { max: 120 })}
       ${settingsField("Role", `team.${i}.role`, member.role, { max: 120 })}
       ${settingsField("Experience / headline", `team.${i}.experience`, member.experience, { full: true, max: 160 })}
-      ${settingsField("Photo path", `team.${i}.photo`, member.photo, { full: true, max: 300, hint: "Use an existing file path such as assets/naveen-sharma.jpg." })}
+      <div class="fld full"><label for="team-${i}-photo-file">Profile photo</label><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><input id="team-${i}-photo-file" type="file" accept="image/*" data-team-photo-upload="${i}" style="max-width:280px"><span class="hint" data-team-photo-status="${i}">${esc(member.photo ? "Current image: " + member.photo : "Choose an image to upload.")}</span></div><div class="hint">Up to ${state.me.limits.adminUploadMb} MB. The image will be saved to hosting storage.</div></div>
+      ${settingsField("Photo path / URL", `team.${i}.photo`, member.photo, { full: true, max: 300, hint: "You can also enter an existing image path or URL." })}
       ${settingsField("Full bio", `team.${i}.bio`, member.bio, { full: true, area: true, rows: 8, max: 3000 })}
       <div class="fld full team-social-box">
         <h4>Social profile icons</h4>
@@ -814,6 +815,7 @@ function drawSettingsForm() {
   $("#settingsForm").addEventListener("change", onSettingsFormChange);
   bindAccountButtons();
   switchSettingsPanel(activeSettingsPanel);
+  bindTeamPhotoUploads();
 }
 
 async function checkVideoFiles(card) {
@@ -827,6 +829,30 @@ async function checkVideoFiles(card) {
     const response = await fetch(url.href, { method: "HEAD", cache: "no-store" });
     note.textContent = response.ok && /^video\//i.test(response.headers.get("content-type") || "") ? "" : "Video file missing or unavailable. Re-upload the original video and save website details.";
   } catch { note.textContent = "Video could not be checked. Check your connection or re-upload the original file."; }
+}
+function bindTeamPhotoUploads() {
+  $$('[data-team-photo-upload]', $("#settingsForm")).forEach(input => {
+    input.onchange = async () => {
+      const file = input.files && input.files[0];
+      if (!file) return;
+      const i = input.dataset.teamPhotoUpload;
+      const status = $(`[data-team-photo-status="${i}"]`);
+      const photoField = $(`[data-key="team.${i}.photo"]`);
+      status.textContent = "Uploading…";
+      input.disabled = true;
+      try {
+        if (!file.type.startsWith("image/")) throw new Error("Choose an image file.");
+        if (file.size > state.me.limits.adminUploadMb * 1024 * 1024) throw new Error(`That file is larger than ${state.me.limits.adminUploadMb} MB.`);
+        const fd = new FormData(); fd.append("file", file);
+        const result = await upload("/team/photo-upload", fd, () => {});
+        photoField.value = result.url;
+        status.textContent = `Uploaded: ${result.url}. Save website details to publish it.`;
+        input.value = "";
+      } catch (err) {
+        status.textContent = err.message;
+      } finally { input.disabled = false; }
+    };
+  });
 }
 
 function normalizeContactDefaults() {

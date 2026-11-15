@@ -130,6 +130,8 @@ try {
             admin_post_gallery();
         } elseif ($method === 'POST' && $path === '/api/admin/gallery/upload') {
             admin_upload_gallery();
+        } elseif ($method === 'POST' && $path === '/api/admin/team/photo-upload') {
+            admin_upload_team_photo();
         } elseif ($method === 'PATCH' && preg_match('#^/api/admin/gallery/(\d+)$#', $path, $matches)) {
             admin_patch_gallery($matches[1]);
         } elseif ($method === 'POST' && $path === '/api/admin/gallery/reorder') {

@@ -315,6 +315,22 @@ router.post("/gallery", async (req, res) => {
 
 /* Upload a file to local storage, then add it. */
 const galleryUpload = makeUpload(config.limits.adminUploadMb).single("file");
+const teamPhotoUpload = makeUpload(config.limits.adminUploadMb).single("file");
+router.post("/team/photo-upload", teamPhotoUpload, async (req, res) => {
+  try {
+    if (!req.file) throw new UserError("Choose an image to upload.");
+    const kind = check(req.file, { kind: "image", maxMb: config.limits.adminUploadMb, label: "The file" });
+    let uploaded;
+    try { uploaded = await media.uploadFile(req.file, kind, "team"); }
+    catch (err) {
+      console.error("Team photo upload failed:", err.message || err.error);
+      throw new UserError("The image could not be saved. Check the file and try again.", 502);
+    }
+    res.status(201).json({ url: uploaded.url });
+  } finally {
+    cleanup(req);
+  }
+});
 router.post("/gallery/upload", galleryUpload, async (req, res) => {
   try {
     if (!req.file) throw new UserError("Choose a photo or video to upload.");

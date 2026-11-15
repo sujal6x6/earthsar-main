@@ -420,6 +420,23 @@ function admin_upload_gallery() {
     _json_out(['item' => _admin_gallery_format($rows[0])], 201);
 }
 
+function admin_upload_team_photo() {
+    global $config;
+    if (empty($_FILES['file']) || $_FILES['file']['error'] !== UPLOAD_ERR_OK) {
+        _json_out(['error' => 'Choose an image to upload.'], 400);
+    }
+    $file = $_FILES['file'];
+    $kind = media_check_type($file, $config['ADMIN_UPLOAD_MAX_MB']);
+    if ($kind !== 'image') {
+        _json_out(['error' => 'Choose a JPG, PNG, WebP or other supported image within the upload limit.'], 400);
+    }
+    $uploaded = upload_file($file, 'image', 'team');
+    if (!$uploaded) {
+        _json_out(['error' => 'The image could not be saved. Check the file and try again.'], 502);
+    }
+    _json_out(['url' => $uploaded['url']], 201);
+}
+
 function admin_patch_gallery($id) {
     $id = _int_id($id);
     $body = _json_input();
