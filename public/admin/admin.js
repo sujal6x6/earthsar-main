@@ -522,6 +522,8 @@ function settingsSelect(label, name, value, options, hint = "") {
 function advisorEditor(member, i, total) {
   const title = `Team member ${i + 1}`;
   const social = member.social || {};
+  const crop = member.photoCrop || {}, desktop = crop.desktop || {}, mobile = crop.mobile || {};
+  const cropPreview = (device, values) => `<div class="team-crop-control"><div class="team-crop-preview ${device}" data-crop-preview="${i}.${device}" style="--crop-x:${Number(values.x ?? 50)}%;--crop-y:${Number(values.y ?? (i === 4 ? 50 : 18))}%">${member.photo ? `<img src="${esc(member.photo)}" alt="">` : `<span>Upload or enter a photo to preview its crop</span>`}</div><div class="team-crop-sliders"><label>Horizontal <input type="range" min="0" max="100" value="${Number(values.x ?? 50)}" data-crop-member="${i}" data-crop-device="${device}" data-crop-axis="x"><output>${Number(values.x ?? 50)}%</output></label><label>Vertical <input type="range" min="0" max="100" value="${Number(values.y ?? (i === 4 ? 50 : 18))}" data-crop-member="${i}" data-crop-device="${device}" data-crop-axis="y"><output>${Number(values.y ?? (i === 4 ? 50 : 18))}%</output></label></div><span class="hint">${device === "desktop" ? "Desktop crop" : "Mobile crop"}</span></div>`;
   return `<section class="settings-advisor" data-team-member="${i}">
     <div class="partner-head">
       <h3>${title}</h3>
@@ -537,6 +539,7 @@ function advisorEditor(member, i, total) {
       ${settingsField("Experience / headline", `team.${i}.experience`, member.experience, { full: true, max: 160 })}
       <div class="fld full"><label for="team-${i}-photo-file">Profile photo</label><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><input id="team-${i}-photo-file" type="file" accept="image/*" data-team-photo-upload="${i}" style="max-width:280px"><span class="hint" data-team-photo-status="${i}">${esc(member.photo ? "Current image: " + member.photo : "Choose an image to upload.")}</span></div><div class="hint">Up to ${state.me.limits.adminUploadMb} MB. The image will be saved to hosting storage.</div></div>
       ${settingsField("Photo path / URL", `team.${i}.photo`, member.photo, { full: true, max: 300, hint: "You can also enter an existing image path or URL." })}
+      <div class="fld full"><label>Adjust photo crop for each screen</label><div class="team-crop-grid">${cropPreview("desktop", desktop)}${cropPreview("mobile", mobile)}</div><div class="hint">Move the horizontal and vertical controls to choose which part of the photo stays visible. The previews match the site’s desktop and mobile card shapes.</div></div>
       ${settingsField("Full bio", `team.${i}.bio`, member.bio, { full: true, area: true, rows: 8, max: 3000 })}
       <div class="fld full team-social-box">
         <h4>Social profile icons</h4>
@@ -831,6 +834,30 @@ async function checkVideoFiles(card) {
   } catch { note.textContent = "Video could not be checked. Check your connection or re-upload the original file."; }
 }
 function bindTeamPhotoUploads() {
+  const form = $("#settingsForm");
+  $$('[data-team-member]', form).forEach(row => {
+    const i = row.dataset.teamMember;
+    const photoField = $(`[data-key="team.${i}.photo"]`, row);
+    const refreshCropPreviews = () => {
+      const value = photoField.value.trim();
+      $$(`[data-crop-preview^="${i}."]`, row).forEach(preview => {
+        if (value) {
+          let img = $("img", preview);
+          if (!img) { preview.replaceChildren(); img = document.createElement("img"); preview.appendChild(img); }
+          img.src = value;
+        } else preview.innerHTML = "<span>Upload or enter a photo to preview its crop</span>";
+      });
+    };
+    photoField.addEventListener("input", refreshCropPreviews);
+  });
+  $$('[data-crop-member]', form).forEach(input => {
+    input.oninput = () => {
+      const { cropMember, cropDevice, cropAxis } = input.dataset;
+      const preview = $(`[data-crop-preview="${cropMember}.${cropDevice}"]`, form);
+      preview.style.setProperty(cropAxis === "x" ? "--crop-x" : "--crop-y", `${input.value}%`);
+      input.nextElementSibling.value = `${input.value}%`;
+    };
+  });
   $$('[data-team-photo-upload]', $("#settingsForm")).forEach(input => {
     input.onchange = async () => {
       const file = input.files && input.files[0];
@@ -846,6 +873,7 @@ function bindTeamPhotoUploads() {
         const fd = new FormData(); fd.append("file", file);
         const result = await upload("/team/photo-upload", fd, () => {});
         photoField.value = result.url;
+        photoField.dispatchEvent(new Event("input", { bubbles: true }));
         status.textContent = `Uploaded: ${result.url}. Save website details to publish it.`;
         input.value = "";
       } catch (err) {
@@ -895,6 +923,16 @@ function collectTeam(form) {
       role: settingsValue(form, `team.${i}.role`),
       experience: settingsValue(form, `team.${i}.experience`),
       photo: settingsValue(form, `team.${i}.photo`),
+      photoCrop: {
+        desktop: {
+          x: Number($(`[data-crop-member="${i}"][data-crop-device="desktop"][data-crop-axis="x"]`, row)?.value ?? 50),
+          y: Number($(`[data-crop-member="${i}"][data-crop-device="desktop"][data-crop-axis="y"]`, row)?.value ?? (i === 4 ? 50 : 18))
+        },
+        mobile: {
+          x: Number($(`[data-crop-member="${i}"][data-crop-device="mobile"][data-crop-axis="x"]`, row)?.value ?? 50),
+          y: Number($(`[data-crop-member="${i}"][data-crop-device="mobile"][data-crop-axis="y"]`, row)?.value ?? (i === 4 ? 50 : 18))
+        }
+      },
       bio: settingsValue(form, `team.${i}.bio`),
       social: {
         linkedin: settingsValue(form, `team.${i}.social.linkedin`),

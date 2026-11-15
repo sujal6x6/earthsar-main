@@ -205,6 +205,10 @@ function clean_team($team) {
     $clean = [];
     foreach ($team as $member) {
         if (is_array($member) && isset($member['name'])) {
+            $photo_crop = is_array($member['photoCrop'] ?? null) ? $member['photoCrop'] : [];
+            $desktop_crop = is_array($photo_crop['desktop'] ?? null) ? $photo_crop['desktop'] : [];
+            $mobile_crop = is_array($photo_crop['mobile'] ?? null) ? $photo_crop['mobile'] : [];
+            $default_desktop_y = count($clean) === 4 ? 50 : 18;
             $clean[] = [
                 'showSocial' => ($member['showSocial'] ?? false) === true || ($member['showSocial'] ?? '') === 'true' || ($member['showSocial'] ?? null) === 1 || ($member['showSocial'] ?? '') === '1',
                 'name' => text($member['name'], 120),
@@ -212,6 +216,16 @@ function clean_team($team) {
                 'experience' => text($member['experience'] ?? '', 160),
                 'bio' => text($member['bio'] ?? '', 3000),
                 'photo' => text($member['photo'] ?? '', 300),
+                'photoCrop' => [
+                    'desktop' => [
+                        'x' => max(0, min(100, (int)($desktop_crop['x'] ?? 50))),
+                        'y' => max(0, min(100, (int)($desktop_crop['y'] ?? $default_desktop_y)))
+                    ],
+                    'mobile' => [
+                        'x' => max(0, min(100, (int)($mobile_crop['x'] ?? 50))),
+                        'y' => max(0, min(100, (int)($mobile_crop['y'] ?? $default_desktop_y)))
+                    ]
+                ],
                 'linkedin' => text($member['linkedin'] ?? '', 300),
                 'social' => [
                     'linkedin' => text($member['social']['linkedin'] ?? ($member['linkedin'] ?? ''), 600),

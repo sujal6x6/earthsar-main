@@ -198,7 +198,7 @@ function cleanMaintenance(maintenance = {}) {
 }
 
 function cleanTeam(team = []) {
-  return (Array.isArray(team) ? team : []).slice(0, 20).map(member => {
+  return (Array.isArray(team) ? team : []).slice(0, 20).map((member, index) => {
     member = member || {};
     return {
     showSocial: member.showSocial === true || member.showSocial === "true" || member.showSocial === 1 || member.showSocial === "1",
@@ -207,6 +207,16 @@ function cleanTeam(team = []) {
     experience: text(member.experience, 160),
     bio: text(member.bio, 3000),
     photo: text(member.photo, 300),
+    photoCrop: {
+      desktop: {
+        x: Math.round(Math.max(0, Math.min(100, Number(member.photoCrop?.desktop?.x ?? 50) || 0))),
+        y: Math.round(Math.max(0, Math.min(100, Number(member.photoCrop?.desktop?.y ?? (index === 4 ? 50 : 18)) || 0)))
+      },
+      mobile: {
+        x: Math.round(Math.max(0, Math.min(100, Number(member.photoCrop?.mobile?.x ?? 50) || 0))),
+        y: Math.round(Math.max(0, Math.min(100, Number(member.photoCrop?.mobile?.y ?? (index === 4 ? 50 : 18)) || 0)))
+      }
+    },
     linkedin: text(member.linkedin, 300),
     social: {
       linkedin: text((member.social && member.social.linkedin) || member.linkedin, 600),

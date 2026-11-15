@@ -379,7 +379,10 @@ function renderTeam(){
     $$(".member.ph .ini svg",g).forEach(s=>{s.style.width="64px";s.style.height="64px";s.style.color="var(--heading)"});return}
   S.team=orderedTeam(S.team);
   g.innerHTML=S.team.map((m,idx)=>{
-    return `<article class="card card-hover member reveal in"><div class="member-photo">${m.photo?`<img src="${esc(m.photo)}" alt="${esc(m.name)}" loading="lazy">`:`<span class="ini">${esc(initials(m.name))}</span>`}</div><div class="member-body"><h3>${esc(m.name)}</h3><div class="role">${esc(m.role)}</div>${teamSocialHtml(m,true)}<div class="div"></div><button class="btn btn-secondary member-read" type="button" data-team="${idx}">Read more</button></div></article>`;
+    const crop=m.photoCrop||{},dc=crop.desktop||{},mc=crop.mobile||{};
+    const defaultY=idx===4?50:18;
+    const cropStyle=`--team-photo-desktop:${Number(dc.x??50)}% ${Number(dc.y??defaultY)}%;--team-photo-mobile:${Number(mc.x??50)}% ${Number(mc.y??defaultY)}%`;
+    return `<article class="card card-hover member reveal in"><div class="member-photo">${m.photo?`<img src="${esc(m.photo)}" alt="${esc(m.name)}" loading="lazy" style="${cropStyle}">`:`<span class="ini">${esc(initials(m.name))}</span>`}</div><div class="member-body"><h3>${esc(m.name)}</h3><div class="role">${esc(m.role)}</div>${teamSocialHtml(m,true)}<div class="div"></div><button class="btn btn-secondary member-read" type="button" data-team="${idx}">Read more</button></div></article>`;
   }).join("");
 }
 function openTeamModal(i){
