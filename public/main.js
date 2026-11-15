@@ -128,13 +128,14 @@ const S={
   partners:C.partners||[],credentials:C.credentials||[],team:C.team||[],
   clientVideos:normalizeClientVideos(C.clientVideos),
   googleReviews:window.earthsarGoogleReviews||C.googleReviews||[],
-  reviews:[],summary:null,gallery:[],limits:{photoMb:8,videoMb:50},loaded:false,
+  reviews:[],summary:null,gallery:[],limits:{photoMb:8,videoMb:50},loaded:false,siteSettingsLoaded:false,
   settings:Object.assign({},C.stats||{},C.contact||{}),
   hero:{image:C.heroImage||"",alt:C.heroImageAlt||"earthsar advisors with clients"},
   showAll:false,galFilter:"all",galAll:false,cmFilter:"all",cmAll:false
 };
 async function getJSON(url){const r=await fetch(url,{headers:{Accept:"application/json"}});if(!r.ok)throw new Error("HTTP "+r.status);return r.json()}
 function applySiteSettings(x){
+  S.siteSettingsLoaded=true;
   const contact=Object.assign({},x.contact||{});
   if(contact.address&&/DLF Corporate Greens,\s*Sector\s*-\s*74A/i.test(contact.address)){
     contact.address=(C.contact&&C.contact.address)||S.settings.address||contact.address;
@@ -142,7 +143,7 @@ function applySiteSettings(x){
   if(x.contact||x.stats)S.settings=Object.assign({},S.settings,x.stats||{},contact);
   if(x.hero)S.hero=Object.assign({},S.hero,x.hero,{image:x.hero.image||"",alt:x.hero.imageAlt||x.hero.alt||S.hero.alt});
   if(Array.isArray(x.partners))S.partners=x.partners;
-  if(Array.isArray(x.team))S.team=x.team;
+  S.team=Array.isArray(x.team)?x.team:[];
   if(Array.isArray(x.clientVideos))S.clientVideos=normalizeClientVideos(x.clientVideos);
   applySEO(x.seo);
   renderHeroContent();renderHero();renderStats();renderContact();renderPartners();renderTeam();renderClientVideos();renderClientMedia();
@@ -385,6 +386,8 @@ function fitTeamCrop(img){
 function renderTeam(){
   const g=$("#teamGrid");
   teamCropObservers.forEach(observer=>observer.disconnect());teamCropObservers.length=0;
+  if(!S.siteSettingsLoaded){$("#team").hidden=true;return}
+  $("#team").hidden=false;
   if(!S.team.length){
     g.innerHTML=[1,2,3].map(()=>`<article class="card member ph"><div class="member-photo"><span class="ini">${icon("i-user")}</span></div><div class="member-body"><h3>Advisor name</h3><div class="role">Designation</div><div class="div"></div><p>Placeholder profile — add real team members in js/config.js.</p></div></article>`).join("");
     $$(".member.ph .ini svg",g).forEach(s=>{s.style.width="64px";s.style.height="64px";s.style.color="var(--heading)"});return}
@@ -560,6 +563,7 @@ async function loadDynamic(){
   if(gl.status==="fulfilled")S.gallery=gl.value.items||[];
   renderReviews();renderClientMedia();renderGallery();
   if(location.hash==="#gallery"&&S.gallery.length)$("#gallery").scrollIntoView();
+  if(location.hash==="#media")$("#media").scrollIntoView();
 }
 
 async function loadHomepageData(){
@@ -573,6 +577,7 @@ async function loadHomepageData(){
     S.gallery=d.gallery||[];
     renderReviews();renderClientMedia();renderGallery();
     if(location.hash==="#gallery"&&S.gallery.length)$("#gallery").scrollIntoView();
+    if(location.hash==="#media")$("#media").scrollIntoView();
   }catch(e){await Promise.all([loadSiteSettings(),loadDynamic()])}
 }
 
