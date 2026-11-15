@@ -232,6 +232,47 @@ function get_settings() {
     _pub_json_out(['settings' => read_public_settings()]);
 }
 
+function get_homepage() {
+    global $config;
+    $settings = read_public_settings();
+    if (!empty($settings['maintenance']['enabled'])) {
+        _pub_json_out(['error' => 'The website is currently in maintenance mode.'], 503);
+    }
+
+    $reviews = db_query("SELECT * FROM reviews WHERE status = 'approved' ORDER BY created_at DESC LIMIT 500");
+    $distribution = [1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0];
+    $total = 0;
+    foreach ($reviews as $review) {
+        $rating = (int)$review['rating'];
+        if (isset($distribution[$rating])) {
+            $distribution[$rating]++;
+            $total += $rating;
+        }
+    }
+    $gallery_rows = db_query("SELECT * FROM gallery_items WHERE published = 1 ORDER BY sort_order ASC, created_at DESC LIMIT 300");
+    $gallery = array_map(function($item) {
+        return array_merge(
+            ['id' => (int)$item['id'], 'title' => $item['title'], 'caption' => $item['caption']],
+            present(['type' => $item['type'], 'url' => $item['url']])
+        );
+    }, $gallery_rows);
+
+    _pub_json_out([
+        'settings' => $settings,
+        'summary' => [
+            'count' => count($reviews),
+            'average' => count($reviews) ? round($total / count($reviews), 2) : 0,
+            'distribution' => $distribution
+        ],
+        'limits' => [
+            'photoMb' => $config['REVIEW_PHOTO_MAX_MB'],
+            'videoMb' => $config['REVIEW_VIDEO_MAX_MB']
+        ],
+        'reviews' => array_map('_public_review', $reviews),
+        'gallery' => $gallery
+    ]);
+}
+
 /* ---------- Enquiries ---------- */
 
 function post_enquiry() {

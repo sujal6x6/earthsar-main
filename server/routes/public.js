@@ -26,7 +26,7 @@ async function readSiteSettings() {
 }
 
 router.use(async (req, res, next) => {
-  if (req.path === "/settings" || req.path === "/health" || req.path.startsWith("/admin")) return next();
+  if (req.path === "/settings" || req.path === "/homepage" || req.path === "/health" || req.path.startsWith("/admin")) return next();
   try {
     const settings = await readSiteSettings();
     if (settings.maintenance && settings.maintenance.enabled) {
@@ -40,6 +40,31 @@ router.use(async (req, res, next) => {
 });
 
 /* ---------- Reviews ---------- */
+
+router.get("/homepage", async (req, res) => {
+  const settings = await readSiteSettings();
+  if (settings.maintenance && settings.maintenance.enabled) {
+    return res.status(503).json({ error: "The website is currently in maintenance mode." });
+  }
+  const [{ rows: reviews }, { rows: gallery }] = await Promise.all([
+    query("SELECT * FROM reviews WHERE status = 'approved' ORDER BY created_at DESC LIMIT 500"),
+    query("SELECT * FROM gallery_items WHERE published = 1 ORDER BY sort_order ASC, created_at DESC LIMIT 300")
+  ]);
+  const distribution = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+  let total = 0;
+  for (const review of reviews) {
+    distribution[review.rating]++;
+    total += review.rating;
+  }
+  res.set("Cache-Control", "no-cache");
+  res.json({
+    settings,
+    summary: { count: reviews.length, average: reviews.length ? +(total / reviews.length).toFixed(2) : 0, distribution },
+    limits: { photoMb: config.limits.reviewPhotoMb, videoMb: config.limits.reviewVideoMb },
+    reviews: reviews.map(publicReview),
+    gallery: gallery.map(item => ({ id: item.id, title: item.title, caption: item.caption, ...media.present({ type: item.type, url: item.url }) }))
+  });
+});
 
 function publicReview(r) {
   const link = r.video_link ? media.parseVideoLink(r.video_link) : null;

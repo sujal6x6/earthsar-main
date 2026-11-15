@@ -150,7 +150,9 @@ try {
     } else {
         require_once __DIR__ . '/public_routes.php';
         
-        if ($method === 'GET' && $path === '/api/reviews') {
+        if ($method === 'GET' && $path === '/api/homepage') {
+            get_homepage();
+        } elseif ($method === 'GET' && $path === '/api/reviews') {
             get_reviews();
         } elseif ($method === 'POST' && $path === '/api/reviews') {
             rate_limit('post_review', 5, 3600); // 5 per hour

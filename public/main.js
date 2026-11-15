@@ -134,22 +134,21 @@ const S={
   showAll:false,galFilter:"all",galAll:false,cmFilter:"all",cmAll:false
 };
 async function getJSON(url){const r=await fetch(url,{headers:{Accept:"application/json"}});if(!r.ok)throw new Error("HTTP "+r.status);return r.json()}
+function applySiteSettings(x){
+  const contact=Object.assign({},x.contact||{});
+  if(contact.address&&/DLF Corporate Greens,\s*Sector\s*-\s*74A/i.test(contact.address)){
+    contact.address=(C.contact&&C.contact.address)||S.settings.address||contact.address;
+  }
+  if(x.contact||x.stats)S.settings=Object.assign({},S.settings,x.stats||{},contact);
+  if(x.hero)S.hero=Object.assign({},S.hero,x.hero,{image:x.hero.image||"",alt:x.hero.imageAlt||x.hero.alt||S.hero.alt});
+  if(Array.isArray(x.partners))S.partners=x.partners;
+  if(Array.isArray(x.team))S.team=x.team;
+  if(Array.isArray(x.clientVideos))S.clientVideos=normalizeClientVideos(x.clientVideos);
+  applySEO(x.seo);
+  renderHeroContent();renderHero();renderStats();renderContact();renderPartners();renderTeam();renderClientVideos();renderClientMedia();
+}
 async function loadSiteSettings(){
-  try{
-    const d=await getJSON("/api/settings");
-    const x=d.settings||{};
-    const contact=Object.assign({},x.contact||{});
-    if(contact.address&&/DLF Corporate Greens,\s*Sector\s*-\s*74A/i.test(contact.address)){
-      contact.address=(C.contact&&C.contact.address)||S.settings.address||contact.address;
-    }
-    if(x.contact||x.stats)S.settings=Object.assign({},S.settings,x.stats||{},contact);
-    if(x.hero)S.hero=Object.assign({},S.hero,x.hero,{image:x.hero.image||"",alt:x.hero.imageAlt||x.hero.alt||S.hero.alt});
-    if(Array.isArray(x.partners))S.partners=x.partners;
-    if(Array.isArray(x.team))S.team=x.team;
-    if(Array.isArray(x.clientVideos))S.clientVideos=normalizeClientVideos(x.clientVideos);
-    applySEO(x.seo);
-    renderHeroContent();renderHero();renderStats();renderContact();renderPartners();renderTeam();renderClientVideos();renderClientMedia();
-  }catch(e){}
+  try{applySiteSettings((await getJSON("/api/settings")).settings||{})}catch(e){}
 }
 
 /* ================= HERO ART ================= */
@@ -563,7 +562,21 @@ async function loadDynamic(){
   if(location.hash==="#gallery"&&S.gallery.length)$("#gallery").scrollIntoView();
 }
 
-renderHeroContent();renderHero();renderStats();renderContact();renderPartners();renderCreds();renderTeam();renderClientVideos();loadSiteSettings();loadDynamic();
+async function loadHomepageData(){
+  try{
+    const d=await getJSON("/api/homepage");
+    applySiteSettings(d.settings||{});
+    S.reviews=mergeReviews(d.reviews||[]);
+    S.summary=d.summary||reviewSummary(S.reviews);
+    S.limits=d.limits||S.limits;
+    S.loaded=true;
+    S.gallery=d.gallery||[];
+    renderReviews();renderClientMedia();renderGallery();
+    if(location.hash==="#gallery"&&S.gallery.length)$("#gallery").scrollIntoView();
+  }catch(e){await Promise.all([loadSiteSettings(),loadDynamic()])}
+}
+
+renderHeroContent();renderHero();renderStats();renderContact();renderPartners();renderCreds();renderTeam();renderClientVideos();loadHomepageData();
 
 /* ================= MODAL ================= */
 let lastFocus=null,onClose=null;
