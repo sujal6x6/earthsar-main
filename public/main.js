@@ -149,7 +149,7 @@ function applySiteSettings(x){
   renderHeroContent();renderHero();renderStats();renderContact();renderPartners();renderTeam();renderClientVideos();renderClientMedia();
 }
 async function loadSiteSettings(){
-  try{applySiteSettings((await getJSON("/api/settings")).settings||{})}catch(e){}
+  try{applySiteSettings((await getJSON("/api/settings")).settings||{});return true}catch(e){return false}
 }
 
 /* ================= HERO ART ================= */
@@ -567,9 +567,12 @@ async function loadDynamic(){
 }
 
 async function loadHomepageData(){
+  // Settings contain the team cards and are much lighter than the combined
+  // homepage response, which also waits for reviews and gallery queries.
+  const settingsPromise=loadSiteSettings();
   try{
     const d=await getJSON("/api/homepage");
-    applySiteSettings(d.settings||{});
+    if(!S.siteSettingsLoaded)applySiteSettings(d.settings||{});
     S.reviews=mergeReviews(d.reviews||[]);
     S.summary=reviewSummary(S.reviews);
     S.limits=d.limits||S.limits;
@@ -578,7 +581,7 @@ async function loadHomepageData(){
     renderReviews();renderClientMedia();renderGallery();
     if(location.hash==="#gallery"&&S.gallery.length)$("#gallery").scrollIntoView();
     if(location.hash==="#media")$("#media").scrollIntoView();
-  }catch(e){await Promise.all([loadSiteSettings(),loadDynamic()])}
+  }catch(e){await Promise.all([settingsPromise,loadDynamic()])}
 }
 
 renderHeroContent();renderHero();renderStats();renderContact();renderPartners();renderCreds();renderTeam();renderClientVideos();loadHomepageData();
