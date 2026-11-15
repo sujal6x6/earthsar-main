@@ -844,11 +844,19 @@ function bindTeamPhotoUploads() {
         if (value) {
           let img = $("img", preview);
           if (!img) { preview.replaceChildren(); img = document.createElement("img"); preview.appendChild(img); }
-          img.src = value;
+          const src = mediaUrlForBrowser(value);
+          img.onerror = () => {
+            if (img.src === src && img.isConnected) {
+              img.remove();
+              preview.textContent = "Image preview unavailable. Check the photo path or URL.";
+            }
+          };
+          if (img.src !== src) img.src = src;
         } else preview.innerHTML = "<span>Upload or enter a photo to preview its crop</span>";
       });
     };
     photoField.addEventListener("input", refreshCropPreviews);
+    refreshCropPreviews();
   });
   $$('[data-crop-member]', form).forEach(input => {
     input.oninput = () => {
