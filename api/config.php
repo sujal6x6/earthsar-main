@@ -20,7 +20,7 @@ function load_env($file) {
 
 $env_file = dirname(__DIR__) . '/.env';
 load_env($env_file);
-foreach (['DATABASE_URL','DATABASE_HOST','DATABASE_PORT','DATABASE_USER','DATABASE_PASS','DATABASE_NAME','JWT_SECRET','ADMIN_EMAIL','ADMIN_PASSWORD','ADMIN_NAME','NODE_ENV','APP_ENV','SITE_URL','REVIEW_PHOTO_MAX_MB','REVIEW_VIDEO_MAX_MB','ADMIN_UPLOAD_MAX_MB'] as $key) {
+foreach (['DATABASE_URL','DATABASE_HOST','DATABASE_PORT','DATABASE_USER','DATABASE_PASS','DATABASE_NAME','JWT_SECRET','ADMIN_EMAIL','ADMIN_PASSWORD','ADMIN_NAME','NODE_ENV','APP_ENV','SITE_URL','REVIEW_PHOTO_MAX_MB','REVIEW_VIDEO_MAX_MB','ADMIN_UPLOAD_MAX_MB','MAIL_FROM'] as $key) {
     $value = getenv($key);
     if ($value !== false) $_ENV[$key] = $value;
 }
@@ -53,7 +53,8 @@ $config = [
     'ADMIN_UPLOAD_MAX_MB' => isset($_ENV['ADMIN_UPLOAD_MAX_MB']) ? (float)$_ENV['ADMIN_UPLOAD_MAX_MB'] : 100,
     
     'APP_ENV' => $_ENV['NODE_ENV'] ?? $_ENV['APP_ENV'] ?? 'development',
-    'SITE_URL' => rtrim($_ENV['SITE_URL'] ?? '', '/')
+    'SITE_URL' => rtrim($_ENV['SITE_URL'] ?? '', '/'),
+    'MAIL_FROM' => filter_var($_ENV['MAIL_FROM'] ?? 'info@earthsar.in', FILTER_SANITIZE_EMAIL)
 ];
 
 // Alias used by index.php

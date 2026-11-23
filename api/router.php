@@ -149,6 +149,9 @@ try {
         }
     } else {
         require_once __DIR__ . '/public_routes.php';
+        require_once __DIR__ . '/client-profile.php';
+        require_once __DIR__ . '/rent-property.php';
+        require_once __DIR__ . '/sale-property.php';
         
         if ($method === 'GET' && $path === '/api/homepage') {
             get_homepage();
@@ -161,6 +164,15 @@ try {
             get_gallery();
         } elseif ($method === 'GET' && $path === '/api/settings') {
             get_settings();
+        } elseif ($method === 'POST' && $path === '/api/client-profile') {
+            rate_limit('client_profile', 5, 3600);
+            post_client_profile();
+        } elseif ($method === 'POST' && $path === '/api/rent-property') {
+            rate_limit('rent_property', 5, 3600);
+            post_rent_property();
+        } elseif ($method === 'POST' && $path === '/api/sale-property') {
+            rate_limit('sale_property', 5, 3600);
+            post_sale_property();
         } elseif ($method === 'POST' && $path === '/api/enquiries') {
             rate_limit('post_enquiry', 10, 3600); // 10 per hour
             post_enquiry();

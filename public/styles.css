@@ -99,7 +99,7 @@ p{margin:0}
 .hdr.scrolled{background:var(--bg);border-bottom-color:var(--line);box-shadow:0 4px 18px rgba(0,40,100,.06)}
 .hdr-in{display:flex;align-items:center;gap:28px;height:86px}
 .hdr .brand-logo{width:206px}
-.nav{display:flex;gap:4px;margin-left:auto}
+.nav{display:flex;gap:2px;margin-left:auto}
 .nav a{position:relative;white-space:nowrap;padding:10px 11px;font-family:var(--f-head);font-weight:500;font-size:15.5px;color:var(--ink);border-radius:8px;transition:color .2s}
 .nav a::after{content:"";position:absolute;left:11px;right:11px;bottom:4px;height:2px;background:var(--es-orange);border-radius:2px;transform:scaleX(0);transform-origin:left;transition:transform .25s ease}
 .nav a:hover{color:var(--heading)}
@@ -117,8 +117,8 @@ p{margin:0}
 .menu-btn span{display:block;width:20px;height:2px;background:var(--heading);border-radius:2px;position:relative}
 .menu-btn span::before,.menu-btn span::after{content:"";position:absolute;left:0;width:20px;height:2px;background:var(--heading);border-radius:2px}
 .menu-btn span::before{top:-6px}.menu-btn span::after{top:6px;width:13px;background:var(--es-orange)}
-/* Tighter spacing at every width so eight links, the logo and the button fit in the 1200px header. */
-.nav a{padding:10px 8px;font-size:15px}.nav a::after{left:8px;right:8px}.hdr-in{gap:18px}
+/* Compact links keep the two property forms visible in the main header. */
+.nav a{padding:8px 5px;font-size:13.5px}.nav a::after{left:5px;right:5px}.hdr-in{gap:14px}
 @media (max-width:1290px){
   .nav,.hdr-cta{display:none}
   .menu-btn{display:inline-flex}

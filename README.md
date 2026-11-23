@@ -72,6 +72,8 @@ All accounts start hidden (the default list is empty). Facebook, Instagram, Link
 | `REVIEW_PHOTO_MAX_MB` | No | Largest photo a customer can upload. Default 5. |
 | `REVIEW_VIDEO_MAX_MB` | No | Largest video a customer can upload. Default 50. Consider using YouTube/Vimeo links for longer videos. |
 | `ADMIN_UPLOAD_MAX_MB` | No | Largest file an admin can upload to the gallery. Default 100. |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS` | Required for Node email delivery | SMTP settings from the mail provider. Use port 465 with `SMTP_SECURE=true`, or port 587 with `SMTP_SECURE=false`. |
+| `MAIL_FROM` | Recommended | Verified sender address for the client profile email. Defaults to `SMTP_USER`, then `info@earthsar.in`. |
 | `NODE_ENV` | On the live site | Set to `production`. This turns on secure cookies and HTTPS upgrades. |
 | `PORT` | No | Most hosts set this for you. Default 3000. |
 
@@ -80,6 +82,8 @@ All accounts start hidden (the default list is empty). Facebook, Instagram, Link
 RERA registration details are editable under **Admin → Website Settings → RERA Registration**. Update the registration number, official HTTPS certificate verification link and profile office address, then click **Save website details**. The block appears at the end of the About page. Switch off **Show registration details** or clear the number to remove it; leave the verification URL blank to hide only the link. Existing sites receive the supplied EARTHSAR registration as the default until it is edited. Both Node and PHP backends store these fields in the existing site settings record.
 
 Node production uploads are stored outside the Git checkout in `~/.earthsar/uploads` so replacing a release does not delete videos and covers. Set `UPLOAD_DIR` to an absolute persistent directory to override this location (required for container hosts with ephemeral home directories). The app copies existing `public/uploads` files there without overwriting saved files when media is first served or uploaded. URLs remain `/uploads/...` and support video byte-range requests. Development and PHP hosting use `public/uploads`; preserve that directory across PHP deployments. Files already removed by a previous deployment must be recovered from backup or re-uploaded in Admin → Website Settings → Videos. The admin now reports missing video files and provides a playback preview.
+
+The **Client Profile** form is available at `/client-profile.html`, and the **Rent Your Property** form is available at `/rent-property`. Each creates an earthsar-branded PDF and emails it to `info@earthsar.in`; Node deployments need the SMTP variables above, while PHP deployments use the host's configured `mail()` transport and `MAIL_FROM`. Submitted details are emailed only and are not stored in the site database.
 
 **Adding a gallery item by link:** paste a direct HTTPS image/video URL in *Admin → Gallery → Paste a link*. YouTube and Vimeo links work for videos too.
 

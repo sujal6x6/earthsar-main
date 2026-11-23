@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Client Profile | earthsar Real Estate Advisory</title>
+<meta name="description" content="Share your household, relocation and rental requirements with an earthsar advisor using our secure client profile form.">
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="icon" href="/updated.png" type="image/png">
+<link rel="stylesheet" href="/seo-pages.css">
+<link rel="stylesheet" href="/client-profile.css">
+</head>
+<body>
+<header class="page-header">
+  <div class="wrap page-nav">
+    <a href="/" class="page-logo-link"><img class="page-logo" src="/assets/earthsar-logo.png" alt="earthsar"></a>
+    <nav class="page-links" aria-label="Main navigation">
+      <a href="/">Home</a><a href="/about.html">About</a><a href="/services.html">Our Expertise</a>
+      <a href="/reviews.html">Reviews</a>
+      <a href="/rent-property">Rent Property</a>
+      <a href="/client-profile.html">Client Profile</a>
+      <a href="/sale-property">Sale Property</a>
+
+<a href="/contact.html">Contact</a>
+    </nav>
+    <button class="menu-btn" type="button" aria-label="Open menu" aria-expanded="false"><span></span></button>
+  </div>
+</header>
+<main>
+  <section class="hero profile-hero">
+    <div class="wrap">
+      <div class="eyebrow">Client profile</div>
+      <h1>Tell us what home needs to feel like.</h1>
+      <p class="lead">Share your household, move-in timeline and preferred home details. Your advisor will use this profile to guide the next steps.</p>
+    </div>
+  </section>
+  <section class="content profile-content">
+    <div class="wrap profile-layout">
+      <form class="profile-form" id="clientProfileForm" enctype="multipart/form-data" novalidate>
+        <div class="form-intro"><span class="form-mark" aria-hidden="true">e</span><div><h2>Client details</h2><p>Fields marked <span aria-hidden="true">*</span> are required.</p></div></div>
+        <div class="form-section">
+          <h3>About the client</h3>
+          <div class="form-grid">
+            <label class="field"><span>Full name <b>*</b></span><input name="name" autocomplete="name" maxlength="100" required></label>
+            <label class="field"><span>Phone number <b>*</b></span><input name="phone" type="tel" autocomplete="tel" maxlength="30" required></label>
+            <label class="field"><span>Email address <b>*</b></span><input name="email" type="email" autocomplete="email" maxlength="200" required></label>
+            <label class="field"><span>LinkedIn profile <small>Optional</small></span><input name="linkedinProfile" type="url" inputmode="url" maxlength="250" placeholder="https://www.linkedin.com/in/your-profile"></label>
+            <label class="field"><span>Offer date <b>*</b></span><input name="offerDate" type="date" required></label>
+            <label class="field"><span>Designation <b>*</b></span><input name="designation" maxlength="120" required></label>
+            <label class="field"><span>Working company / profession <b>*</b></span><input name="company" maxlength="120" required></label>
+          </div>
+          <label class="field photo-field"><span>Client photo <small>Optional · JPG or PNG up to 3 MB</small></span><input name="photo" type="file" accept="image/jpeg,image/png"><span class="photo-name" id="photoName">No photo selected</span></label>
+        </div>
+        <div class="form-section">
+          <h3>Home preference</h3>
+          <div class="form-grid">
+            <label class="field"><span>Preferred flat size <b>*</b></span><select name="preferredFlat" required><option value="">Select a flat size</option><option>1 BHK</option><option>1.5 BHK</option><option>2 BHK</option><option>2.5 BHK</option><option>2 BHK + Study</option><option>3 BHK</option><option>3.5 BHK</option><option>4 BHK</option><option>4.5 BHK</option><option>5 BHK</option><option>Other</option></select></label>
+            <label class="field"><span>Monthly rental budget (INR) <b>*</b></span><div class="money-input"><span aria-hidden="true">₹</span><input name="budget" type="number" min="1" max="9999999999" inputmode="numeric" placeholder="e.g. 35000" required></div></label>
+          </div>
+        </div>
+        <div class="form-section">
+          <h3>Household &amp; moving plans</h3>
+          <div class="form-grid">
+            <label class="field"><span>Number of family members <b>*</b></span><input name="familyCount" type="number" min="1" max="30" inputmode="numeric" required></label>
+            <label class="field"><span>Native place <b>*</b></span><input name="nativePlace" maxlength="100" required></label>
+            <label class="field"><span>Shifting from <b>*</b></span><input name="shiftingFrom" maxlength="100" required></label>
+            <label class="field"><span>Expected shifting date <b>*</b></span><input name="shiftDate" type="date" required></label>
+            <label class="field field-wide"><span>Family members who will regularly reside <b>*</b></span><textarea name="familyDetails" rows="3" maxlength="180" placeholder="For example: Self (35), spouse (33), child (5)" required></textarea></label>
+            <label class="field"><span>Educational background <b>*</b></span><input name="education" maxlength="120" required></label>
+            <label class="field field-wide"><span>Pets <small>Optional</small></span><textarea name="pets" rows="2" maxlength="300" placeholder="Tell us if you have pets and any housing needs to consider."></textarea></label>
+          </div>
+        </div>
+        <label class="consent"><input name="consent" type="checkbox" required><span>I agree to share these details with earthsar so an advisor can contact me about my requirements. <b>*</b></span></label>
+        <div class="honeypot" aria-hidden="true"><label>Leave this field empty<input name="website" tabindex="-1" autocomplete="off"></label></div>
+        <div class="form-actions"><button class="btn btn-primary" type="submit" id="submitProfile">Create &amp; email profile</button><p class="form-status" id="formStatus" role="status" aria-live="polite"></p></div>
+      </form>
+      <aside class="profile-aside">
+        <div class="aside-art" aria-hidden="true"><span></span><span></span><span></span></div>
+        <div class="eyebrow">A clearer start</div>
+        <h2>Good advice begins with your priorities.</h2>
+        <p>Your completed profile is formatted into a shareable client brief and emailed directly to the earthsar team.</p>
+        <div class="aside-steps"><div><span>01</span><p>Share your household and work details</p></div><div><span>02</span><p>Tell us your preferred flat and budget</p></div><div><span>03</span><p>We’ll follow up with your requirements in view</p></div></div>
+        <a class="aside-contact" href="mailto:info@earthsar.in">Questions? Email info@earthsar.in</a>
+      </aside>
+    </div>
+  </section>
+</main>
+<footer class="ftr">
+  <div class="wrap">
+    <div class="ftr-top">
+      <div class="ftr-brand"><span class="plate"><img class="page-logo" src="/assets/earthsar-logo.png" alt="earthsar"></span><p class="tagl">Smart Advisors in Real Estate. Honest guidance for property decisions you can trust.</p></div>
+      <div><h4>Company</h4><ul><li><a href="/about.html">About</a></li><li><a href="/services.html">Our Expertise</a></li><li><a href="/contact.html">Contact</a></li></ul></div>
+      <div><h4>Trust</h4><ul><li><a href="/reviews.html">Client reviews</a></li><li><a href="/privacy.html">Privacy policy</a></li><li><a href="/terms.html">Terms of use</a></li></ul></div>
+      <div><h4>Contact</h4><ul><li><a href="tel:+917982008930">79820 08930</a></li><li><a href="mailto:info@earthsar.in">info@earthsar.in</a></li></ul></div>
+    </div>
+    <div class="ftr-bot"><span>© <span data-year></span> earthsar. All rights reserved.</span></div>
+  </div>
+</footer>
+<script src="/seo-pages.js"></script>
+<script src="/client-profile.js"></script>
+</body>
+</html>

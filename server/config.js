@@ -20,6 +20,14 @@ const config = {
   databaseUrl: dbUrl,
   jwtSecret: (process.env.JWT_SECRET || "").trim(),
   siteUrl: (process.env.SITE_URL || "").trim().replace(/\/+$/, ""),
+  smtp: {
+    host: (process.env.SMTP_HOST || "").trim(),
+    port: num(process.env.SMTP_PORT, 465),
+    secure: !["false", "0", "no"].includes((process.env.SMTP_SECURE || "true").trim().toLowerCase()),
+    user: (process.env.SMTP_USER || "").trim(),
+    pass: process.env.SMTP_PASS || "",
+    from: (process.env.MAIL_FROM || process.env.SMTP_USER || "info@earthsar.in").trim()
+  },
   // Optional first-run admin. Created only when the admins table is empty.
   bootstrapAdmin: {
     email: (process.env.ADMIN_EMAIL || "").trim().toLowerCase(),
