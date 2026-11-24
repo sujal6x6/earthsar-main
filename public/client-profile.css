@@ -56,3 +56,6 @@
 @media(max-width:760px){.profile-hero{padding:38px 0 24px}.profile-content{padding:15px 0 48px}.profile-layout{grid-template-columns:1fr}.profile-aside{position:relative;top:auto;order:-1}.profile-aside h2{font-size:22px;max-width:24ch}.aside-steps{grid-template-columns:repeat(3,1fr);gap:10px;margin-top:20px}.aside-steps>div{grid-template-columns:1fr;align-items:start;gap:8px}.aside-steps p{font-size:12.5px}.aside-contact{margin-top:19px}.profile-form{padding:20px}.form-grid{gap:14px 12px}}
 @media(max-width:520px){.form-grid{grid-template-columns:1fr}.field-wide{grid-column:auto}.profile-form{padding:17px}.form-intro h2{font-size:22px}.aside-steps{grid-template-columns:1fr;gap:12px}.aside-steps>div{grid-template-columns:31px 1fr;align-items:center}.aside-steps p{font-size:13.5px}.profile-aside{padding:22px}}
 @media(max-width:520px){.portal-logo{gap:8px;padding:7px 9px}.portal-logo .page-logo{width:112px}.portal-logo>span{padding-left:8px;font-size:9px}.portal-links .portal-main-link{margin-left:0;padding-left:4px;border-left:0}}
+
+/* Sale and rent pages keep focus on the enquiry form. */
+.property-form-layout{grid-template-columns:minmax(0,900px);justify-content:center}
