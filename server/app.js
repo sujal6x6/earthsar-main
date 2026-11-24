@@ -229,6 +229,7 @@ app.use("/admin", (req, res, next) => {
   next();
 });
 app.get(["/", "/index.html"], sendIndex);
+app.get("/client-profile.html", (req, res) => res.redirect(301, "/client-profile"));
 app.use("/uploads", async (req, res, next) => {
   if (!/\.(?:jpe?g|png|webp|gif|heic|heif|avif|mp4|webm|mov|m4v|3gp)$/i.test(req.path)) return res.sendStatus(404);
   res.set("Content-Security-Policy", "default-src 'none'; sandbox");

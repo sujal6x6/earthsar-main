@@ -22,6 +22,10 @@ RewriteRule ^api(/.*)?$ api/router.php [L,QSA]
 RewriteRule ^robots\.txt$ api/seo.php?type=robots [L,QSA]
 RewriteRule ^sitemap\.xml$ api/seo.php?type=sitemap [L,QSA]
 
+# Normalize the Client Profile URL and keep the clean path for PHP hosting.
+RewriteRule ^client-profile\.html$ /client-profile [R=301,L,NE]
+RewriteRule ^client-profile/?$ public/client-profile.html [L]
+
 # Public property submission page
 RewriteRule ^rent-property/?$ public/rent-property.html [L]
 RewriteRule ^sale-property/?$ public/sale-property.html [L]
