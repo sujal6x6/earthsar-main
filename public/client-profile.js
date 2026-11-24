@@ -1,4 +1,9 @@
 (() => {
+  if (window.location.pathname === "/client-profile.html") {
+    const cleanUrl = `/client-profile${window.location.search}${window.location.hash}`;
+    window.history.replaceState(null, "", cleanUrl);
+  }
+
   const form = document.querySelector("#clientProfileForm");
   if (!form) return;
 
