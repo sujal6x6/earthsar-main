@@ -36,6 +36,7 @@ async function readSiteSettings() {
   }
   return sanitizeSiteSettings(saved);
 }
+const configuredChoices = (form, key) => (form.options && form.options[key] || []).filter(choice => choice && choice.visible !== false).map(choice => choice.value);
 
 router.use(async (req, res, next) => {
   if (req.path === "/settings" || req.path === "/homepage" || req.path === "/health" || req.path.startsWith("/admin")) return next();
@@ -269,6 +270,8 @@ function profileImageDimensions(buffer, mime) {
 router.post("/client-profile", profileLimiter, profileUpload, async (req, res, next) => {
   try {
     const b = req.body || {};
+    const formSettings = (await readSiteSettings()).forms.clientProfile;
+    const enabled = key => formSettings.fields[key] !== false;
     if (b.website) return res.status(201).json({ ok: true });
 
     const data = {
@@ -293,19 +296,19 @@ router.post("/client-profile", profileLimiter, profileUpload, async (req, res, n
     const errors = {};
     if (data.name.length < 2) errors.name = "Enter the client's full name.";
     if (!EMAIL_RE.test(data.email)) errors.email = "Enter a valid email address.";
-    if (data.linkedinProfile && !validLinkedInProfile(data.linkedinProfile)) errors.linkedinProfile = "Enter a valid LinkedIn profile URL.";
+    if (enabled("linkedinProfile") && data.linkedinProfile && !validLinkedInProfile(data.linkedinProfile)) errors.linkedinProfile = "Enter a valid LinkedIn profile URL.";
     if (data.phone.replace(/\D/g, "").length < 7) errors.phone = "Enter a valid phone number.";
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(data.offerDate)) errors.offerDate = "Choose the offer date.";
-    if (!/^\d{1,2}$/.test(data.familyCount) || +data.familyCount < 1 || +data.familyCount > 30) errors.familyCount = "Enter a family size from 1 to 30.";
-    if (!data.familyDetails) errors.familyDetails = "Add the details of household members who will reside regularly.";
-    if (!data.nativePlace) errors.nativePlace = "Enter the client's native place.";
-    if (!data.shiftingFrom) errors.shiftingFrom = "Enter where the client is shifting from.";
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(data.shiftDate)) errors.shiftDate = "Choose the expected shifting date.";
-    if (!data.education) errors.education = "Enter the educational background.";
-    if (!data.company) errors.company = "Enter the working company or profession.";
-    if (!data.designation) errors.designation = "Enter the designation.";
-    if (!data.preferredFlat) errors.preferredFlat = "Choose the preferred flat size.";
-    if (!/^\d{1,10}$/.test(data.budget) || +data.budget < 1) errors.budget = "Enter the monthly rental budget in rupees.";
+    if (enabled("offerDate") && !/^\d{4}-\d{2}-\d{2}$/.test(data.offerDate)) errors.offerDate = "Choose the offer date.";
+    if (enabled("familyCount") && (!/^\d{1,2}$/.test(data.familyCount) || +data.familyCount < 1 || +data.familyCount > 30)) errors.familyCount = "Enter a family size from 1 to 30.";
+    if (enabled("familyDetails") && !data.familyDetails) errors.familyDetails = "Add the details of household members who will reside regularly.";
+    if (enabled("nativePlace") && !data.nativePlace) errors.nativePlace = "Enter the client's native place.";
+    if (enabled("shiftingFrom") && !data.shiftingFrom) errors.shiftingFrom = "Enter where the client is shifting from.";
+    if (enabled("shiftDate") && !/^\d{4}-\d{2}-\d{2}$/.test(data.shiftDate)) errors.shiftDate = "Choose the expected shifting date.";
+    if (enabled("education") && !data.education) errors.education = "Enter the educational background.";
+    if (enabled("company") && !data.company) errors.company = "Enter the working company or profession.";
+    if (enabled("designation") && !data.designation) errors.designation = "Enter the designation.";
+    if (enabled("preferredFlat") && !configuredChoices(formSettings, "preferredFlat").includes(data.preferredFlat)) errors.preferredFlat = "Choose the preferred flat size.";
+    if (enabled("budget") && (!/^\d{1,10}$/.test(data.budget) || +data.budget < 1)) errors.budget = "Enter the monthly rental budget in rupees.";
     if (b.consent !== "on") errors.consent = "Consent is required to send this profile to earthsar.";
     if (Object.keys(errors).length) return res.status(400).json({ error: "Check the highlighted fields.", fields: errors });
 
@@ -363,6 +366,8 @@ const rentPropertyLimiter = rateLimit({
 router.post("/rent-property", rentPropertyLimiter, express.json({ limit: "20kb" }), async (req, res) => {
   if (req.body && req.body.website) return res.status(201).json({ ok: true });
   const b = req.body || {};
+  const formSettings = (await readSiteSettings()).forms.rentProperty;
+  const enabled = key => formSettings.fields[key] !== false;
   const data = {
     reference: `RP-${require("crypto").randomBytes(3).toString("hex").toUpperCase()}`,
     name: str(b.name, 100),
@@ -382,15 +387,15 @@ router.post("/rent-property", rentPropertyLimiter, express.json({ limit: "20kb" 
   const errors = {};
   if (data.name.length < 2) errors.name = "Enter your full name.";
   if (!EMAIL_RE.test(data.email)) errors.email = "Enter a valid email address.";
-  if (data.linkedinProfile && !validLinkedInProfile(data.linkedinProfile)) errors.linkedinProfile = "Enter a valid LinkedIn profile URL.";
+  if (enabled("linkedinProfile") && data.linkedinProfile && !validLinkedInProfile(data.linkedinProfile)) errors.linkedinProfile = "Enter a valid LinkedIn profile URL.";
   if (data.phone.replace(/\D/g, "").length < 7) errors.phone = "Enter a valid phone number.";
-  if (!["Apartment", "House", "Villa"].includes(data.propertyType)) errors.propertyType = "Choose a property type.";
-  if (!["2 BHK", "2.5 BHK", "3 BHK", "3.5 BHK", "4 BHK", "4.5 BHK"].includes(data.bhk)) errors.bhk = "Choose the BHK configuration.";
-  if (data.address.length < 5) errors.address = "Enter the property address.";
-  if (!data.city) errors.city = "Enter the city.";
-  if (!data.state) errors.state = "Enter the state.";
-  if (!/^\d{2,7}$/.test(data.area) || +data.area < 100) errors.area = "Enter the area in square feet.";
-  if (!/^\d{1,10}$/.test(data.rent) || +data.rent < 1) errors.rent = "Enter the monthly rent amount in rupees.";
+  if (enabled("propertyType") && !configuredChoices(formSettings, "propertyType").includes(data.propertyType)) errors.propertyType = "Choose a property type.";
+  if (enabled("bhk") && !configuredChoices(formSettings, "bhk").includes(data.bhk)) errors.bhk = "Choose the BHK configuration.";
+  if (enabled("address") && data.address.length < 5) errors.address = "Enter the property address.";
+  if (enabled("city") && !data.city) errors.city = "Enter the city.";
+  if (enabled("state") && !data.state) errors.state = "Enter the state.";
+  if (enabled("area") && (!/^\d{2,7}$/.test(data.area) || +data.area < 100)) errors.area = "Enter the area in square feet.";
+  if (enabled("rent") && (!/^\d{1,10}$/.test(data.rent) || +data.rent < 1)) errors.rent = "Enter the monthly rent amount in rupees.";
   if (b.consent !== true) errors.consent = "Please confirm that we may contact you about the property.";
   if (Object.keys(errors).length) return res.status(400).json({ error: "Check the highlighted fields.", fields: errors });
   if (!config.smtp.host || !config.smtp.port || !config.smtp.user || !config.smtp.pass || !config.smtp.from) {
@@ -436,6 +441,8 @@ const salePropertyLimiter = rateLimit({
 router.post("/sale-property", salePropertyLimiter, express.json({ limit: "20kb" }), async (req, res) => {
   if (req.body && req.body.website) return res.status(201).json({ ok: true });
   const b = req.body || {};
+  const formSettings = (await readSiteSettings()).forms.saleProperty;
+  const enabled = key => formSettings.fields[key] !== false;
   const data = {
     reference: `SP-${require("crypto").randomBytes(3).toString("hex").toUpperCase()}`,
     name: str(b.name, 100),
@@ -455,15 +462,15 @@ router.post("/sale-property", salePropertyLimiter, express.json({ limit: "20kb" 
   const errors = {};
   if (data.name.length < 2) errors.name = "Enter your full name.";
   if (!EMAIL_RE.test(data.email)) errors.email = "Enter a valid email address.";
-  if (data.linkedinProfile && !validLinkedInProfile(data.linkedinProfile)) errors.linkedinProfile = "Enter a valid LinkedIn profile URL.";
+  if (enabled("linkedinProfile") && data.linkedinProfile && !validLinkedInProfile(data.linkedinProfile)) errors.linkedinProfile = "Enter a valid LinkedIn profile URL.";
   if (data.phone.replace(/\D/g, "").length < 7) errors.phone = "Enter a valid phone number.";
-  if (!["Apartment", "House", "Villa"].includes(data.propertyType)) errors.propertyType = "Choose a property type.";
-  if (!["2 BHK", "2.5 BHK", "3 BHK", "3.5 BHK", "4 BHK", "4.5 BHK"].includes(data.bhk)) errors.bhk = "Choose the BHK configuration.";
-  if (data.address.length < 5) errors.address = "Enter the property address.";
-  if (!data.city) errors.city = "Enter the city.";
-  if (!data.state) errors.state = "Enter the state.";
-  if (!/^\d{2,7}$/.test(data.area) || +data.area < 100) errors.area = "Enter the area in square feet.";
-  if (!/^\d{1,12}$/.test(data.saleAmount) || +data.saleAmount < 1) errors.saleAmount = "Enter the sale amount in rupees.";
+  if (enabled("propertyType") && !configuredChoices(formSettings, "propertyType").includes(data.propertyType)) errors.propertyType = "Choose a property type.";
+  if (enabled("bhk") && !configuredChoices(formSettings, "bhk").includes(data.bhk)) errors.bhk = "Choose the BHK configuration.";
+  if (enabled("address") && data.address.length < 5) errors.address = "Enter the property address.";
+  if (enabled("city") && !data.city) errors.city = "Enter the city.";
+  if (enabled("state") && !data.state) errors.state = "Enter the state.";
+  if (enabled("area") && (!/^\d{2,7}$/.test(data.area) || +data.area < 100)) errors.area = "Enter the area in square feet.";
+  if (enabled("saleAmount") && (!/^\d{1,12}$/.test(data.saleAmount) || +data.saleAmount < 1)) errors.saleAmount = "Enter the sale amount in rupees.";
   if (b.consent !== true) errors.consent = "Please confirm that we may contact you about the property.";
   if (Object.keys(errors).length) return res.status(400).json({ error: "Check the highlighted fields.", fields: errors });
   if (!config.smtp.host || !config.smtp.port || !config.smtp.user || !config.smtp.pass || !config.smtp.from) {

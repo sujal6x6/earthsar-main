@@ -1,4 +1,18 @@
 const DEFAULT_SITE_SETTINGS = {
+  forms: {
+    clientProfile: {
+      fields: Object.fromEntries(['name','phone','email','linkedinProfile','offerDate','designation','company','photo','preferredFlat','budget','familyCount','nativePlace','shiftingFrom','shiftDate','familyDetails','education','pets'].map(key => [key, true])),
+      options: { preferredFlat: ['1 BHK','1.5 BHK','2 BHK','2.5 BHK','2 BHK + Study','3 BHK','3.5 BHK','4 BHK','4.5 BHK','5 BHK','Other'].map(value => ({value, visible:true})) }
+    },
+    rentProperty: {
+      fields: Object.fromEntries(['name','email','phone','linkedinProfile','propertyType','bhk','address','city','state','area','rent','description','pets'].map(key => [key, true])),
+      options: { propertyType: ['Apartment','House','Villa'].map(value => ({value, visible:true})), bhk: ['2 BHK','2.5 BHK','3 BHK','3.5 BHK','4 BHK','4.5 BHK'].map(value => ({value, visible:true})) }
+    },
+    saleProperty: {
+      fields: Object.fromEntries(['name','email','phone','linkedinProfile','propertyType','bhk','address','city','state','area','saleAmount','description','pets'].map(key => [key, true])),
+      options: { propertyType: ['Apartment','House','Villa'].map(value => ({value, visible:true})), bhk: ['2 BHK','2.5 BHK','3 BHK','3.5 BHK','4 BHK','4.5 BHK'].map(value => ({value, visible:true})) }
+    }
+  },
   registration: require("../public/registration").defaults,
   stats: {
     years: "15",
@@ -286,7 +300,22 @@ function sanitizeSiteSettings(input = {}) {
   ))) {
     partnerSource = [...DEFAULT_SITE_SETTINGS.partners.slice(0, 16), ...saved];
   }
+  const forms = {};
+  for (const formName of Object.keys(DEFAULT_SITE_SETTINGS.forms)) {
+    const defaults = DEFAULT_SITE_SETTINGS.forms[formName];
+    const saved = input.forms && input.forms[formName] || {};
+    const fields = Object.fromEntries(Object.keys(defaults.fields).map(key => [key, saved.fields && typeof saved.fields[key] === 'boolean' ? saved.fields[key] : true]));
+    for (const required of ['name', 'email', 'phone']) if (required in fields) fields[required] = true;
+    const options = {};
+    for (const key of Object.keys(defaults.options)) {
+      const values = Array.isArray(saved.options && saved.options[key]) ? saved.options[key] : defaults.options[key];
+      const normalized = values.map(item => typeof item === 'string' ? { value: item, visible: true } : { value: String(item && item.value || '').trim().slice(0, 60), visible: !item || item.visible !== false }).filter(item => item.value);
+      options[key] = normalized.filter((item, i) => normalized.findIndex(other => other.value.toLowerCase() === item.value.toLowerCase()) === i).slice(0, 40);
+    }
+    forms[formName] = { fields, options };
+  }
   return {
+    forms,
     registration: require("../public/registration").clean(input.registration),
     social: require("../public/social-links").clean(input.social),
     stats: cleanStats({ ...DEFAULT_SITE_SETTINGS.stats, ...(input.stats || {}) }),

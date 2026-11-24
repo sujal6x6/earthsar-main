@@ -123,6 +123,9 @@ function post_client_profile() {
     global $_EMAIL_RE, $config;
     ensure_not_maintenance();
     if (!empty($_POST['website'])) _pub_json_out(['ok' => true], 201);
+    $form_settings = read_public_settings()['forms']['clientProfile'];
+    $enabled = fn($key) => ($form_settings['fields'][$key] ?? true) !== false;
+    $flat_choices = array_values(array_map(fn($item) => $item['value'], array_filter($form_settings['options']['preferredFlat'] ?? [], fn($item) => ($item['visible'] ?? true) !== false)));
 
     $data = [
         'reference' => 'CP-' . strtoupper(bin2hex(random_bytes(3))),
@@ -146,19 +149,19 @@ function post_client_profile() {
     $errors = [];
     if (mb_strlen($data['name']) < 2) $errors['name'] = 'Enter the client\'s full name.';
     if (!preg_match($_EMAIL_RE, $data['email'])) $errors['email'] = 'Enter a valid email address.';
-    if ($data['linkedinProfile'] !== '' && !preg_match('~^https://(www\.)?linkedin\.com/(in|pub)/[A-Za-z0-9_%./?=&-]+$~i', $data['linkedinProfile'])) $errors['linkedinProfile'] = 'Enter a valid LinkedIn profile URL.';
+    if ($enabled('linkedinProfile') && $data['linkedinProfile'] !== '' && !preg_match('~^https://(www\.)?linkedin\.com/(in|pub)/[A-Za-z0-9_%./?=&-]+$~i', $data['linkedinProfile'])) $errors['linkedinProfile'] = 'Enter a valid LinkedIn profile URL.';
     if (strlen(preg_replace('/\D/', '', $data['phone'])) < 7) $errors['phone'] = 'Enter a valid phone number.';
-    if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $data['offerDate'])) $errors['offerDate'] = 'Choose the offer date.';
-    if (!preg_match('/^\d{1,2}$/', $data['familyCount']) || (int)$data['familyCount'] < 1 || (int)$data['familyCount'] > 30) $errors['familyCount'] = 'Enter a family size from 1 to 30.';
-    if (!$data['familyDetails']) $errors['familyDetails'] = 'Add household member details.';
-    if (!$data['nativePlace']) $errors['nativePlace'] = 'Enter the native place.';
-    if (!$data['shiftingFrom']) $errors['shiftingFrom'] = 'Enter where the client is shifting from.';
-    if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $data['shiftDate'])) $errors['shiftDate'] = 'Choose the expected shifting date.';
-    if (!$data['education']) $errors['education'] = 'Enter the educational background.';
-    if (!$data['company']) $errors['company'] = 'Enter the working company or profession.';
-    if (!$data['designation']) $errors['designation'] = 'Enter the designation.';
-    if (!$data['preferredFlat']) $errors['preferredFlat'] = 'Choose the preferred flat size.';
-    if (!preg_match('/^\d{1,10}$/', $data['budget']) || (int)$data['budget'] < 1) $errors['budget'] = 'Enter the monthly rental budget in rupees.';
+    if ($enabled('offerDate') && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $data['offerDate'])) $errors['offerDate'] = 'Choose the offer date.';
+    if ($enabled('familyCount') && (!preg_match('/^\d{1,2}$/', $data['familyCount']) || (int)$data['familyCount'] < 1 || (int)$data['familyCount'] > 30)) $errors['familyCount'] = 'Enter a family size from 1 to 30.';
+    if ($enabled('familyDetails') && !$data['familyDetails']) $errors['familyDetails'] = 'Add household member details.';
+    if ($enabled('nativePlace') && !$data['nativePlace']) $errors['nativePlace'] = 'Enter the native place.';
+    if ($enabled('shiftingFrom') && !$data['shiftingFrom']) $errors['shiftingFrom'] = 'Enter where the client is shifting from.';
+    if ($enabled('shiftDate') && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $data['shiftDate'])) $errors['shiftDate'] = 'Choose the expected shifting date.';
+    if ($enabled('education') && !$data['education']) $errors['education'] = 'Enter the educational background.';
+    if ($enabled('company') && !$data['company']) $errors['company'] = 'Enter the working company or profession.';
+    if ($enabled('designation') && !$data['designation']) $errors['designation'] = 'Enter the designation.';
+    if ($enabled('preferredFlat') && !in_array($data['preferredFlat'], $flat_choices, true)) $errors['preferredFlat'] = 'Choose the preferred flat size.';
+    if ($enabled('budget') && (!preg_match('/^\d{1,10}$/', $data['budget']) || (int)$data['budget'] < 1)) $errors['budget'] = 'Enter the monthly rental budget in rupees.';
     if (($_POST['consent'] ?? '') !== 'on') $errors['consent'] = 'Consent is required to send this profile to earthsar.';
     if ($errors) _pub_json_out(['error' => 'Check the highlighted fields.', 'fields' => $errors], 400);
 

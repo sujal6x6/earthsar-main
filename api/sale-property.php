@@ -59,6 +59,9 @@ function post_sale_property() {
     global $_EMAIL_RE, $config;
     ensure_not_maintenance();
     $body = json_decode(file_get_contents('php://input'), true) ?? [];
+    $form_settings = read_public_settings()['forms']['saleProperty'];
+    $enabled = fn($key) => ($form_settings['fields'][$key] ?? true) !== false;
+    $choices = fn($key) => array_values(array_map(fn($item) => $item['value'], array_filter($form_settings['options'][$key] ?? [], fn($item) => ($item['visible'] ?? true) !== false)));
     if (!empty($body['website'])) _pub_json_out(['ok' => true], 201);
     $data = [
         'reference' => 'SP-' . strtoupper(bin2hex(random_bytes(3))),
@@ -79,15 +82,15 @@ function post_sale_property() {
     $errors = [];
     if (mb_strlen($data['name']) < 2) $errors['name'] = 'Enter your full name.';
     if (!preg_match($_EMAIL_RE, $data['email'])) $errors['email'] = 'Enter a valid email address.';
-    if ($data['linkedinProfile'] !== '' && !preg_match('~^https://(www\.)?linkedin\.com/(in|pub)/[A-Za-z0-9_%./?=&-]+$~i', $data['linkedinProfile'])) $errors['linkedinProfile'] = 'Enter a valid LinkedIn profile URL.';
+    if ($enabled('linkedinProfile') && $data['linkedinProfile'] !== '' && !preg_match('~^https://(www\.)?linkedin\.com/(in|pub)/[A-Za-z0-9_%./?=&-]+$~i', $data['linkedinProfile'])) $errors['linkedinProfile'] = 'Enter a valid LinkedIn profile URL.';
     if (strlen(preg_replace('/\D/', '', $data['phone'])) < 7) $errors['phone'] = 'Enter a valid phone number.';
-    if (!in_array($data['propertyType'], ['Apartment', 'House', 'Villa'], true)) $errors['propertyType'] = 'Choose a property type.';
-    if (!in_array($data['bhk'], ['2 BHK', '2.5 BHK', '3 BHK', '3.5 BHK', '4 BHK', '4.5 BHK'], true)) $errors['bhk'] = 'Choose the BHK configuration.';
-    if (mb_strlen($data['address']) < 5) $errors['address'] = 'Enter the property address.';
-    if (!$data['city']) $errors['city'] = 'Enter the city.';
-    if (!$data['state']) $errors['state'] = 'Enter the state.';
-    if (!preg_match('/^\d{2,7}$/', $data['area']) || (int)$data['area'] < 100) $errors['area'] = 'Enter the area in square feet.';
-    if (!preg_match('/^\d{1,10}$/', $data['saleAmount']) || (int)$data['saleAmount'] < 1) $errors['saleAmount'] = 'Enter the sale amount in rupees.';
+    if ($enabled('propertyType') && !in_array($data['propertyType'], $choices('propertyType'), true)) $errors['propertyType'] = 'Choose a property type.';
+    if ($enabled('bhk') && !in_array($data['bhk'], $choices('bhk'), true)) $errors['bhk'] = 'Choose the BHK configuration.';
+    if ($enabled('address') && mb_strlen($data['address']) < 5) $errors['address'] = 'Enter the property address.';
+    if ($enabled('city') && !$data['city']) $errors['city'] = 'Enter the city.';
+    if ($enabled('state') && !$data['state']) $errors['state'] = 'Enter the state.';
+    if ($enabled('area') && (!preg_match('/^\d{2,7}$/', $data['area']) || (int)$data['area'] < 100)) $errors['area'] = 'Enter the area in square feet.';
+    if ($enabled('saleAmount') && (!preg_match('/^\d{1,10}$/', $data['saleAmount']) || (int)$data['saleAmount'] < 1)) $errors['saleAmount'] = 'Enter the sale amount in rupees.';
     if (($body['consent'] ?? false) !== true) $errors['consent'] = 'Please confirm that we may contact you about the property.';
     if ($errors) _pub_json_out(['error' => 'Check the highlighted fields.', 'fields' => $errors], 400);
     if (!function_exists('mail')) _pub_json_out(['error' => 'Email delivery is not available. Please contact earthsar directly.'], 503);

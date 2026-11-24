@@ -191,6 +191,7 @@ body.adm{background:var(--neutral);min-height:100vh;overflow-x:hidden}
 .settings-form .form-grid.compact{grid-template-columns:repeat(3,minmax(0,1fr))}
 .settings-form input,.settings-form textarea,.settings-form select{background:var(--surface)}
 .settings-form textarea{resize:vertical;min-height:74px}
+.form-config-grid{display:grid;gap:14px}.form-config-card{padding:16px;display:grid;gap:12px}.form-config-card h3{font:700 18px var(--f-head);color:var(--heading)}.form-config-card>p{color:var(--muted);font-size:13px}.form-config-fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:7px}.form-config-field{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-size:13px}.form-config-field>span:last-child{display:flex;align-items:center;gap:5px;white-space:nowrap;color:var(--muted)}.form-config-options{display:grid;gap:8px;padding-top:10px;border-top:1px solid var(--line)}.form-config-options h4{font-size:14px;color:var(--heading)}.form-config-option{display:flex;align-items:center;gap:8px}.form-config-option>input{flex:1;min-width:0}.form-config-option label{display:flex;align-items:center;gap:4px;color:var(--muted);font-size:12px;white-space:nowrap}.form-config-option .btn{flex:0 0 auto}
 .maintenance-panel{border:1px solid var(--line);border-radius:12px;background:var(--soft-blue);padding:18px}
 .maintenance-panel.is-on{border-color:#F0B57C;background:#FFF7EF}
 .maintenance-panel .notice{margin-bottom:0}

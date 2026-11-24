@@ -51,11 +51,11 @@
       });
       const result = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(result.error || "The profile could not be sent. Please try again.");
-      const ref = result.reference ? ` Reference: ${result.reference}.` : "";
+      const ref = result.reference ? ` Your reference number is ${result.reference}.` : "";
       form.reset();
       offerDate.value = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
       photoName.textContent = "No photo selected";
-      status.textContent = `Your profile PDF has been emailed to the earthsar team.${ref}`;
+      status.textContent = `Thank you for reaching out to earthsar. Our team has received your information and will get in touch with you soon.${ref}`;
       status.classList.remove("error");
     } catch (error) {
       status.textContent = error.message;

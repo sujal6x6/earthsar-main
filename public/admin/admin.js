@@ -12,6 +12,7 @@ let teamCropPreviewObservers = [];
 const SETTINGS_SECTIONS = [
   ["brands", "Trusted brands"],
   ["team", "Expert teams"],
+  ["forms", "Client forms"],
   ["contact", "Contact"],
   ["registration", "RERA Registration"],
   ["hero", "Hero"],
@@ -23,6 +24,42 @@ const SETTINGS_SECTIONS = [
   ["account", "Account"]
 ];
 let activeSettingsPanel = "brands";
+const FORM_EDITOR_DEFS = {
+  clientProfile: { label: "Client Profile", fields: {name:"Full name",phone:"Phone number",email:"Email address",linkedinProfile:"LinkedIn profile",offerDate:"Offer date",designation:"Designation",company:"Working company / profession",photo:"Client photo",preferredFlat:"Preferred flat size",budget:"Monthly rental budget",familyCount:"Number of family members",nativePlace:"Native place",shiftingFrom:"Shifting from",shiftDate:"Expected shifting date",familyDetails:"Family members residing",education:"Educational background",pets:"Pets"}, options:{preferredFlat:"Preferred flat size"} },
+  rentProperty: { label: "Rent Property", fields:{name:"Name",email:"Email",phone:"Phone",linkedinProfile:"LinkedIn profile",propertyType:"Property type",bhk:"BHK",address:"Property address",city:"City",state:"State",area:"Area",rent:"Rent amount",description:"Description",pets:"Pet policy"}, options:{propertyType:"Property type",bhk:"BHK"} },
+  saleProperty: { label: "Sale Property", fields:{name:"Name",email:"Email",phone:"Phone",linkedinProfile:"LinkedIn profile",propertyType:"Property type",bhk:"BHK",address:"Property address",city:"City",state:"State",area:"Area",saleAmount:"Sale amount",description:"Description",pets:"Pets"}, options:{propertyType:"Property type",bhk:"BHK"} }
+};
+function formEditorHtml(forms = {}) {
+  return Object.entries(FORM_EDITOR_DEFS).map(([formKey, def]) => {
+    const config = forms[formKey] || {};
+    const locked = formKey === "clientProfile" ? ["name","phone","email"] : ["name","email","phone"];
+    const fields = Object.entries(def.fields).map(([key, label]) => `<label class="form-config-field"><span>${esc(label)}</span><span><input type="checkbox" data-form-field="${formKey}.${key}" ${config.fields?.[key] !== false ? "checked" : ""} ${locked.includes(key) ? "disabled" : ""}> Show${locked.includes(key) ? " (required)" : ""}</span></label>`).join("");
+    const options = Object.entries(def.options).map(([key, label]) => {
+      const values = config.options?.[key] || [];
+      return `<div class="form-config-options"><h4>${esc(label)} choices</h4>${values.map((item, index) => `<div class="form-config-option"><input aria-label="${esc(label)} choice" maxlength="60" value="${esc(typeof item === "string" ? item : item.value)}" data-form-option-value="${formKey}.${key}.${index}"><label><input type="checkbox" data-form-option-visible="${formKey}.${key}.${index}" ${typeof item === "string" || item.visible !== false ? "checked" : ""}> Show</label><button class="btn btn-secondary btn-sm" type="button" data-form-option-delete="${formKey}.${key}.${index}">Delete</button></div>`).join("")}<button class="btn btn-secondary btn-sm" type="button" data-form-option-add="${formKey}.${key}">Add choice</button></div>`;
+    }).join("");
+    return `<section class="panel form-config-card"><h3>${esc(def.label)}</h3><p>Choose which fields visitors see, and manage dropdown choices. Name, email, phone and consent remain required for submissions.</p><div class="form-config-fields">${fields}</div>${options}</section>`;
+  }).join("");
+}
+function collectFormConfig(form) {
+  const config = {};
+  Object.keys(FORM_EDITOR_DEFS).forEach(formKey => {
+    const def = FORM_EDITOR_DEFS[formKey];
+    const fields = {};
+    Object.keys(def.fields).forEach(key => { const input = $(`[data-form-field="${formKey}.${key}"]`, form); fields[key] = input?.disabled ? true : !!input?.checked; });
+    const options = {};
+    Object.keys(def.options).forEach(key => {
+      const indexes = $$(`[data-form-option-value^="${formKey}.${key}."]`, form);
+      options[key] = indexes.map(input => {
+        const suffix = input.dataset.formOptionValue.split(".").pop();
+        const visible = $(`[data-form-option-visible="${formKey}.${key}.${suffix}"]`, form);
+        return { value: input.value.trim(), visible: !!visible?.checked };
+      }).filter(item => item.value);
+    });
+    config[formKey] = { fields, options };
+  });
+  return config;
+}
 
 function toast(msg) { const t = $("#toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove("show"), 3000); }
 
@@ -724,6 +761,11 @@ function drawSettingsForm() {
       <div class="advisor-grid">${team.length ? team.map((m, i) => advisorEditor(m, i, team.length)).join("") : `<div class="panel empty-state"><b>No team members yet</b>Add a team member to show them on the homepage.</div>`}</div>
       <div class="team-add-row"><span>${team.length} of 20 team members</span><button class="btn btn-secondary" type="button" data-team-add ${team.length >= 20 ? "disabled" : ""}>Add another team member</button></div>
     `)}
+    ${settingsPanel("forms", `
+      <div class="section-head"><div><h2>Client Forms</h2><p>Control fields and dropdown choices on the separate Client Profile, Rent Property and Sale Property pages.</p></div></div>
+      <div class="form-config-grid">${formEditorHtml(s.forms || {})}</div>
+      <div class="notice">Hidden fields are omitted from the form and are no longer required. Name, email, phone and consent stay required. Changes take effect after saving.</div>
+    `)}
     ${settingsPanel("contact", `
       <h2>Contact Details</h2>
       <div class="form-grid">
@@ -1071,7 +1113,8 @@ function collectSettings(form, opts = {}) {
       twitterDescription: settingsValue(form, "seo.twitterDescription")
     },
     team: collectTeam(form),
-    clientVideos: collectClientVideos(form)
+    clientVideos: collectClientVideos(form),
+    forms: collectFormConfig(form)
   };
   if (validateSocial) settings.social = window.readSocialEditor(document.getElementById("socialEditor"));
   else {
@@ -1098,6 +1141,8 @@ function onSettingsFormClick(e) {
   const removeVideo = e.target.closest("[data-video-remove]");
   const moveVideo = e.target.closest("[data-video-move]");
   const captureCover = e.target.closest("[data-video-cover-capture]");
+  const addFormOption = e.target.closest("[data-form-option-add]");
+  const deleteFormOption = e.target.closest("[data-form-option-delete]");
   const removeCover = e.target.closest("[data-video-cover-remove]");
   if (captureCover) {
     captureVideoCover(captureCover);
@@ -1111,6 +1156,17 @@ function onSettingsFormClick(e) {
     if (input) input.value = "";
     if (preview) preview.innerHTML = "<span>Cover preview</span>";
     toast("Video cover removed. Save website details to publish.");
+    return;
+  }
+  if (addFormOption || deleteFormOption) {
+    const settings = collectSettings(form, { validateSocial: false });
+    const target = addFormOption ? addFormOption.dataset.formOptionAdd : deleteFormOption.dataset.formOptionDelete;
+    const [formKey, optionKey, index] = target.split(".");
+    if (addFormOption) settings.forms[formKey].options[optionKey].push({ value: "", visible: true });
+    else settings.forms[formKey].options[optionKey].splice(Number(index), 1);
+    state.settings = settings;
+    drawSettingsForm();
+    switchSettingsPanel("forms");
     return;
   }
   if (!add && !remove && !move && !addTeam && !removeTeam && !moveTeam && !addVideo && !removeVideo && !moveVideo) return;

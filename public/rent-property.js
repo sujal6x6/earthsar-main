@@ -86,7 +86,7 @@
       }
       if (!response.ok) throw new Error(result.error || "The property details could not be sent. Please try again.");
       form.reset();
-      status.textContent = `Your property details were emailed to the earthsar team.${result.reference ? ` Reference: ${result.reference}.` : ""}`;
+      status.textContent = `Thank you for reaching out to earthsar. Our team has received your property details and will get in touch with you soon.${result.reference ? ` Your reference number is ${result.reference}.` : ""}`;
       status.classList.remove("error");
     } catch (error) {
       status.textContent = error.message;
