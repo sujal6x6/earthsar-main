@@ -11,7 +11,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="icon" href="/updated.png" type="image/png">
 <link rel="stylesheet" href="/seo-pages.css">
-<link rel="stylesheet" href="/client-profile.css?v=portal-1">
+<link rel="stylesheet" href="/client-profile.css?v=profile-fields-v2">
 </head>
 <body>
 <header class="page-header forms-portal-header">
@@ -44,7 +44,6 @@
             <label class="field"><span>Name <b>*</b></span><input name="name" autocomplete="name" maxlength="100" required></label>
             <label class="field"><span>Email <b>*</b></span><input name="email" type="email" autocomplete="email" maxlength="200" required></label>
             <label class="field"><span>Phone <b>*</b></span><input name="phone" type="tel" autocomplete="tel" maxlength="30" required></label>
-            <label class="field field-wide"><span>LinkedIn profile <small>Optional</small></span><input name="linkedinProfile" type="url" inputmode="url" maxlength="250" placeholder="https://www.linkedin.com/in/your-profile"></label>
           </div>
         </div>
         <div class="form-section">
@@ -52,13 +51,15 @@
           <div class="form-grid">
             <label class="field"><span>Property type <b>*</b></span><select name="propertyType" required><option value="">Select property type</option><option>Apartment</option><option>House</option><option>Villa</option></select></label>
             <label class="field"><span>BHK <b>*</b></span><select name="bhk" required><option value="">Select BHK</option><option>2 BHK</option><option>2.5 BHK</option><option>3 BHK</option><option>3.5 BHK</option><option>4 BHK</option><option>4.5 BHK</option></select></label>
-            <label class="field field-wide"><span>Property address <b>*</b></span><input name="address" autocomplete="street-address" maxlength="300" required></label>
+            <label class="field"><span>House / flat number <b>*</b></span><input name="houseNumber" autocomplete="address-line1" maxlength="60" required></label>
+            <label class="field field-wide"><span>Street / locality <b>*</b></span><input name="address" autocomplete="street-address" maxlength="300" required></label>
             <label class="field"><span>City <b>*</b></span><input name="city" autocomplete="address-level2" maxlength="80" required></label>
             <label class="field"><span>State <b>*</b></span><input name="state" autocomplete="address-level1" maxlength="80" required></label>
             <label class="field"><span>Area (sq ft) <b>*</b></span><input name="area" type="number" min="100" max="9999999" inputmode="numeric" required></label>
             <label class="field"><span>Sale amount (INR) <b>*</b></span><div class="money-input"><span aria-hidden="true">₹</span><input name="saleAmount" type="number" min="1" max="9999999999" inputmode="numeric" required></div></label>
-            <label class="field field-wide"><span>Description <small>Optional</small></span><textarea name="description" rows="4" maxlength="600" placeholder="Share any useful details about the property."></textarea></label>
-            <label class="field field-wide"><span>Pets / pet-related details <small>Optional</small></span><textarea name="pets" rows="2" maxlength="300" placeholder="Mention any pets at the property or pet-related considerations."></textarea></label>
+            <label class="field"><span>Is there an existing bank loan? <b>*</b></span><select name="bankLoan" required><option value="">Choose yes or no</option><option>Yes</option><option>No</option></select></label>
+            <label class="field conditional-field" data-depends-on="bankLoan" data-depends-value="Yes" hidden><span>Bank name <b>*</b></span><input name="bankName" maxlength="120" required disabled></label>
+            <label class="field field-wide"><span>Remarks <small>Optional</small></span><textarea name="remarks" rows="4" maxlength="600" placeholder="Add any other details about the property."></textarea></label>
           </div>
         </div>
         <label class="consent"><input name="consent" type="checkbox" required><span>I agree to share these details with earthsar so the team may contact me about this sale. <b>*</b></span></label>
@@ -88,7 +89,7 @@
   </div>
 </footer>
 <script src="/seo-pages.js"></script>
-<script src="/form-settings.js?v=forms-admin-1"></script>
-<script src="/sale-property.js?v=followup-message-1"></script>
+<script src="/form-settings.js?v=forms-v2"></script>
+<script src="/sale-property.js?v=sale-fields-v2"></script>
 </body>
 </html>

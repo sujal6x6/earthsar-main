@@ -11,9 +11,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="icon" href="/updated.png" type="image/png">
 <link rel="stylesheet" href="/seo-pages.css">
-<link rel="stylesheet" href="/client-profile.css?v=portal-1">
+<link rel="stylesheet" href="/client-profile.css?v=profile-fields-v2">
 </head>
-<body>
+<body class="client-profile-page">
 <header class="page-header forms-portal-header">
   <div class="wrap page-nav">
     <a href="/client-profile" class="page-logo-link portal-logo"><img class="page-logo" src="/assets/earthsar-logo.png" alt="earthsar"><span>PROPERTY PORTAL</span></a>
@@ -44,10 +44,14 @@
             <label class="field"><span>Full name <b>*</b></span><input name="name" autocomplete="name" maxlength="100" required></label>
             <label class="field"><span>Phone number <b>*</b></span><input name="phone" type="tel" autocomplete="tel" maxlength="30" required></label>
             <label class="field"><span>Email address <b>*</b></span><input name="email" type="email" autocomplete="email" maxlength="200" required></label>
-            <label class="field"><span>LinkedIn profile <small>Optional</small></span><input name="linkedinProfile" type="url" inputmode="url" maxlength="250" placeholder="https://www.linkedin.com/in/your-profile"></label>
+            <label class="field"><span>Do you have a LinkedIn profile? <b>*</b></span><select name="hasLinkedIn" required><option value="">Choose yes or no</option><option>Yes</option><option>No</option></select></label>
+            <label class="field field-wide conditional-field" data-depends-on="hasLinkedIn" data-depends-value="Yes" hidden><span>LinkedIn profile</span><input name="linkedinProfile" type="url" inputmode="url" maxlength="250" placeholder="https://www.linkedin.com/in/your-profile" disabled></label>
             <label class="field"><span>Offer date <b>*</b></span><input name="offerDate" type="date" required></label>
+            <label class="field"><span>Company / profession <b>*</b></span><input name="company" maxlength="120" required></label>
             <label class="field"><span>Designation <b>*</b></span><input name="designation" maxlength="120" required></label>
-            <label class="field"><span>Working company / profession <b>*</b></span><input name="company" maxlength="120" required></label>
+            <label class="field"><span>Does your wife work? <b>*</b></span><select name="wifeWorks" required><option value="">Choose yes or no</option><option>Yes</option><option>No</option></select></label>
+            <label class="field conditional-field" data-depends-on="wifeWorks" data-depends-value="Yes" hidden><span>Wife’s company name <b>*</b></span><input name="wifeCompany" maxlength="120" required disabled></label>
+            <label class="field conditional-field" data-depends-on="wifeWorks" data-depends-value="Yes" hidden><span>Wife’s designation <b>*</b></span><input name="wifeDesignation" maxlength="120" required disabled></label>
           </div>
           <label class="field photo-field"><span>Client photo <small>Optional · JPG or PNG up to 3 MB</small></span><input name="photo" type="file" accept="image/jpeg,image/png"><span class="photo-name" id="photoName">No photo selected</span></label>
         </div>
@@ -67,21 +71,14 @@
             <label class="field"><span>Expected shifting date <b>*</b></span><input name="shiftDate" type="date" required></label>
             <label class="field field-wide"><span>Family members who will regularly reside <b>*</b></span><textarea name="familyDetails" rows="3" maxlength="180" placeholder="For example: Self (35), spouse (33), child (5)" required></textarea></label>
             <label class="field"><span>Educational background <b>*</b></span><input name="education" maxlength="120" required></label>
-            <label class="field field-wide"><span>Pets <small>Optional</small></span><textarea name="pets" rows="2" maxlength="300" placeholder="Tell us if you have pets and any housing needs to consider."></textarea></label>
+            <label class="field"><span>Do you have any pets? <b>*</b></span><select name="hasPets" required><option value="">Choose yes or no</option><option>Yes</option><option>No</option></select></label>
+            <label class="field field-wide conditional-field" data-depends-on="hasPets" data-depends-value="Yes" hidden><span>Pet details <small>Optional</small></span><textarea name="pets" rows="2" maxlength="300" placeholder="You may include the type and number of pets." disabled></textarea></label>
           </div>
         </div>
         <label class="consent"><input name="consent" type="checkbox" required><span>I agree to share these details with earthsar so an advisor can contact me about my requirements. <b>*</b></span></label>
         <div class="honeypot" aria-hidden="true"><label>Leave this field empty<input name="website" tabindex="-1" autocomplete="off"></label></div>
         <div class="form-actions"><button class="btn btn-primary" type="submit" id="submitProfile">Create &amp; email profile</button><p class="form-status" id="formStatus" role="status" aria-live="polite"></p></div>
       </form>
-      <aside class="profile-aside">
-        <div class="aside-art" aria-hidden="true"><span></span><span></span><span></span></div>
-        <div class="eyebrow">A clearer start</div>
-        <h2>Good advice begins with your priorities.</h2>
-        <p>Your completed profile is formatted into a shareable client brief and emailed directly to the earthsar team.</p>
-        <div class="aside-steps"><div><span>01</span><p>Share your household and work details</p></div><div><span>02</span><p>Tell us your preferred flat and budget</p></div><div><span>03</span><p>We’ll follow up with your requirements in view</p></div></div>
-        <a class="aside-contact" href="mailto:info@earthsar.in">Questions? Email info@earthsar.in</a>
-      </aside>
     </div>
   </section>
 </main>
@@ -97,7 +94,7 @@
   </div>
 </footer>
 <script src="/seo-pages.js"></script>
-<script src="/form-settings.js?v=forms-admin-1"></script>
-<script src="/client-profile.js?v=followup-message-1"></script>
+<script src="/form-settings.js?v=forms-v2"></script>
+<script src="/client-profile.js?v=profile-fields-v2"></script>
 </body>
 </html>

@@ -1,10 +1,12 @@
 const PDFDocument = require("pdfkit");
+const path = require("path");
 
 const BLUE = "#004BAF";
 const ORANGE = "#F1770A";
 const MUTED = "#687789";
 const LINE = "#DCE5F0";
 const SOFT = "#F4F8FF";
+const LOGO = path.join(__dirname, "../public/assets/earthsar-logo.png");
 
 function createClientProfilePdf(data, photo) {
   return new Promise((resolve, reject) => {
@@ -21,8 +23,7 @@ function createClientProfilePdf(data, photo) {
       doc.x = left;
       doc.y = 0;
       doc.rect(left, 32, right - left, 3).fill(ORANGE);
-      doc.font("Helvetica-Bold").fontSize(20).fillColor(BLUE).text("earthsar", left, 48, { lineBreak: false });
-      doc.font("Helvetica").fontSize(8).fillColor(MUTED).text("SMART ADVISORS IN REAL ESTATE", left, 72, { lineBreak: false, characterSpacing: 0.7 });
+      doc.image(LOGO, left, 40, { width: 150 });
       doc.font("Helvetica-Bold").fontSize(23).fillColor(BLUE).text("Client Profile", left, 96, { lineBreak: false });
       doc.font("Helvetica-Bold").fontSize(8).fillColor(MUTED).text(`REF  ${data.reference}`, left, 106, { align: "right", width: right - left });
       doc.moveTo(left, 128).lineTo(right, 128).lineWidth(1).strokeColor(LINE).stroke();
@@ -36,14 +37,21 @@ function createClientProfilePdf(data, photo) {
     const left = doc.page.margins.left;
     const right = doc.page.width - doc.page.margins.right;
     const contentWidth = right - left;
-    const bottom = doc.page.height - doc.page.margins.bottom - 4;
-    const ensureSpace = height => {
+    const bottom = doc.page.height - doc.page.margins.bottom - 30;
+    let activeSection = "";
+    const ensureSpace = (height, repeatSection = false) => {
       if (doc.y + height > bottom) {
         doc.addPage();
         pageHeader();
+        if (repeatSection && activeSection) {
+          doc.font("Helvetica-Bold").fontSize(9).fillColor(ORANGE).text(`${activeSection.toUpperCase()} (CONTINUED)`, left, doc.y, { characterSpacing: 0.65 });
+          doc.moveTo(left, doc.y + 4).lineTo(right, doc.y + 4).lineWidth(0.8).strokeColor(ORANGE).stroke();
+          doc.y += 13;
+        }
       }
     };
     const section = title => {
+      activeSection = title;
       ensureSpace(30);
       doc.moveDown(0.65);
       doc.font("Helvetica-Bold").fontSize(9).fillColor(ORANGE).text(title.toUpperCase(), left, doc.y, { characterSpacing: 0.65 });
@@ -56,7 +64,7 @@ function createClientProfilePdf(data, photo) {
       const text = value || "Not provided";
       const valueHeight = doc.font("Helvetica").fontSize(9.5).heightOfString(text, { width: valueWidth, lineGap: 2 });
       const height = Math.max(31, valueHeight + 15);
-      ensureSpace(height + 2);
+      ensureSpace(height + 2, true);
       const y = doc.y;
       doc.rect(left, y, contentWidth, height).fill("#FFFFFF").stroke(LINE);
       doc.rect(left, y, labelWidth, height).fill(SOFT);
@@ -75,7 +83,7 @@ function createClientProfilePdf(data, photo) {
     const textWidth = contentWidth - imageW - (photo ? 16 : 0);
     doc.font("Helvetica-Bold").fontSize(7.5).fillColor(ORANGE).text("CLIENT", textX, cardY + 2, { characterSpacing: 0.7 });
     doc.font("Helvetica-Bold").fontSize(19).fillColor(BLUE).text(data.name, textX, cardY + 18, { width: textWidth, height: 48, ellipsis: true });
-    const subtitle = [data.designation, data.company].filter(Boolean).join("  ·  ");
+    const subtitle = [data.company, data.designation].filter(Boolean).join("  ·  ");
     if (subtitle) doc.font("Helvetica").fontSize(9).fillColor(MUTED).text(subtitle, textX, cardY + 47, { width: textWidth, height: 18, ellipsis: true });
     const metricY = cardY + 72;
     const metricGap = 14;
@@ -92,18 +100,25 @@ function createClientProfilePdf(data, photo) {
     row("Name", data.name);
     row("Email", data.email);
     row("Phone", data.phone);
-    row("LinkedIn profile", data.linkedinProfile);
+    row("LinkedIn profile available", data.hasLinkedIn);
+    if (data.hasLinkedIn === "Yes" && data.linkedinProfile) row("LinkedIn profile", data.linkedinProfile);
     row("No. of family members", data.familyCount);
     row("Family members residing", data.familyDetails);
     row("Native place", data.nativePlace);
     row("Shifting from", data.shiftingFrom);
     row("Expected shifting date", data.shiftDate);
     row("Educational background", data.education);
-    row("Working company / profession", data.company);
+    row("Company / profession", data.company);
     row("Designation", data.designation);
+    row("Wife works", data.wifeWorks);
+    if (data.wifeWorks === "Yes") {
+      row("Wife’s company", data.wifeCompany);
+      row("Wife’s designation", data.wifeDesignation);
+    }
     row("Preferred flat size", data.preferredFlat);
     row("Monthly rental budget", `INR ${data.budget}`);
-    row("Pets / housing needs", data.pets);
+    row("Has pets", data.hasPets);
+    if (data.hasPets === "Yes" && data.pets) row("Pet details / housing needs", data.pets);
 
     doc.end();
   });

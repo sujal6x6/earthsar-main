@@ -1,10 +1,12 @@
 const PDFDocument = require("pdfkit");
+const path = require("path");
 
 const BLUE = "#004BAF";
 const ORANGE = "#F1770A";
 const MUTED = "#687789";
 const LINE = "#DCE5F0";
 const SOFT = "#F4F8FF";
+const LOGO = path.join(__dirname, "../public/assets/earthsar-logo.png");
 
 function createPropertyPdf(data, sale = false) {
   return new Promise((resolve, reject) => {
@@ -21,8 +23,7 @@ function createPropertyPdf(data, sale = false) {
       doc.x = left;
       doc.y = 0;
       doc.rect(left, 32, right - left, 3).fill(ORANGE);
-      doc.font("Helvetica-Bold").fontSize(20).fillColor(BLUE).text("earthsar", left, 48, { lineBreak: false });
-      doc.font("Helvetica").fontSize(8).fillColor(MUTED).text("SMART ADVISORS IN REAL ESTATE", left, 72, { lineBreak: false, characterSpacing: 0.7 });
+      doc.image(LOGO, left, 40, { width: 150 });
       doc.font("Helvetica-Bold").fontSize(23).fillColor(BLUE).text(sale ? "Sale Property" : "Rental Property", left, 96, { lineBreak: false });
       doc.font("Helvetica-Bold").fontSize(8).fillColor(MUTED).text(`REF  ${data.reference}`, left, 106, { align: "right", width: right - left });
       doc.moveTo(left, 128).lineTo(right, 128).lineWidth(1).strokeColor(LINE).stroke();
@@ -36,9 +37,20 @@ function createPropertyPdf(data, sale = false) {
     const left = doc.page.margins.left;
     const right = doc.page.width - doc.page.margins.right;
     const width = right - left;
-    const bottom = doc.page.height - doc.page.margins.bottom - 4;
-    const ensureSpace = height => { if (doc.y + height > bottom) addPage(); };
+    const bottom = doc.page.height - doc.page.margins.bottom - 30;
+    let activeSection = "";
+    const ensureSpace = (height, repeatSection = false) => {
+      if (doc.y + height > bottom) {
+        addPage();
+        if (repeatSection && activeSection) {
+          doc.font("Helvetica-Bold").fontSize(9).fillColor(ORANGE).text(`${activeSection.toUpperCase()} (CONTINUED)`, left, doc.y, { characterSpacing: 0.65 });
+          doc.moveTo(left, doc.y + 4).lineTo(right, doc.y + 4).lineWidth(0.8).strokeColor(ORANGE).stroke();
+          doc.y += 13;
+        }
+      }
+    };
     const section = title => {
+      activeSection = title;
       ensureSpace(30);
       doc.moveDown(0.65);
       doc.font("Helvetica-Bold").fontSize(9).fillColor(ORANGE).text(title.toUpperCase(), left, doc.y, { characterSpacing: 0.65 });
@@ -50,7 +62,7 @@ function createPropertyPdf(data, sale = false) {
       const valueWidth = width - labelWidth - 24;
       const lines = String(value || "Not provided").split(/\r?\n/);
       const height = Math.max(31, doc.heightOfString(lines.join("\n"), { width: valueWidth, font: "Helvetica", fontSize: 9.5, lineGap: 2 }) + 15);
-      ensureSpace(height + 2);
+      ensureSpace(height + 2, true);
       const y = doc.y;
       doc.rect(left, y, width, height).fill("#FFFFFF").stroke(LINE);
       doc.rect(left, y, labelWidth, height).fill(SOFT);
@@ -76,18 +88,25 @@ function createPropertyPdf(data, sale = false) {
     row("Name", data.name);
     row("Email", data.email);
     row("Phone", data.phone);
-    row("LinkedIn profile", data.linkedinProfile);
+    if (!sale) row("LinkedIn profile", data.linkedinProfile);
     section("Property details");
     row("Property type", data.propertyType);
     row("BHK", data.bhk);
-    row("Address", data.address);
+    if (sale) row("House / flat number", data.houseNumber);
+    row(sale ? "Street / locality" : "Address", data.address);
     row("City", data.city);
     row("State", data.state);
     row("Area", `${data.area} sq ft`);
     if (sale) row("Sale amount", `INR ${data.saleAmount}`);
     else row("Rent amount (including maintenance)", `INR ${data.rent}`);
-    row("Description", data.description);
-    row(sale ? "Pets / pet-related details" : "Pet policy", data.pets);
+    if (sale) {
+      row("Existing bank loan", data.bankLoan);
+      if (data.bankLoan === "Yes") row("Bank name", data.bankName);
+      row("Remarks", data.remarks);
+    } else {
+      row("Description", data.description);
+      row("Pet policy", data.pets);
+    }
     doc.end();
   });
 }

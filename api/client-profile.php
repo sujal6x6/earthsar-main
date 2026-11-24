@@ -43,8 +43,7 @@ function _profile_pdf_build($data, $photoJpeg = null, $photoSize = null) {
     $blue = '#004BAF'; $orange = '#F1770A'; $muted = '#687789'; $line = '#DCE5F0'; $soft = '#F4F8FF';
     $ops = "";
     $ops .= _profile_pdf_rect(44, 32, 507, 3, $orange);
-    $ops .= _profile_pdf_text(44, 48, 'earthsar', 20, true, $blue);
-    $ops .= _profile_pdf_text(44, 72, 'SMART ADVISORS IN REAL ESTATE', 8, false, $muted);
+    $ops .= sprintf("q 150 0 0 %.2f 44 %.2f cm /Logo Do Q\n", 150 * 212 / 700, 842 - 40 - (150 * 212 / 700));
     $ops .= _profile_pdf_text(44, 96, 'Client Profile', 23, true, $blue);
     $ops .= _profile_pdf_text(463, 106, 'REF  ' . $data['reference'], 8, true, $muted);
     $ops .= _profile_pdf_line(44, 128, 551, 128, $line, 1);
@@ -63,7 +62,7 @@ function _profile_pdf_build($data, $photoJpeg = null, $photoSize = null) {
     $ops .= _profile_pdf_text($textX, 144, 'CLIENT', 8, true, $orange);
     $name = $data['name'];
     $ops .= _profile_pdf_text($textX, 160, mb_substr($name, 0, 40), 19, true, $blue);
-    $sub = trim($data['designation'] . '  ·  ' . $data['company'], ' ·');
+    $sub = trim($data['company'] . '  ·  ' . $data['designation'], ' ·');
     if ($sub !== '') $ops .= _profile_pdf_text($textX, 189, mb_substr($sub, 0, 72), 9, false, $muted);
     $ops .= _profile_pdf_line($textX, 207, 551, 207, $line, 0.7);
     $metricW = ($textW - 14) / 2;
@@ -75,23 +74,31 @@ function _profile_pdf_build($data, $photoJpeg = null, $photoSize = null) {
     $ops .= _profile_pdf_text(44, 263, 'CLIENT DETAILS', 9, true, $orange);
     $ops .= _profile_pdf_line(44, 276, 551, 276, $orange, 0.8);
     $rows = [
-        ['Offer date', $data['offerDate']], ['Name', $data['name']], ['Email', $data['email']], ['Phone', $data['phone']], ['LinkedIn profile', $data['linkedinProfile']],
+        ['Offer date', $data['offerDate']], ['Name', $data['name']], ['Email', $data['email']], ['Phone', $data['phone']],
+        ['LinkedIn profile available', $data['hasLinkedIn']]
+    ];
+    if ($data['hasLinkedIn'] === 'Yes' && $data['linkedinProfile'] !== '') $rows[] = ['LinkedIn profile', $data['linkedinProfile']];
+    $rows = array_merge($rows, [
         ['No. of family members', $data['familyCount']], ['Family members residing', $data['familyDetails']],
         ['Native place', $data['nativePlace']], ['Shifting from', $data['shiftingFrom']],
         ['Expected shifting date', $data['shiftDate']], ['Educational background', $data['education']],
-        ['Working company / profession', $data['company']], ['Designation', $data['designation']],
-        ['Preferred flat size', $data['preferredFlat']], ['Monthly rental budget', 'INR ' . $data['budget']], ['Pets / housing needs', $data['pets']]
-    ];
+        ['Company / profession', $data['company']], ['Designation', $data['designation']], ['Wife works', $data['wifeWorks']]
+    ]);
+    if ($data['wifeWorks'] === 'Yes') $rows = array_merge($rows, [['Wife company', $data['wifeCompany']], ['Wife designation', $data['wifeDesignation']]]);
+    $rows = array_merge($rows, [
+        ['Preferred flat size', $data['preferredFlat']], ['Monthly rental budget', 'INR ' . $data['budget']], ['Has pets', $data['hasPets']]
+    ]);
+    if ($data['hasPets'] === 'Yes' && $data['pets'] !== '') $rows[] = ['Pet details / housing needs', $data['pets']];
     $top = 282; $labelW = 174;
     foreach ($rows as [$label, $value]) {
         $value = $value !== '' ? $value : 'Not provided';
         $lines = explode("\n", wordwrap($value, 70, "\n", true));
-        $height = max(31, count($lines) * 11 + 14);
+        $height = max(21, count($lines) * 8 + 7);
         $ops .= _profile_pdf_rect(44, $top, 507, $height, '#FFFFFF', $line);
         $ops .= _profile_pdf_rect(44, $top, $labelW, $height, $soft);
-        $ops .= _profile_pdf_text(54, $top + 10, strtoupper($label), 7, true, $muted);
+        $ops .= _profile_pdf_text(54, $top + 7, strtoupper($label), 7, true, $muted);
         foreach ($lines as $index => $valueLine) {
-            $ops .= _profile_pdf_text(230, $top + 9 + ($index * 11), $valueLine, 9, false, '#182433');
+            $ops .= _profile_pdf_text(230, $top + 5 + ($index * 8), $valueLine, 8, false, '#182433');
         }
         $top += $height;
     }
@@ -100,12 +107,14 @@ function _profile_pdf_build($data, $photoJpeg = null, $photoSize = null) {
     $objects = [];
     $objects[1] = '<< /Type /Catalog /Pages 2 0 R >>';
     $objects[2] = '<< /Type /Pages /Kids [3 0 R] /Count 1 >>';
-    $xobjects = $photoJpeg ? ' /XObject << /Im1 7 0 R >>' : '';
+    $xobjects = ' /XObject << /Logo 7 0 R' . ($photoJpeg ? ' /Im1 8 0 R' : '') . ' >>';
     $objects[3] = '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 5 0 R /F2 6 0 R >>' . $xobjects . ' >> /Contents 4 0 R >>';
     $objects[4] = '<< /Length ' . strlen($ops) . " >>\nstream\n" . $ops . 'endstream';
     $objects[5] = '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>';
     $objects[6] = '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>';
-    if ($photoJpeg) $objects[7] = '<< /Type /XObject /Subtype /Image /Width ' . $photoSize[0] . ' /Height ' . $photoSize[1] . ' /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ' . strlen($photoJpeg) . " >>\nstream\n" . $photoJpeg . "\nendstream";
+    $logoJpeg = file_get_contents(__DIR__ . '/../public/assets/earthsar-logo-pdf.jpg');
+    $objects[7] = '<< /Type /XObject /Subtype /Image /Width 700 /Height 212 /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ' . strlen($logoJpeg) . " >>\nstream\n" . $logoJpeg . "\nendstream";
+    if ($photoJpeg) $objects[8] = '<< /Type /XObject /Subtype /Image /Width ' . $photoSize[0] . ' /Height ' . $photoSize[1] . ' /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ' . strlen($photoJpeg) . " >>\nstream\n" . $photoJpeg . "\nendstream";
     ksort($objects);
     $pdf = "%PDF-1.4\n%\xE2\xE3\xCF\xD3\n"; $offsets = [0];
     foreach ($objects as $number => $object) {
@@ -132,6 +141,7 @@ function post_client_profile() {
         'name' => _pub_str($_POST['name'] ?? '', 100),
         'email' => strtolower(_pub_str($_POST['email'] ?? '', 200)),
         'phone' => _pub_str($_POST['phone'] ?? '', 30),
+        'hasLinkedIn' => _pub_str($_POST['hasLinkedIn'] ?? '', 3),
         'linkedinProfile' => _pub_str($_POST['linkedinProfile'] ?? '', 250),
         'pets' => _pub_str($_POST['pets'] ?? '', 300),
         'offerDate' => _pub_str($_POST['offerDate'] ?? '', 10),
@@ -143,13 +153,19 @@ function post_client_profile() {
         'education' => _pub_str($_POST['education'] ?? '', 120),
         'company' => _pub_str($_POST['company'] ?? '', 120),
         'designation' => _pub_str($_POST['designation'] ?? '', 120),
+        'wifeWorks' => _pub_str($_POST['wifeWorks'] ?? '', 3),
+        'wifeCompany' => _pub_str($_POST['wifeCompany'] ?? '', 120),
+        'wifeDesignation' => _pub_str($_POST['wifeDesignation'] ?? '', 120),
         'preferredFlat' => _pub_str($_POST['preferredFlat'] ?? '', 40),
-        'budget' => _pub_str($_POST['budget'] ?? '', 12)
+        'budget' => _pub_str($_POST['budget'] ?? '', 12),
+        'hasPets' => _pub_str($_POST['hasPets'] ?? '', 3),
+        'pets' => _pub_str($_POST['pets'] ?? '', 300)
     ];
     $errors = [];
     if (mb_strlen($data['name']) < 2) $errors['name'] = 'Enter the client\'s full name.';
     if (!preg_match($_EMAIL_RE, $data['email'])) $errors['email'] = 'Enter a valid email address.';
-    if ($enabled('linkedinProfile') && $data['linkedinProfile'] !== '' && !preg_match('~^https://(www\.)?linkedin\.com/(in|pub)/[A-Za-z0-9_%./?=&-]+$~i', $data['linkedinProfile'])) $errors['linkedinProfile'] = 'Enter a valid LinkedIn profile URL.';
+    if (!in_array($data['hasLinkedIn'], ['Yes','No'], true)) $errors['hasLinkedIn'] = 'Please choose Yes or No for LinkedIn.';
+    if ($data['hasLinkedIn'] === 'Yes' && $enabled('linkedinProfile') && $data['linkedinProfile'] !== '' && !preg_match('~^https://(www\.)?linkedin\.com/(in|pub)/[A-Za-z0-9_%./?=&-]+$~i', $data['linkedinProfile'])) $errors['linkedinProfile'] = 'Enter a valid LinkedIn profile URL.';
     if (strlen(preg_replace('/\D/', '', $data['phone'])) < 7) $errors['phone'] = 'Enter a valid phone number.';
     if ($enabled('offerDate') && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $data['offerDate'])) $errors['offerDate'] = 'Choose the offer date.';
     if ($enabled('familyCount') && (!preg_match('/^\d{1,2}$/', $data['familyCount']) || (int)$data['familyCount'] < 1 || (int)$data['familyCount'] > 30)) $errors['familyCount'] = 'Enter a family size from 1 to 30.';
@@ -160,8 +176,12 @@ function post_client_profile() {
     if ($enabled('education') && !$data['education']) $errors['education'] = 'Enter the educational background.';
     if ($enabled('company') && !$data['company']) $errors['company'] = 'Enter the working company or profession.';
     if ($enabled('designation') && !$data['designation']) $errors['designation'] = 'Enter the designation.';
+    if (!in_array($data['wifeWorks'], ['Yes','No'], true)) $errors['wifeWorks'] = 'Please choose Yes or No.';
+    if ($data['wifeWorks'] === 'Yes' && $enabled('wifeCompany') && !$data['wifeCompany']) $errors['wifeCompany'] = 'Enter your wife’s company name.';
+    if ($data['wifeWorks'] === 'Yes' && $enabled('wifeDesignation') && !$data['wifeDesignation']) $errors['wifeDesignation'] = 'Enter your wife’s designation.';
     if ($enabled('preferredFlat') && !in_array($data['preferredFlat'], $flat_choices, true)) $errors['preferredFlat'] = 'Choose the preferred flat size.';
     if ($enabled('budget') && (!preg_match('/^\d{1,10}$/', $data['budget']) || (int)$data['budget'] < 1)) $errors['budget'] = 'Enter the monthly rental budget in rupees.';
+    if (!in_array($data['hasPets'], ['Yes','No'], true)) $errors['hasPets'] = 'Please choose Yes or No for pets.';
     if (($_POST['consent'] ?? '') !== 'on') $errors['consent'] = 'Consent is required to send this profile to earthsar.';
     if ($errors) _pub_json_out(['error' => 'Check the highlighted fields.', 'fields' => $errors], 400);
 

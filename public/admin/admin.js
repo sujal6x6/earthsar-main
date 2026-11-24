@@ -25,14 +25,14 @@ const SETTINGS_SECTIONS = [
 ];
 let activeSettingsPanel = "brands";
 const FORM_EDITOR_DEFS = {
-  clientProfile: { label: "Client Profile", fields: {name:"Full name",phone:"Phone number",email:"Email address",linkedinProfile:"LinkedIn profile",offerDate:"Offer date",designation:"Designation",company:"Working company / profession",photo:"Client photo",preferredFlat:"Preferred flat size",budget:"Monthly rental budget",familyCount:"Number of family members",nativePlace:"Native place",shiftingFrom:"Shifting from",shiftDate:"Expected shifting date",familyDetails:"Family members residing",education:"Educational background",pets:"Pets"}, options:{preferredFlat:"Preferred flat size"} },
+  clientProfile: { label: "Client Profile", fields: {name:"Full name",phone:"Phone number",email:"Email address",hasLinkedIn:"LinkedIn yes/no",linkedinProfile:"LinkedIn profile",offerDate:"Offer date",company:"Company / profession",designation:"Designation",wifeWorks:"Wife works yes/no",wifeCompany:"Wife’s company",wifeDesignation:"Wife’s designation",photo:"Client photo",preferredFlat:"Preferred flat size",budget:"Monthly rental budget",familyCount:"Number of family members",nativePlace:"Native place",shiftingFrom:"Shifting from",shiftDate:"Expected shifting date",familyDetails:"Family members residing",education:"Educational background",hasPets:"Pets yes/no",pets:"Pet details"}, options:{preferredFlat:"Preferred flat size"} },
   rentProperty: { label: "Rent Property", fields:{name:"Name",email:"Email",phone:"Phone",linkedinProfile:"LinkedIn profile",propertyType:"Property type",bhk:"BHK",address:"Property address",city:"City",state:"State",area:"Area",rent:"Rent amount",description:"Description",pets:"Pet policy"}, options:{propertyType:"Property type",bhk:"BHK"} },
-  saleProperty: { label: "Sale Property", fields:{name:"Name",email:"Email",phone:"Phone",linkedinProfile:"LinkedIn profile",propertyType:"Property type",bhk:"BHK",address:"Property address",city:"City",state:"State",area:"Area",saleAmount:"Sale amount",description:"Description",pets:"Pets"}, options:{propertyType:"Property type",bhk:"BHK"} }
+  saleProperty: { label: "Sale Property", fields:{name:"Name",email:"Email",phone:"Phone",propertyType:"Property type",bhk:"BHK",houseNumber:"House / flat number",address:"Street / locality",city:"City",state:"State",area:"Area",saleAmount:"Sale amount",bankLoan:"Bank loan yes/no",bankName:"Bank name",remarks:"Remarks"}, options:{propertyType:"Property type",bhk:"BHK"} }
 };
 function formEditorHtml(forms = {}) {
   return Object.entries(FORM_EDITOR_DEFS).map(([formKey, def]) => {
     const config = forms[formKey] || {};
-    const locked = formKey === "clientProfile" ? ["name","phone","email"] : ["name","email","phone"];
+    const locked = ["name","email","phone","hasLinkedIn","wifeWorks","hasPets","bankLoan"];
     const fields = Object.entries(def.fields).map(([key, label]) => `<label class="form-config-field"><span>${esc(label)}</span><span><input type="checkbox" data-form-field="${formKey}.${key}" ${config.fields?.[key] !== false ? "checked" : ""} ${locked.includes(key) ? "disabled" : ""}> Show${locked.includes(key) ? " (required)" : ""}</span></label>`).join("");
     const options = Object.entries(def.options).map(([key, label]) => {
       const values = config.options?.[key] || [];

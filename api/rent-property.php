@@ -4,8 +4,7 @@
 function _rent_property_pdf_build($data) {
     $blue = '#004BAF'; $orange = '#F1770A'; $muted = '#687789'; $line = '#DCE5F0'; $soft = '#F4F8FF';
     $ops = _profile_pdf_rect(44, 32, 507, 3, $orange);
-    $ops .= _profile_pdf_text(44, 48, 'earthsar', 20, true, $blue);
-    $ops .= _profile_pdf_text(44, 72, 'SMART ADVISORS IN REAL ESTATE', 8, false, $muted);
+    $ops .= sprintf("q 150 0 0 %.2f 44 %.2f cm /Logo Do Q\n", 150 * 212 / 700, 842 - 40 - (150 * 212 / 700));
     $ops .= _profile_pdf_text(44, 96, 'Rental Property', 23, true, $blue);
     $ops .= _profile_pdf_text(463, 106, 'REF  ' . $data['reference'], 8, true, $muted);
     $ops .= _profile_pdf_line(44, 128, 551, 128, $line, 1);
@@ -42,16 +41,18 @@ function _rent_property_pdf_build($data) {
     $objects = [
         1 => '<< /Type /Catalog /Pages 2 0 R >>',
         2 => '<< /Type /Pages /Kids [3 0 R] /Count 1 >>',
-        3 => '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 5 0 R /F2 6 0 R >> >> /Contents 4 0 R >>',
+        3 => '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 5 0 R /F2 6 0 R >> /XObject << /Logo 7 0 R >> >> /Contents 4 0 R >>',
         4 => '<< /Length ' . strlen($ops) . " >>\nstream\n" . $ops . 'endstream',
         5 => '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>',
         6 => '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>'
     ];
+    $logoJpeg = file_get_contents(__DIR__ . '/../public/assets/earthsar-logo-pdf.jpg');
+    $objects[7] = '<< /Type /XObject /Subtype /Image /Width 700 /Height 212 /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ' . strlen($logoJpeg) . " >>\nstream\n" . $logoJpeg . "\nendstream";
     $pdf = "%PDF-1.4\n%\xE2\xE3\xCF\xD3\n"; $offsets = [0];
     foreach ($objects as $number => $object) { $offsets[$number] = strlen($pdf); $pdf .= $number . " 0 obj\n" . $object . "\nendobj\n"; }
-    $xref = strlen($pdf); $pdf .= "xref\n0 7\n0000000000 65535 f \n";
-    for ($n = 1; $n <= 6; $n++) $pdf .= sprintf("%010d 00000 n \n", $offsets[$n]);
-    $pdf .= "trailer\n<< /Size 7 /Root 1 0 R >>\nstartxref\n{$xref}\n%%EOF";
+    $xref = strlen($pdf); $pdf .= "xref\n0 8\n0000000000 65535 f \n";
+    for ($n = 1; $n <= 7; $n++) $pdf .= sprintf("%010d 00000 n \n", $offsets[$n]);
+    $pdf .= "trailer\n<< /Size 8 /Root 1 0 R >>\nstartxref\n{$xref}\n%%EOF";
     return $pdf;
 }
 

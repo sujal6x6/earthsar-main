@@ -279,6 +279,7 @@ router.post("/client-profile", profileLimiter, profileUpload, async (req, res, n
       name: str(b.name, 100),
       email: str(b.email, 200).toLowerCase(),
       phone: str(b.phone, 30),
+      hasLinkedIn: str(b.hasLinkedIn, 3),
       linkedinProfile: str(b.linkedinProfile, 250),
       offerDate: str(b.offerDate, 10),
       familyCount: str(b.familyCount, 3),
@@ -289,14 +290,19 @@ router.post("/client-profile", profileLimiter, profileUpload, async (req, res, n
       education: str(b.education, 120),
       company: str(b.company, 120),
       designation: str(b.designation, 120),
+      wifeWorks: str(b.wifeWorks, 3),
+      wifeCompany: str(b.wifeCompany, 120),
+      wifeDesignation: str(b.wifeDesignation, 120),
       preferredFlat: str(b.preferredFlat, 40),
       budget: str(b.budget, 12),
+      hasPets: str(b.hasPets, 3),
       pets: str(b.pets, 300)
     };
     const errors = {};
     if (data.name.length < 2) errors.name = "Enter the client's full name.";
     if (!EMAIL_RE.test(data.email)) errors.email = "Enter a valid email address.";
-    if (enabled("linkedinProfile") && data.linkedinProfile && !validLinkedInProfile(data.linkedinProfile)) errors.linkedinProfile = "Enter a valid LinkedIn profile URL.";
+    if (!["Yes", "No"].includes(data.hasLinkedIn)) errors.hasLinkedIn = "Please choose Yes or No for LinkedIn.";
+    if (data.hasLinkedIn === "Yes" && enabled("linkedinProfile") && data.linkedinProfile && !validLinkedInProfile(data.linkedinProfile)) errors.linkedinProfile = "Enter a valid LinkedIn profile URL.";
     if (data.phone.replace(/\D/g, "").length < 7) errors.phone = "Enter a valid phone number.";
     if (enabled("offerDate") && !/^\d{4}-\d{2}-\d{2}$/.test(data.offerDate)) errors.offerDate = "Choose the offer date.";
     if (enabled("familyCount") && (!/^\d{1,2}$/.test(data.familyCount) || +data.familyCount < 1 || +data.familyCount > 30)) errors.familyCount = "Enter a family size from 1 to 30.";
@@ -307,8 +313,12 @@ router.post("/client-profile", profileLimiter, profileUpload, async (req, res, n
     if (enabled("education") && !data.education) errors.education = "Enter the educational background.";
     if (enabled("company") && !data.company) errors.company = "Enter the working company or profession.";
     if (enabled("designation") && !data.designation) errors.designation = "Enter the designation.";
+    if (!["Yes", "No"].includes(data.wifeWorks)) errors.wifeWorks = "Please choose Yes or No.";
+    if (data.wifeWorks === "Yes" && enabled("wifeCompany") && !data.wifeCompany) errors.wifeCompany = "Enter your wife’s company name.";
+    if (data.wifeWorks === "Yes" && enabled("wifeDesignation") && !data.wifeDesignation) errors.wifeDesignation = "Enter your wife’s designation.";
     if (enabled("preferredFlat") && !configuredChoices(formSettings, "preferredFlat").includes(data.preferredFlat)) errors.preferredFlat = "Choose the preferred flat size.";
     if (enabled("budget") && (!/^\d{1,10}$/.test(data.budget) || +data.budget < 1)) errors.budget = "Enter the monthly rental budget in rupees.";
+    if (!["Yes", "No"].includes(data.hasPets)) errors.hasPets = "Please choose Yes or No for pets.";
     if (b.consent !== "on") errors.consent = "Consent is required to send this profile to earthsar.";
     if (Object.keys(errors).length) return res.status(400).json({ error: "Check the highlighted fields.", fields: errors });
 
@@ -450,27 +460,30 @@ router.post("/sale-property", salePropertyLimiter, express.json({ limit: "20kb" 
     phone: str(b.phone, 30),
     propertyType: str(b.propertyType, 30),
     bhk: str(b.bhk, 20),
+    houseNumber: str(b.houseNumber, 60),
     address: str(b.address, 300),
     city: str(b.city, 80),
     state: str(b.state, 80),
     area: str(b.area, 8),
     saleAmount: str(b.saleAmount, 12),
-    description: str(b.description, 600),
-    linkedinProfile: str(b.linkedinProfile, 250),
-    pets: str(b.pets, 300)
+    bankLoan: str(b.bankLoan, 3),
+    bankName: str(b.bankName, 120),
+    remarks: str(b.remarks, 600)
   };
   const errors = {};
   if (data.name.length < 2) errors.name = "Enter your full name.";
   if (!EMAIL_RE.test(data.email)) errors.email = "Enter a valid email address.";
-  if (enabled("linkedinProfile") && data.linkedinProfile && !validLinkedInProfile(data.linkedinProfile)) errors.linkedinProfile = "Enter a valid LinkedIn profile URL.";
   if (data.phone.replace(/\D/g, "").length < 7) errors.phone = "Enter a valid phone number.";
   if (enabled("propertyType") && !configuredChoices(formSettings, "propertyType").includes(data.propertyType)) errors.propertyType = "Choose a property type.";
   if (enabled("bhk") && !configuredChoices(formSettings, "bhk").includes(data.bhk)) errors.bhk = "Choose the BHK configuration.";
-  if (enabled("address") && data.address.length < 5) errors.address = "Enter the property address.";
+  if (enabled("houseNumber") && !data.houseNumber) errors.houseNumber = "Enter the house or flat number.";
+  if (enabled("address") && data.address.length < 5) errors.address = "Enter the street or locality.";
   if (enabled("city") && !data.city) errors.city = "Enter the city.";
   if (enabled("state") && !data.state) errors.state = "Enter the state.";
   if (enabled("area") && (!/^\d{2,7}$/.test(data.area) || +data.area < 100)) errors.area = "Enter the area in square feet.";
   if (enabled("saleAmount") && (!/^\d{1,12}$/.test(data.saleAmount) || +data.saleAmount < 1)) errors.saleAmount = "Enter the sale amount in rupees.";
+  if (!["Yes", "No"].includes(data.bankLoan)) errors.bankLoan = "Please choose Yes or No for an existing bank loan.";
+  if (data.bankLoan === "Yes" && enabled("bankName") && !data.bankName) errors.bankName = "Enter the bank name.";
   if (b.consent !== true) errors.consent = "Please confirm that we may contact you about the property.";
   if (Object.keys(errors).length) return res.status(400).json({ error: "Check the highlighted fields.", fields: errors });
   if (!config.smtp.host || !config.smtp.port || !config.smtp.user || !config.smtp.pass || !config.smtp.from) {
@@ -494,7 +507,7 @@ router.post("/sale-property", salePropertyLimiter, express.json({ limit: "20kb" 
       to: "info@earthsar.in",
       replyTo: data.email,
       subject: `Sale property submission · ${data.name} · ${data.reference}`,
-      text: `A property was submitted for sale through earthsar.in.\n\nOwner: ${data.name}\nPhone: ${data.phone}\nEmail: ${data.email}\nProperty: ${data.propertyType}, ${data.bhk}\nCity: ${data.city}\nSale amount: INR ${data.saleAmount}\nReference: ${data.reference}\n\nThe completed sale property details are attached as a PDF.`,
+      text: `A property was submitted for sale through earthsar.in.\n\nOwner: ${data.name}\nPhone: ${data.phone}\nEmail: ${data.email}\nProperty: ${data.propertyType}, ${data.bhk}\nAddress: ${data.houseNumber}, ${data.address}\nCity: ${data.city}\nSale amount: INR ${data.saleAmount}\nBank loan: ${data.bankLoan}${data.bankName ? ` (${data.bankName})` : ""}\nReference: ${data.reference}\n\nThe completed sale property details are attached as a PDF.`,
       attachments: [{ filename: `earthsar-sale-property-${safeName}.pdf`, content: pdf, contentType: "application/pdf" }]
     });
     res.status(201).json({ ok: true, reference: data.reference });

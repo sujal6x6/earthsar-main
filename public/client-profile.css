@@ -3,6 +3,7 @@
 .profile-hero h1{max-width:760px}.profile-hero .lead{max-width:720px}
 .profile-content{padding:28px 0 84px;background:linear-gradient(180deg,#fff 0%,#F8FAFD 100%)}
 .profile-layout{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(260px,.72fr);gap:24px;align-items:start}
+.client-profile-page .profile-layout{grid-template-columns:minmax(0,1fr)}.client-profile-page .profile-form{width:100%;max-width:900px;margin-inline:auto}
 .profile-form{min-width:0;padding:clamp(20px,4vw,38px);border:1px solid var(--line);border-radius:16px;background:#fff;box-shadow:0 18px 50px rgba(0,42,105,.08)}
 .form-intro{display:flex;align-items:center;gap:14px;padding-bottom:22px;border-bottom:1px solid var(--line)}
 .form-mark{width:48px;height:48px;display:grid;place-items:center;border-radius:14px;background:linear-gradient(135deg,var(--es-blue),#003170);color:white;font-family:var(--f-head);font-size:27px;font-weight:700;box-shadow:0 8px 18px rgba(0,75,175,.17)}
@@ -11,6 +12,7 @@
 .form-section h3{font-size:18px;margin:0 0 17px;color:var(--es-blue)}
 .form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:17px 16px}
 .field{display:flex;min-width:0;flex-direction:column;gap:7px;color:#26364A;font-size:14px;font-weight:700}
+.field[hidden]{display:none!important}
 .field>span{display:flex;align-items:baseline;gap:5px;flex-wrap:wrap}
 .field small{color:#738094;font-size:12px;font-weight:500}
 .field input,.field select,.field textarea{width:100%;min-width:0;min-height:48px;padding:11px 13px;border:1px solid #CBD8E8;border-radius:9px;background:#fff;color:#182433;font:500 15px var(--f-body);transition:border-color .18s,box-shadow .18s}

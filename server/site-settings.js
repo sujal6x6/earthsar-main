@@ -1,7 +1,7 @@
 const DEFAULT_SITE_SETTINGS = {
   forms: {
     clientProfile: {
-      fields: Object.fromEntries(['name','phone','email','linkedinProfile','offerDate','designation','company','photo','preferredFlat','budget','familyCount','nativePlace','shiftingFrom','shiftDate','familyDetails','education','pets'].map(key => [key, true])),
+      fields: Object.fromEntries(['name','phone','email','hasLinkedIn','linkedinProfile','offerDate','company','designation','wifeWorks','wifeCompany','wifeDesignation','photo','preferredFlat','budget','familyCount','nativePlace','shiftingFrom','shiftDate','familyDetails','education','hasPets','pets'].map(key => [key, true])),
       options: { preferredFlat: ['1 BHK','1.5 BHK','2 BHK','2.5 BHK','2 BHK + Study','3 BHK','3.5 BHK','4 BHK','4.5 BHK','5 BHK','Other'].map(value => ({value, visible:true})) }
     },
     rentProperty: {
@@ -9,7 +9,7 @@ const DEFAULT_SITE_SETTINGS = {
       options: { propertyType: ['Apartment','House','Villa'].map(value => ({value, visible:true})), bhk: ['2 BHK','2.5 BHK','3 BHK','3.5 BHK','4 BHK','4.5 BHK'].map(value => ({value, visible:true})) }
     },
     saleProperty: {
-      fields: Object.fromEntries(['name','email','phone','linkedinProfile','propertyType','bhk','address','city','state','area','saleAmount','description','pets'].map(key => [key, true])),
+      fields: Object.fromEntries(['name','email','phone','propertyType','bhk','houseNumber','address','city','state','area','saleAmount','bankLoan','bankName','remarks'].map(key => [key, true])),
       options: { propertyType: ['Apartment','House','Villa'].map(value => ({value, visible:true})), bhk: ['2 BHK','2.5 BHK','3 BHK','3.5 BHK','4 BHK','4.5 BHK'].map(value => ({value, visible:true})) }
     }
   },
@@ -305,7 +305,7 @@ function sanitizeSiteSettings(input = {}) {
     const defaults = DEFAULT_SITE_SETTINGS.forms[formName];
     const saved = input.forms && input.forms[formName] || {};
     const fields = Object.fromEntries(Object.keys(defaults.fields).map(key => [key, saved.fields && typeof saved.fields[key] === 'boolean' ? saved.fields[key] : true]));
-    for (const required of ['name', 'email', 'phone']) if (required in fields) fields[required] = true;
+    for (const required of ['name', 'email', 'phone', 'hasLinkedIn', 'wifeWorks', 'hasPets', 'bankLoan']) if (required in fields) fields[required] = true;
     const options = {};
     for (const key of Object.keys(defaults.options)) {
       const values = Array.isArray(saved.options && saved.options[key]) ? saved.options[key] : defaults.options[key];
