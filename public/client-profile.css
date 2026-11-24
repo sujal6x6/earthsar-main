@@ -19,6 +19,10 @@
 .field input::placeholder,.field textarea::placeholder{color:#8995A4;font-weight:400}
 .field select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' viewBox='0 0 16 16'%3E%3Cpath d='m4 6 4 4 4-4' stroke='%23004BAF' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-position:right 13px center;background-repeat:no-repeat;padding-right:38px}
 .field-wide{grid-column:1/-1}
+.field.has-error>span:first-child{color:#AC3434}
+.field.has-error input,.field.has-error select,.field.has-error textarea,.field.has-error .money-input input{border-color:#AC3434;box-shadow:0 0 0 3px rgba(172,52,52,.12)}
+.field-error-message{display:block;color:#AC3434;font-size:12px;font-weight:700;line-height:1.4}
+.consent.has-error{color:#AC3434;flex-wrap:wrap}.consent.has-error input{outline:2px solid #AC3434;outline-offset:2px}.consent .field-error-message{flex-basis:100%;margin-left:30px;margin-top:-5px}
 .money-input{position:relative}.money-input>span{position:absolute;left:14px;top:10px;color:var(--es-blue);font-weight:800}.money-input input{padding-left:34px}
 .photo-field{margin-top:17px}.photo-field input[type=file]{min-height:48px;padding:8px;font-size:13px;background:#FBFCFE}.photo-field input::file-selector-button{min-height:30px;margin-right:10px;padding:4px 10px;border:1px solid var(--line-strong);border-radius:6px;background:#fff;color:var(--es-blue);font:700 12px var(--f-head);cursor:pointer}.photo-name{color:#758196;font-size:13px;font-weight:500}
 .privacy-note{display:flex;align-items:flex-start;gap:12px;padding:16px;margin-top:22px;border:1px solid #D9E7F7;border-radius:10px;background:#F3F8FF}.privacy-icon{display:grid;place-items:center;flex:none;width:24px;height:24px;border-radius:50%;background:#E1EEFF;color:var(--es-blue);font-size:14px;font-weight:900}.privacy-note p{margin:0;color:#4C5B70;font-size:13.5px;line-height:1.55}.privacy-note strong{color:var(--es-blue)}
