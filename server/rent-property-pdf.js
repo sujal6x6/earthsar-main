@@ -7,106 +7,85 @@ const MUTED = "#687789";
 const LINE = "#DCE5F0";
 const SOFT = "#F4F8FF";
 const LOGO = path.join(__dirname, "../public/assets/earthsar-logo.png");
+const FONT_REGULAR = path.join(__dirname, "fonts/NotoSans-Regular.ttf");
+const FONT_BOLD = path.join(__dirname, "fonts/NotoSans-Bold.ttf");
 
 function createPropertyPdf(data, sale = false) {
   return new Promise((resolve, reject) => {
-    const doc = new PDFDocument({ size: "A4", margins: { top: 40, right: 44, bottom: 48, left: 44 }, autoFirstPage: false });
+    const doc = new PDFDocument({ size: "A4", margins: { top: 22, right: 34, bottom: 12, left: 34 } });
+    doc.registerFont("Noto", FONT_REGULAR);
+    doc.registerFont("Noto-Bold", FONT_BOLD);
     const chunks = [];
     doc.on("data", chunk => chunks.push(chunk));
     doc.on("error", reject);
     doc.on("end", () => resolve(Buffer.concat(chunks)));
 
-    const pageHeader = () => {
-      const { width, height } = doc.page;
-      const left = doc.page.margins.left;
-      const right = width - doc.page.margins.right;
-      doc.x = left;
-      doc.y = 0;
-      doc.rect(left, 32, right - left, 3).fill(ORANGE);
-      doc.image(LOGO, left, 40, { width: 150 });
-      doc.font("Helvetica-Bold").fontSize(23).fillColor(BLUE).text(sale ? "Sale Property" : "Rental Property", left, 96, { lineBreak: false });
-      doc.font("Helvetica-Bold").fontSize(8).fillColor(MUTED).text(`REF  ${data.reference}`, left, 106, { align: "right", width: right - left });
-      doc.moveTo(left, 128).lineTo(right, 128).lineWidth(1).strokeColor(LINE).stroke();
-      doc.font("Helvetica-Oblique").fontSize(8).fillColor(MUTED).text("Property owner submission  ·  earthsar Real Estate Advisory", left, height - doc.page.margins.bottom - 14, { width: right - left, align: "center", lineBreak: false });
-      doc.x = left;
-      doc.y = 142;
-    };
-    const addPage = () => { doc.addPage(); pageHeader(); };
-    addPage();
-
-    const left = doc.page.margins.left;
-    const right = doc.page.width - doc.page.margins.right;
+    const left = 34;
+    const right = doc.page.width - 34;
     const width = right - left;
-    const bottom = doc.page.height - doc.page.margins.bottom - 30;
-    let activeSection = "";
-    const ensureSpace = (height, repeatSection = false) => {
-      if (doc.y + height > bottom) {
-        addPage();
-        if (repeatSection && activeSection) {
-          doc.font("Helvetica-Bold").fontSize(9).fillColor(ORANGE).text(`${activeSection.toUpperCase()} (CONTINUED)`, left, doc.y, { characterSpacing: 0.65 });
-          doc.moveTo(left, doc.y + 4).lineTo(right, doc.y + 4).lineWidth(0.8).strokeColor(ORANGE).stroke();
-          doc.y += 13;
-        }
-      }
-    };
+    doc.image(LOGO, left, 27, { width: 112 });
+    doc.font("Noto-Bold").fontSize(19).fillColor(BLUE).text(sale ? "Sale Property" : "Rental Property", 178, 32, { width: right - 178, align: "right", lineBreak: false });
+    doc.font("Noto").fontSize(8.5).fillColor(MUTED).text(`Reference ${data.reference}`, 178, 56, { width: right - 178, align: "right", lineBreak: false });
+    doc.moveTo(left, 73).lineTo(right, 73).lineWidth(0.6).strokeColor(LINE).stroke();
+    doc.moveTo(left, 73).lineTo(left + 42, 73).lineWidth(1.8).strokeColor(ORANGE).stroke();
+
+    doc.font("Noto-Bold").fontSize(13).fillColor(BLUE).text(data.name, left, 84, { width: width * 0.46, height: 16, ellipsis: true, lineBreak: false });
+    doc.font("Noto").fontSize(8.5).fillColor(MUTED).text(`${data.email}  ·  ${data.phone}`, left + width * 0.46, 87, { width: width * 0.54, height: 14, ellipsis: true, lineBreak: false });
+    doc.moveTo(left, 99).lineTo(right, 105).lineWidth(0.5).strokeColor(LINE).stroke();
+
+    const metrics = [
+      ["PROPERTY TYPE", data.propertyType],
+      ["BHK", data.bhk],
+      ["AREA", `${data.area} sq ft`],
+      ["FLOOR", data.floor],
+      [sale ? "SALE AMOUNT" : "MONTHLY RENT", `INR ${sale ? data.saleAmount : data.rent}`]
+    ];
+    const metricW = width / metrics.length;
+    metrics.forEach(([label, value], i) => {
+      const x = left + i * metricW;
+      doc.font("Noto-Bold").fontSize(7.7).fillColor(MUTED).text(label, x, 113, { width: metricW - 7, lineBreak: false });
+      doc.font("Noto-Bold").fontSize(10).fillColor(i === 4 ? ORANGE : BLUE).text(String(value || "—"), x, 125, { width: metricW - 7, height: 13, ellipsis: true, lineBreak: false });
+    });
+    doc.moveTo(left, 139).lineTo(right, 145).lineWidth(0.5).strokeColor(LINE).stroke();
+
+    let y = 153;
     const section = title => {
-      activeSection = title;
-      ensureSpace(30);
-      doc.moveDown(0.65);
-      doc.font("Helvetica-Bold").fontSize(9).fillColor(ORANGE).text(title.toUpperCase(), left, doc.y, { characterSpacing: 0.65 });
-      doc.moveTo(left, doc.y + 4).lineTo(right, doc.y + 4).lineWidth(0.8).strokeColor(ORANGE).stroke();
-      doc.y += 13;
+      doc.font("Noto-Bold").fontSize(9).fillColor(ORANGE).text(title.toUpperCase(), left, y, { characterSpacing: 0.5, lineBreak: false });
+      y += 13;
     };
     const row = (label, value) => {
-      const labelWidth = 174;
-      const valueWidth = width - labelWidth - 24;
-      const lines = String(value || "Not provided").split(/\r?\n/);
-      const height = Math.max(31, doc.heightOfString(lines.join("\n"), { width: valueWidth, font: "Helvetica", fontSize: 9.5, lineGap: 2 }) + 15);
-      ensureSpace(height + 2, true);
-      const y = doc.y;
-      doc.rect(left, y, width, height).fill("#FFFFFF").stroke(LINE);
-      doc.rect(left, y, labelWidth, height).fill(SOFT);
-      doc.font("Helvetica-Bold").fontSize(7.5).fillColor(MUTED).text(label.toUpperCase(), left + 10, y + 10, { width: labelWidth - 18 });
-      doc.font("Helvetica").fontSize(9.5).fillColor("#182433").text(lines.join("\n"), left + labelWidth + 12, y + 7, { width: valueWidth, lineGap: 2 });
-      doc.y = y + height;
+      const labelW = 142;
+      const valueW = width - labelW - 18;
+      const fontSize = 9;
+      const text = String(value == null || value === "" ? "Not provided" : value);
+      const textHeight = doc.font("Noto").fontSize(fontSize).heightOfString(text, { width: valueW, lineGap: 0.5 });
+      const h = Math.max(19, textHeight + 8);
+      doc.rect(left, y, width, h).fill("#FFFFFF").stroke(LINE);
+      doc.rect(left, y, labelW, h).fill(SOFT);
+      doc.font("Noto-Bold").fontSize(7.7).fillColor(MUTED).text(label.toUpperCase(), left + 6, y + 6, { width: labelW - 10, lineBreak: false, ellipsis: true });
+      doc.font("Noto").fontSize(fontSize).fillColor("#182433").text(text, left + labelW + 8, y + 4, { width: valueW, lineGap: 0.5 });
+      y += h + 2;
     };
 
-    doc.font("Helvetica-Bold").fontSize(7.5).fillColor(ORANGE).text("PROPERTY OWNER", left, 144, { characterSpacing: 0.7 });
-    doc.font("Helvetica-Bold").fontSize(19).fillColor(BLUE).text(data.name, left, 160, { width, height: 28, ellipsis: true });
-    doc.font("Helvetica").fontSize(9).fillColor(MUTED).text(`${data.email}  ·  ${data.phone}`, left, 190, { width, height: 15, ellipsis: true });
-    doc.moveTo(left, 215).lineTo(right, 215).lineWidth(0.7).strokeColor(LINE).stroke();
-    const metricWidth = width / 3;
-    const metrics = [["PROPERTY TYPE", data.propertyType], ["CONFIGURATION", data.bhk], [sale ? "SALE AMOUNT" : "MONTHLY RENT", `INR ${sale ? data.saleAmount : data.rent}`]];
-    metrics.forEach(([label, value], index) => {
-      const x = left + metricWidth * index;
-      doc.font("Helvetica-Bold").fontSize(7).fillColor(MUTED).text(label, x, 223, { width: metricWidth - 8 });
-      doc.font("Helvetica-Bold").fontSize(12).fillColor(index === 2 ? ORANGE : BLUE).text(value, x, 236, { width: metricWidth - 10, height: 22, ellipsis: true });
-    });
-    doc.y = 272;
-
-    section("Owner details");
-    row("Name", data.name);
-    row("Email", data.email);
-    row("Phone", data.phone);
-    if (!sale) row("LinkedIn profile", data.linkedinProfile);
     section("Property details");
-    row("Property type", data.propertyType);
-    row("BHK", data.bhk);
-    if (sale) row("House / flat number", data.houseNumber);
-    row(sale ? "Street / locality" : "Address", data.address);
+    if (!sale) row("LinkedIn profile", data.linkedinProfile || "Not provided");
+    if (sale) {
+      row("House / flat number", data.houseNumber);
+      row("Street / locality", data.address);
+    } else {
+      row("Property address", data.address);
+    }
     row("City", data.city);
     row("State", data.state);
-    row("Area", `${data.area} sq ft`);
-    if (sale) row("Sale amount", `INR ${data.saleAmount}`);
-    else row("Rent amount (including maintenance)", `INR ${data.rent}`);
     if (sale) {
       row("Existing bank loan", data.bankLoan);
-      if (data.bankLoan === "Yes") row("Bank name", data.bankName);
-      row("Remarks", data.remarks);
+      row("Bank name", data.bankLoan === "Yes" ? data.bankName : "Not applicable");
+      row("Remarks", data.remarks || "Not provided");
     } else {
-      row("Description", data.description);
-      row("Pet policy", data.pets);
+      row("Description", data.description || "Not provided");
+      row("Pet policy", data.pets || "Not provided");
     }
+    doc.font("Noto").fontSize(8.5).fillColor(MUTED).text(sale ? "Property owner submission  ·  earthsar Real Estate Advisory" : "Property owner submission  ·  earthsar Real Estate Advisory", left, 808, { width, align: "center", lineBreak: false });
     doc.end();
   });
 }

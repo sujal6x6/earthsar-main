@@ -41,38 +41,24 @@ function _profile_pdf_line($x1, $top1, $x2, $top2, $hex, $width = 0.8) {
 
 function _profile_pdf_build($data, $photoJpeg = null, $photoSize = null) {
     $blue = '#004BAF'; $orange = '#F1770A'; $muted = '#687789'; $line = '#DCE5F0'; $soft = '#F4F8FF';
-    $ops = "";
-    $ops .= _profile_pdf_rect(44, 32, 507, 3, $orange);
-    $ops .= sprintf("q 150 0 0 %.2f 44 %.2f cm /Logo Do Q\n", 150 * 212 / 700, 842 - 40 - (150 * 212 / 700));
-    $ops .= _profile_pdf_text(44, 96, 'Client Profile', 23, true, $blue);
-    $ops .= _profile_pdf_text(463, 106, 'REF  ' . $data['reference'], 8, true, $muted);
-    $ops .= _profile_pdf_line(44, 128, 551, 128, $line, 1);
-
-    $imageX = 44; $imageTop = 142; $imageW = 82; $imageH = 94;
+    $ops = _profile_pdf_rect(44, 20, 507, 2, $orange);
+    $ops .= sprintf("q 112 0 0 %.2f 44 %.2f cm /Logo Do Q\n", 112 * 212 / 700, 842 - 27 - (112 * 212 / 700));
+    $ops .= _profile_pdf_line(162, 27, 162, 64, $line, 0.8);
+    $ops .= _profile_pdf_text(178, 27, 'CLIENT BRIEF', 7, true, $orange);
+    $ops .= _profile_pdf_text(551 - (strlen('Client Profile') * 10), 38, 'Client Profile', 19, true, $blue);
+    $ops .= _profile_pdf_rect(445, 45, 116, 19, $soft);
+    $ops .= _profile_pdf_text(551 - (strlen('REF  ' . $data['reference']) * 4.2), 51, 'REF  ' . $data['reference'], 7, true, $muted);
+    $ops .= _profile_pdf_line(44, 70, 551, 70, $line, 0.8);
     if ($photoJpeg && $photoSize) {
-        [$pw, $ph] = $photoSize;
-        $scale = min($imageW / max(1, $pw), $imageH / max(1, $ph));
+        [$pw, $ph] = $photoSize; $scale = min(48 / max(1, $pw), 52 / max(1, $ph));
         $drawW = $pw * $scale; $drawH = $ph * $scale;
-        $drawX = $imageX + ($imageW - $drawW) / 2;
-        $drawTop = $imageTop + ($imageH - $drawH) / 2;
-        $ops .= sprintf("q %.2f 0 0 %.2f %.2f %.2f cm /Im1 Do Q\n", $drawW, $drawH, $drawX, 842 - $drawTop - $drawH);
-        $textX = 142;
-    } else $textX = 44;
-    $textW = 551 - $textX;
-    $ops .= _profile_pdf_text($textX, 144, 'CLIENT', 8, true, $orange);
-    $name = $data['name'];
-    $ops .= _profile_pdf_text($textX, 160, mb_substr($name, 0, 40), 19, true, $blue);
+        $ops .= sprintf("q %.2f 0 0 %.2f %.2f %.2f cm /Im1 Do Q\n", $drawW, $drawH, 44 + (48 - $drawW) / 2, 842 - 83 - $drawH);
+        $nameX = 102;
+    } else $nameX = 44;
+    $ops .= _profile_pdf_text($nameX, 88, mb_substr($data['name'], 0, 48), 13, true, $blue);
     $sub = trim($data['company'] . '  ·  ' . $data['designation'], ' ·');
-    if ($sub !== '') $ops .= _profile_pdf_text($textX, 189, mb_substr($sub, 0, 72), 9, false, $muted);
-    $ops .= _profile_pdf_line($textX, 207, 551, 207, $line, 0.7);
-    $metricW = ($textW - 14) / 2;
-    $ops .= _profile_pdf_text($textX, 214, 'PREFERRED FLAT', 7, true, $muted);
-    $ops .= _profile_pdf_text($textX, 226, $data['preferredFlat'], 13, true, $orange);
-    $ops .= _profile_pdf_text($textX + $metricW + 14, 214, 'MONTHLY BUDGET', 7, true, $muted);
-    $ops .= _profile_pdf_text($textX + $metricW + 14, 226, 'INR ' . $data['budget'], 13, true, $blue);
-
-    $ops .= _profile_pdf_text(44, 263, 'CLIENT DETAILS', 9, true, $orange);
-    $ops .= _profile_pdf_line(44, 276, 551, 276, $orange, 0.8);
+    if ($sub !== '') $ops .= _profile_pdf_text($nameX, 106, mb_substr($sub, 0, 88), 7, false, $muted);
+    $ops .= _profile_pdf_line($nameX, 121, 551, 121, $orange, 0.7);
     $rows = [
         ['Offer date', $data['offerDate']], ['Name', $data['name']], ['Email', $data['email']], ['Phone', $data['phone']],
         ['LinkedIn profile available', $data['hasLinkedIn']]
@@ -85,42 +71,34 @@ function _profile_pdf_build($data, $photoJpeg = null, $photoSize = null) {
         ['Company / profession', $data['company']], ['Designation', $data['designation']], ['Wife works', $data['wifeWorks']]
     ]);
     if ($data['wifeWorks'] === 'Yes') $rows = array_merge($rows, [['Wife company', $data['wifeCompany']], ['Wife designation', $data['wifeDesignation']]]);
-    $rows = array_merge($rows, [
-        ['Preferred flat size', $data['preferredFlat']], ['Monthly rental budget', 'INR ' . $data['budget']], ['Has pets', $data['hasPets']]
-    ]);
+    $rows = array_merge($rows, [['Preferred flat size', $data['preferredFlat']], ['Monthly rental budget', 'INR ' . $data['budget']], ['Has pets', $data['hasPets']]]);
     if ($data['hasPets'] === 'Yes' && $data['pets'] !== '') $rows[] = ['Pet details / housing needs', $data['pets']];
-    $top = 282; $labelW = 174;
+    $top = 132; $labelW = 166;
     foreach ($rows as [$label, $value]) {
-        $value = $value !== '' ? $value : 'Not provided';
-        $lines = explode("\n", wordwrap($value, 70, "\n", true));
-        $height = max(21, count($lines) * 8 + 7);
+        $value = $value !== '' ? (string)$value : 'Not provided';
+        $lines = explode("\n", wordwrap($value, 88, "\n", true));
+        $height = max(16, count($lines) * 7 + 5);
         $ops .= _profile_pdf_rect(44, $top, 507, $height, '#FFFFFF', $line);
         $ops .= _profile_pdf_rect(44, $top, $labelW, $height, $soft);
-        $ops .= _profile_pdf_text(54, $top + 7, strtoupper($label), 7, true, $muted);
-        foreach ($lines as $index => $valueLine) {
-            $ops .= _profile_pdf_text(230, $top + 5 + ($index * 8), $valueLine, 8, false, '#182433');
-        }
+        $ops .= _profile_pdf_text(50, $top + 5, strtoupper($label), 7, true, $muted);
+        foreach ($lines as $index => $valueLine) $ops .= _profile_pdf_text(218, $top + 4 + ($index * 7), $valueLine, 8, false, '#182433');
         $top += $height;
     }
-    $ops .= _profile_pdf_text(44, 806, 'Private client information  ·  earthsar Real Estate Advisory', 8, false, $muted);
-
-    $objects = [];
-    $objects[1] = '<< /Type /Catalog /Pages 2 0 R >>';
-    $objects[2] = '<< /Type /Pages /Kids [3 0 R] /Count 1 >>';
-    $xobjects = ' /XObject << /Logo 7 0 R' . ($photoJpeg ? ' /Im1 8 0 R' : '') . ' >>';
-    $objects[3] = '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 5 0 R /F2 6 0 R >>' . $xobjects . ' >> /Contents 4 0 R >>';
-    $objects[4] = '<< /Length ' . strlen($ops) . " >>\nstream\n" . $ops . 'endstream';
-    $objects[5] = '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>';
-    $objects[6] = '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>';
+    $ops .= _profile_pdf_text(44, 814, 'Private client information  ·  earthsar Real Estate Advisory', 7, false, $muted);
+    $objects = [
+        1 => '<< /Type /Catalog /Pages 2 0 R >>',
+        2 => '<< /Type /Pages /Kids [3 0 R] /Count 1 >>',
+        3 => '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 5 0 R /F2 6 0 R >> /XObject << /Logo 7 0 R' . ($photoJpeg ? ' /Im1 8 0 R' : '') . ' >> >> /Contents 4 0 R >>',
+        4 => '<< /Length ' . strlen($ops) . ">>\nstream\n" . $ops . 'endstream',
+        5 => '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>',
+        6 => '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>'
+    ];
     $logoJpeg = file_get_contents(__DIR__ . '/../public/assets/earthsar-logo-pdf.jpg');
-    $objects[7] = '<< /Type /XObject /Subtype /Image /Width 700 /Height 212 /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ' . strlen($logoJpeg) . " >>\nstream\n" . $logoJpeg . "\nendstream";
-    if ($photoJpeg) $objects[8] = '<< /Type /XObject /Subtype /Image /Width ' . $photoSize[0] . ' /Height ' . $photoSize[1] . ' /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ' . strlen($photoJpeg) . " >>\nstream\n" . $photoJpeg . "\nendstream";
+    $objects[7] = '<< /Type /XObject /Subtype /Image /Width 700 /Height 212 /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ' . strlen($logoJpeg) . ">>\nstream\n" . $logoJpeg . "\nendstream";
+    if ($photoJpeg) $objects[8] = '<< /Type /XObject /Subtype /Image /Width ' . $photoSize[0] . ' /Height ' . $photoSize[1] . ' /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ' . strlen($photoJpeg) . ">>\nstream\n" . $photoJpeg . "\nendstream";
     ksort($objects);
     $pdf = "%PDF-1.4\n%\xE2\xE3\xCF\xD3\n"; $offsets = [0];
-    foreach ($objects as $number => $object) {
-        $offsets[$number] = strlen($pdf);
-        $pdf .= $number . " 0 obj\n" . $object . "\nendobj\n";
-    }
+    foreach ($objects as $number => $object) { $offsets[$number] = strlen($pdf); $pdf .= $number . " 0 obj\n" . $object . "\nendobj\n"; }
     $xref = strlen($pdf); $max = max(array_keys($objects)) + 1;
     $pdf .= "xref\n0 {$max}\n0000000000 65535 f \n";
     for ($n = 1; $n < $max; $n++) $pdf .= sprintf("%010d 00000 n \n", $offsets[$n] ?? 0);

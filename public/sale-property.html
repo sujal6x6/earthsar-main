@@ -44,11 +44,12 @@
           <div class="form-grid">
             <label class="field"><span>Property type <b>*</b></span><select name="propertyType" required><option value="">Select property type</option><option>Apartment</option><option>House</option><option>Villa</option></select></label>
             <label class="field"><span>BHK <b>*</b></span><select name="bhk" required><option value="">Select BHK</option><option>2 BHK</option><option>2.5 BHK</option><option>3 BHK</option><option>3.5 BHK</option><option>4 BHK</option><option>4.5 BHK</option></select></label>
+            <label class="field"><span>Area (sq ft) <b>*</b></span><input name="area" type="number" min="100" max="9999999" inputmode="numeric" required></label>
+            <label class="field"><span>Floor <b>*</b></span><input name="floor" maxlength="30" placeholder="e.g. 3rd floor or Ground floor" required></label>
             <label class="field"><span>House / flat number <b>*</b></span><input name="houseNumber" autocomplete="address-line1" maxlength="60" required></label>
             <label class="field field-wide"><span>Street / locality <b>*</b></span><input name="address" autocomplete="street-address" maxlength="300" required></label>
             <label class="field"><span>City <b>*</b></span><input name="city" autocomplete="address-level2" maxlength="80" required></label>
             <label class="field"><span>State <b>*</b></span><input name="state" autocomplete="address-level1" maxlength="80" required></label>
-            <label class="field"><span>Area (sq ft) <b>*</b></span><input name="area" type="number" min="100" max="9999999" inputmode="numeric" required></label>
             <label class="field"><span>Sale amount (INR) <b>*</b></span><div class="money-input"><span aria-hidden="true">₹</span><input name="saleAmount" type="number" min="1" max="9999999999" inputmode="numeric" required></div></label>
             <label class="field"><span>Is there an existing bank loan? <b>*</b></span><select name="bankLoan" required><option value="">Choose yes or no</option><option>Yes</option><option>No</option></select></label>
             <label class="field conditional-field" data-depends-on="bankLoan" data-depends-value="Yes" hidden><span>Bank name <b>*</b></span><input name="bankName" maxlength="120" required disabled></label>
@@ -57,7 +58,7 @@
         </div>
         <label class="consent"><input name="consent" type="checkbox" required><span>I agree to share these details with earthsar so the team may contact me about this sale. <b>*</b></span></label>
         <div class="honeypot" aria-hidden="true"><label>Leave this field empty<input name="website" tabindex="-1" autocomplete="off"></label></div>
-        <div class="form-actions"><button class="btn btn-primary" type="submit" id="submitSaleProperty">Submit property</button><p class="form-status" id="saleStatus" role="status" aria-live="polite"></p></div>
+        <div class="form-actions"><button class="btn btn-primary" type="submit" id="submitSaleProperty">Kindly submit your property details</button><p class="form-status" id="saleStatus" role="status" aria-live="polite"></p></div>
       </form>
     </div>
   </section>
@@ -74,7 +75,7 @@
   </div>
 </footer>
 <script src="/seo-pages.js"></script>
-<script src="/form-settings.js?v=forms-v2"></script>
-<script src="/sale-property.js?v=sale-fields-v2"></script>
+<script src="/form-settings.js?v=forms-v3"></script>
+<script src="/sale-property.js?v=property-floor-v1"></script>
 </body>
 </html>

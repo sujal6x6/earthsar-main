@@ -93,7 +93,7 @@
       status.classList.add("error");
     } finally {
       submit.disabled = false;
-      submit.textContent = "Submit property";
+      submit.textContent = "Kindly submit your property details";
     }
   });
 })();

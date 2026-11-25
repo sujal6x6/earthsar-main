@@ -3,42 +3,36 @@
 
 function _sale_property_pdf_build($data) {
     $blue = '#004BAF'; $orange = '#F1770A'; $muted = '#687789'; $line = '#DCE5F0'; $soft = '#F4F8FF';
-    $ops = _profile_pdf_rect(44, 32, 507, 3, $orange);
-    $ops .= sprintf("q 150 0 0 %.2f 44 %.2f cm /Logo Do Q\n", 150 * 212 / 700, 842 - 40 - (150 * 212 / 700));
-    $ops .= _profile_pdf_text(44, 96, 'Sale Property', 23, true, $blue);
-    $ops .= _profile_pdf_text(463, 106, 'REF  ' . $data['reference'], 8, true, $muted);
-    $ops .= _profile_pdf_line(44, 128, 551, 128, $line, 1);
-    $ops .= _profile_pdf_text(44, 144, 'PROPERTY OWNER', 8, true, $orange);
-    $ops .= _profile_pdf_text(44, 160, mb_substr($data['name'], 0, 40), 19, true, $blue);
-    $ops .= _profile_pdf_text(44, 189, mb_substr($data['email'] . '  ·  ' . $data['phone'], 0, 88), 9, false, $muted);
-    $ops .= _profile_pdf_line(44, 215, 551, 215, $line, 0.7);
-    $ops .= _profile_pdf_text(44, 223, 'PROPERTY TYPE', 7, true, $muted);
-    $ops .= _profile_pdf_text(44, 236, $data['propertyType'], 12, true, $blue);
-    $ops .= _profile_pdf_text(212, 223, 'CONFIGURATION', 7, true, $muted);
-    $ops .= _profile_pdf_text(212, 236, $data['bhk'], 12, true, $blue);
-    $ops .= _profile_pdf_text(380, 223, 'SALE AMOUNT', 7, true, $muted);
-    $ops .= _profile_pdf_text(380, 236, 'INR ' . $data['saleAmount'], 12, true, $orange);
-    $ops .= _profile_pdf_text(44, 270, 'PROPERTY DETAILS', 9, true, $orange);
-    $ops .= _profile_pdf_line(44, 283, 551, 283, $orange, 0.8);
+    $ops = _profile_pdf_rect(44, 20, 507, 2, $orange);
+    $ops .= sprintf("q 112 0 0 %.2f 44 %.2f cm /Logo Do Q\n", 112 * 212 / 700, 842 - 27 - (112 * 212 / 700));
+    $ops .= _profile_pdf_line(162, 27, 162, 64, $line, 0.8);
+    $ops .= _profile_pdf_text(178, 27, 'PROPERTY SUBMISSION', 7, true, $orange);
+    $ops .= _profile_pdf_text(551 - (strlen('Sale Property') * 10), 38, 'Sale Property', 19, true, $blue);
+    $ops .= _profile_pdf_rect(445, 45, 116, 19, $soft);
+    $ops .= _profile_pdf_text(551 - (strlen('REF  ' . $data['reference']) * 4.2), 51, 'REF  ' . $data['reference'], 7, true, $muted);
+    $ops .= _profile_pdf_line(44, 70, 551, 70, $line, 0.8);
+    $ops .= _profile_pdf_text(44, 88, mb_substr($data['name'], 0, 50), 12, true, $blue);
+    $ops .= _profile_pdf_text(44, 105, mb_substr($data['email'] . '  ·  ' . $data['phone'], 0, 115), 8, false, $muted);
+    $ops .= _profile_pdf_line(44, 121, 551, 121, $orange, 0.7);
     $rows = [
-        ['Owner name', $data['name']], ['Email', $data['email']], ['Phone', $data['phone']],
-        ['Property type', $data['propertyType']], ['BHK', $data['bhk']], ['House / flat number', $data['houseNumber']], ['Street / locality', $data['address']],
-        ['City', $data['city']], ['State', $data['state']], ['Area', $data['area'] . ' sq ft'],
-        ['Sale amount', 'INR ' . $data['saleAmount']], ['Existing bank loan', $data['bankLoan']],
-        ['Bank name', $data['bankLoan'] === 'Yes' ? $data['bankName'] : 'Not applicable'], ['Remarks', $data['remarks'] ?: 'Not provided']
+        ['Owner', $data['name']], ['Contact', $data['email'] . '  ·  ' . $data['phone']],
+        ['Property type', $data['propertyType']], ['BHK', $data['bhk']], ['Area', $data['area'] . ' sq ft'], ['Floor', $data['floor']],
+        ['House / flat number', $data['houseNumber']], ['Street / locality', $data['address']],
+        ['City / state', $data['city'] . ', ' . $data['state']], ['Sale amount', 'INR ' . $data['saleAmount']],
+        ['Existing bank loan', $data['bankLoan']], ['Bank name', $data['bankLoan'] === 'Yes' ? $data['bankName'] : 'Not applicable'], ['Remarks', $data['remarks'] ?: 'Not provided']
     ];
-    $top = 289; $labelW = 174;
+    $top = 132; $labelW = 148;
     foreach ($rows as [$label, $value]) {
-        $lines = explode("\n", wordwrap($value, 70, "\n", true));
-        $height = max(29, count($lines) * 11 + 12);
+        $value = (string)($value !== '' ? $value : 'Not provided');
+        $lines = explode("\n", wordwrap($value, 92, "\n", true));
+        $height = max(17, count($lines) * 8 + 6);
         $ops .= _profile_pdf_rect(44, $top, 507, $height, '#FFFFFF', $line);
         $ops .= _profile_pdf_rect(44, $top, $labelW, $height, $soft);
-        $ops .= _profile_pdf_text(54, $top + 9, strtoupper($label), 7, true, $muted);
-        foreach ($lines as $index => $valueLine) $ops .= _profile_pdf_text(230, $top + 8 + ($index * 11), $valueLine, 9, false, '#182433');
+        $ops .= _profile_pdf_text(51, $top + 5, strtoupper($label), 7, true, $muted);
+        foreach ($lines as $index => $valueLine) $ops .= _profile_pdf_text(201, $top + 4 + ($index * 8), $valueLine, 8, false, '#182433');
         $top += $height;
     }
-    $ops .= _profile_pdf_text(44, 806, 'Property owner submission  ·  earthsar Real Estate Advisory', 8, false, $muted);
-
+    $ops .= _profile_pdf_text(44, 814, 'Property owner submission  ·  earthsar Real Estate Advisory', 7, false, $muted);
     $objects = [
         1 => '<< /Type /Catalog /Pages 2 0 R >>',
         2 => '<< /Type /Pages /Kids [3 0 R] /Count 1 >>',
@@ -53,7 +47,7 @@ function _sale_property_pdf_build($data) {
     foreach ($objects as $number => $object) { $offsets[$number] = strlen($pdf); $pdf .= $number . " 0 obj\n" . $object . "\nendobj\n"; }
     $xref = strlen($pdf); $pdf .= "xref\n0 8\n0000000000 65535 f \n";
     for ($n = 1; $n <= 7; $n++) $pdf .= sprintf("%010d 00000 n \n", $offsets[$n]);
-    $pdf .= "trailer\n<< /Size 8 /Root 1 0 R >>\nstartxref\n{$xref}\n%%EOF";
+    $pdf .= "trailer\n<< /Size 8 /Root 1 0 R >>\nstartxref\n" . $xref . "\n%%EOF";
     return $pdf;
 }
 
@@ -72,6 +66,7 @@ function post_sale_property() {
         'phone' => _pub_str($body['phone'] ?? '', 30),
         'propertyType' => _pub_str($body['propertyType'] ?? '', 30),
         'bhk' => _pub_str($body['bhk'] ?? '', 20),
+        'floor' => _pub_str($body['floor'] ?? '', 30),
         'houseNumber' => _pub_str($body['houseNumber'] ?? '', 60),
         'address' => _pub_str($body['address'] ?? '', 300),
         'city' => _pub_str($body['city'] ?? '', 80),
@@ -88,6 +83,7 @@ function post_sale_property() {
     if (strlen(preg_replace('/\D/', '', $data['phone'])) < 7) $errors['phone'] = 'Enter a valid phone number.';
     if ($enabled('propertyType') && !in_array($data['propertyType'], $choices('propertyType'), true)) $errors['propertyType'] = 'Choose a property type.';
     if ($enabled('bhk') && !in_array($data['bhk'], $choices('bhk'), true)) $errors['bhk'] = 'Choose the BHK configuration.';
+    if ($enabled('floor') && !$data['floor']) $errors['floor'] = 'Enter the property floor.';
     if ($enabled('houseNumber') && !$data['houseNumber']) $errors['houseNumber'] = 'Enter the house or flat number.';
     if ($enabled('address') && mb_strlen($data['address']) < 5) $errors['address'] = 'Enter the street or locality.';
     if ($enabled('city') && !$data['city']) $errors['city'] = 'Enter the city.';
@@ -109,7 +105,7 @@ function post_sale_property() {
         'From: earthsar <' . $from . '>', 'Reply-To: ' . $data['email'], 'MIME-Version: 1.0',
         'Content-Type: multipart/mixed; boundary="' . $boundary . '"'
     ];
-    $message = "A property was submitted for sale through earthsar.in.\r\n\r\nOwner: {$data['name']}\r\nPhone: {$data['phone']}\r\nEmail: {$data['email']}\r\nProperty: {$data['propertyType']}, {$data['bhk']}\r\nAddress: {$data['houseNumber']}, {$data['address']}\r\nCity: {$data['city']}\r\nSale amount: INR {$data['saleAmount']}\r\nBank loan: {$data['bankLoan']}\r\nReference: {$data['reference']}\r\n\r\nThe completed sale property details are attached as a PDF.";
+    $message = "A property was submitted for sale through earthsar.in.\r\n\r\nOwner: {$data['name']}\r\nPhone: {$data['phone']}\r\nEmail: {$data['email']}\r\nProperty: {$data['propertyType']}, {$data['bhk']}\r\nAddress: {$data['houseNumber']}, {$data['address']}\r\nFloor: {$data['floor']}\r\nArea: {$data['area']} sq ft\r\nCity: {$data['city']}\r\nSale amount: INR {$data['saleAmount']}\r\nBank loan: {$data['bankLoan']}\r\nReference: {$data['reference']}\r\n\r\nThe completed sale property details are attached as a PDF.";
     $mailBody = "--{$boundary}\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: 8bit\r\n\r\n{$message}";
     $mailBody .= "\r\n--{$boundary}\r\nContent-Type: application/pdf; name=\"{$filename}\"\r\nContent-Transfer-Encoding: base64\r\nContent-Disposition: attachment; filename=\"{$filename}\"\r\n\r\n" . chunk_split(base64_encode($pdf)) . "\r\n--{$boundary}--\r\n";
     if (!@mail('info@earthsar.in', $subject, $mailBody, implode("\r\n", $headers))) {
