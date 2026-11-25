@@ -130,7 +130,7 @@ function mergeSettingsPatch(current, incoming) {
   for (const key of ["stats", "contact", "hero", "seo", "maintenance", "registration"]) {
     if (Object.prototype.hasOwnProperty.call(b, key)) next[key] = { ...(current[key] || {}), ...(b[key] || {}) };
   }
-  for (const key of ["social", "partners", "clientVideos", "team"]) {
+  for (const key of ["social", "partners", "clientVideos", "team", "forms"]) {
     if (Object.prototype.hasOwnProperty.call(b, key)) next[key] = b[key];
   }
   return next;

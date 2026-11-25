@@ -6,11 +6,11 @@ const DEFAULT_SITE_SETTINGS = {
     },
     rentProperty: {
       fields: Object.fromEntries(['name','email','phone','linkedinProfile','propertyType','bhk','area','floor','address','city','state','rent','description','pets'].map(key => [key, true])),
-      options: { propertyType: ['Apartment','House','Villa'].map(value => ({value, visible:true})), bhk: ['2 BHK','2.5 BHK','3 BHK','3.5 BHK','4 BHK','4.5 BHK'].map(value => ({value, visible:true})) }
+      options: { propertyType: ['Apartment','House','Villa','Office Space','Retail'].map(value => ({value, visible:true})), bhk: ['2 BHK','2.5 BHK','3 BHK','3.5 BHK','4 BHK','4.5 BHK'].map(value => ({value, visible:true})) }
     },
     saleProperty: {
       fields: Object.fromEntries(['name','email','phone','propertyType','bhk','area','floor','houseNumber','address','city','state','saleAmount','bankLoan','bankName','remarks'].map(key => [key, true])),
-      options: { propertyType: ['Apartment','House','Villa'].map(value => ({value, visible:true})), bhk: ['2 BHK','2.5 BHK','3 BHK','3.5 BHK','4 BHK','4.5 BHK'].map(value => ({value, visible:true})) }
+      options: { propertyType: ['Apartment','House','Villa','Office Space','Retail'].map(value => ({value, visible:true})), bhk: ['2 BHK','2.5 BHK','3 BHK','3.5 BHK','4 BHK','4.5 BHK'].map(value => ({value, visible:true})) }
     }
   },
   registration: require("../public/registration").defaults,
@@ -305,14 +305,20 @@ function sanitizeSiteSettings(input = {}) {
     const defaults = DEFAULT_SITE_SETTINGS.forms[formName];
     const saved = input.forms && input.forms[formName] || {};
     const fields = Object.fromEntries(Object.keys(defaults.fields).map(key => [key, saved.fields && typeof saved.fields[key] === 'boolean' ? saved.fields[key] : true]));
+    const optionsVersion = Number(saved.optionsVersion) || 0;
     for (const required of ['name', 'email', 'phone', 'hasLinkedIn', 'wifeWorks', 'hasPets', 'bankLoan']) if (required in fields) fields[required] = true;
     const options = {};
     for (const key of Object.keys(defaults.options)) {
       const values = Array.isArray(saved.options && saved.options[key]) ? saved.options[key] : defaults.options[key];
       const normalized = values.map(item => typeof item === 'string' ? { value: item, visible: true } : { value: String(item && item.value || '').trim().slice(0, 60), visible: !item || item.visible !== false }).filter(item => item.value);
       options[key] = normalized.filter((item, i) => normalized.findIndex(other => other.value.toLowerCase() === item.value.toLowerCase()) === i).slice(0, 40);
+      if (key === 'propertyType' && optionsVersion < 1) {
+        for (const value of ['Office Space', 'Retail']) {
+          if (!options[key].some(item => item.value.toLowerCase() === value.toLowerCase())) options[key].push({ value, visible: true });
+        }
+      }
     }
-    forms[formName] = { fields, options };
+    forms[formName] = { fields, options, optionsVersion: 1 };
   }
   return {
     forms,

@@ -38,7 +38,7 @@ function formEditorHtml(forms = {}) {
       const values = config.options?.[key] || [];
       return `<div class="form-config-options"><h4>${esc(label)} choices</h4>${values.map((item, index) => `<div class="form-config-option"><input aria-label="${esc(label)} choice" maxlength="60" value="${esc(typeof item === "string" ? item : item.value)}" data-form-option-value="${formKey}.${key}.${index}"><label><input type="checkbox" data-form-option-visible="${formKey}.${key}.${index}" ${typeof item === "string" || item.visible !== false ? "checked" : ""}> Show</label><button class="btn btn-secondary btn-sm" type="button" data-form-option-delete="${formKey}.${key}.${index}">Delete</button></div>`).join("")}<button class="btn btn-secondary btn-sm" type="button" data-form-option-add="${formKey}.${key}">Add choice</button></div>`;
     }).join("");
-    return `<section class="panel form-config-card"><h3>${esc(def.label)}</h3><p>Choose which fields visitors see, and manage dropdown choices. Name, email, phone and consent remain required for submissions.</p><div class="form-config-fields">${fields}</div>${options}</section>`;
+    return `<section class="panel form-config-card" data-form-config="${esc(formKey)}" data-options-version="${Number(config.optionsVersion) || 1}"><h3>${esc(def.label)}</h3><p>Choose which fields visitors see, and manage dropdown choices. Name, email, phone and consent remain required for submissions.</p><div class="form-config-fields">${fields}</div>${options}</section>`;
   }).join("");
 }
 function collectFormConfig(form) {
@@ -56,7 +56,8 @@ function collectFormConfig(form) {
         return { value: input.value.trim(), visible: !!visible?.checked };
       }).filter(item => item.value);
     });
-    config[formKey] = { fields, options };
+    const card = $(`[data-form-config="${formKey}"]`, form);
+    config[formKey] = { fields, options, optionsVersion: Number(card?.dataset.optionsVersion) || 1 };
   });
   return config;
 }

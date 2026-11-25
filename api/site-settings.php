@@ -4,8 +4,8 @@
 $DEFAULT_SITE_SETTINGS = [
     'forms' => [
         'clientProfile' => ['fields' => array_fill_keys(['name','phone','email','hasLinkedIn','linkedinProfile','offerDate','company','designation','wifeWorks','wifeCompany','wifeDesignation','photo','preferredFlat','budget','familyCount','nativePlace','shiftingFrom','shiftDate','familyDetails','education','hasPets','pets'], true), 'options' => ['preferredFlat' => array_map(fn($value) => ['value' => $value, 'visible' => true], ['1 BHK','1.5 BHK','2 BHK','2.5 BHK','2 BHK + Study','3 BHK','3.5 BHK','4 BHK','4.5 BHK','5 BHK','Other'])]],
-        'rentProperty' => ['fields' => array_fill_keys(['name','email','phone','linkedinProfile','propertyType','bhk','area','floor','address','city','state','rent','description','pets'], true), 'options' => ['propertyType' => array_map(fn($value) => ['value' => $value, 'visible' => true], ['Apartment','House','Villa']), 'bhk' => array_map(fn($value) => ['value' => $value, 'visible' => true], ['2 BHK','2.5 BHK','3 BHK','3.5 BHK','4 BHK','4.5 BHK'])]],
-        'saleProperty' => ['fields' => array_fill_keys(['name','email','phone','propertyType','bhk','area','floor','houseNumber','address','city','state','saleAmount','bankLoan','bankName','remarks'], true), 'options' => ['propertyType' => array_map(fn($value) => ['value' => $value, 'visible' => true], ['Apartment','House','Villa']), 'bhk' => array_map(fn($value) => ['value' => $value, 'visible' => true], ['2 BHK','2.5 BHK','3 BHK','3.5 BHK','4 BHK','4.5 BHK'])]]
+        'rentProperty' => ['fields' => array_fill_keys(['name','email','phone','linkedinProfile','propertyType','bhk','area','floor','address','city','state','rent','description','pets'], true), 'options' => ['propertyType' => array_map(fn($value) => ['value' => $value, 'visible' => true], ['Apartment','House','Villa','Office Space','Retail']), 'bhk' => array_map(fn($value) => ['value' => $value, 'visible' => true], ['2 BHK','2.5 BHK','3 BHK','3.5 BHK','4 BHK','4.5 BHK'])]],
+        'saleProperty' => ['fields' => array_fill_keys(['name','email','phone','propertyType','bhk','area','floor','houseNumber','address','city','state','saleAmount','bankLoan','bankName','remarks'], true), 'options' => ['propertyType' => array_map(fn($value) => ['value' => $value, 'visible' => true], ['Apartment','House','Villa','Office Space','Retail']), 'bhk' => array_map(fn($value) => ['value' => $value, 'visible' => true], ['2 BHK','2.5 BHK','3 BHK','3.5 BHK','4 BHK','4.5 BHK'])]]
     ],
     'registration' => [
         'enabled' => true,
@@ -351,6 +351,7 @@ function sanitize_site_settings($input) {
     foreach ($DEFAULT_SITE_SETTINGS['forms'] as $form_key => $defaults) {
         $saved_form = $input['forms'][$form_key] ?? [];
         $fields = [];
+        $options_version = (int)($saved_form['optionsVersion'] ?? 0);
         foreach ($defaults['fields'] as $key => $unused) $fields[$key] = in_array($key, ['name','email','phone','hasLinkedIn','wifeWorks','hasPets','bankLoan'], true) ? true : (($saved_form['fields'][$key] ?? true) !== false);
         $options = [];
         foreach ($defaults['options'] as $key => $default_options) {
@@ -361,8 +362,15 @@ function sanitize_site_settings($input) {
                 if ($value === '') continue;
                 $options[$key][] = ['value' => $value, 'visible' => !is_array($item) || ($item['visible'] ?? true) !== false];
             }
+            if ($key === 'propertyType' && $options_version < 1) {
+                foreach (['Office Space', 'Retail'] as $value) {
+                    $found = false;
+                    foreach ($options[$key] as $choice) if (strtolower($choice['value']) === strtolower($value)) $found = true;
+                    if (!$found) $options[$key][] = ['value' => $value, 'visible' => true];
+                }
+            }
         }
-        $forms[$form_key] = ['fields' => $fields, 'options' => $options];
+        $forms[$form_key] = ['fields' => $fields, 'options' => $options, 'optionsVersion' => 1];
     }
     return [
         'forms' => $forms,
