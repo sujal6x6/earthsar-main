@@ -51,28 +51,42 @@ function createClientProfilePdf(data, photo) {
     y += 12;
     doc.moveTo(left, y).lineTo(right, y).lineWidth(0.7).strokeColor(ORANGE).stroke();
     y += 4;
-    const rows = [
-      ["Offer date", data.offerDate], ["Name", data.name], ["Email", data.email], ["Phone", data.phone],
-      ["LinkedIn profile available", data.hasLinkedIn]
+    const spouseProfession = data.wifeWorks === "Yes"
+      ? [data.wifeDesignation, data.wifeCompany].filter(Boolean).join(" / ")
+      : data.wifeWorks === "No" ? "Not working" : "";
+    const primaryRows = [
+      ["Name", data.name], ["Phone no.", data.phone], ["Email", data.email],
+      ["Company / profession", data.company], ["Spouse profession", spouseProfession],
+      ["No. of family members", data.familyCount], ["Shifting from", data.shiftingFrom]
     ];
-    if (data.hasLinkedIn === "Yes" && data.linkedinProfile) rows.push(["LinkedIn profile", data.linkedinProfile]);
-    rows.push(["No. of family members", data.familyCount], ["Family members residing", data.familyDetails], ["Native place", data.nativePlace], ["Shifting from", data.shiftingFrom], ["Expected shifting date", data.shiftDate], ["Educational background", data.education], ["Company / profession", data.company], ["Designation", data.designation], ["Wife works", data.wifeWorks]);
-    if (data.wifeWorks === "Yes") rows.push(["Wife’s company", data.wifeCompany], ["Wife’s designation", data.wifeDesignation]);
-    rows.push(["Preferred flat size", data.preferredFlat], ["Monthly rental budget", `INR ${data.budget}`], ["Has pets", data.hasPets]);
-    if (data.hasPets === "Yes" && data.pets) rows.push(["Pet details / housing needs", data.pets]);
+    const otherRows = [
+      ["Offer date", data.offerDate], ["LinkedIn profile available", data.hasLinkedIn]
+    ];
+    if (data.hasLinkedIn === "Yes" && data.linkedinProfile) otherRows.push(["LinkedIn profile", data.linkedinProfile]);
+    otherRows.push(
+      ["Family members residing", data.familyDetails], ["Native place", data.nativePlace],
+      ["Expected shifting date", data.shiftDate], ["Educational background", data.education],
+      ["Designation", data.designation], ["Preferred flat size", data.preferredFlat],
+      ["Monthly rental budget", `INR ${data.budget}`], ["Has pets", data.hasPets]
+    );
+    if (data.hasPets === "Yes" && data.pets) otherRows.push(["Pet details / housing needs", data.pets]);
 
-    const labelW = 166;
-    for (const [label, value] of rows) {
-      const text = String(value == null || value === "" ? "Not provided" : value);
-      const fontSize = 9;
-      const valueW = width - labelW - 14;
-      const textHeight = doc.font("Noto").fontSize(fontSize).heightOfString(text, { width: valueW, lineGap: 0.4 });
-      const h = Math.max(19, textHeight + 7);
-      doc.rect(left, y, width, h).fill("#FFFFFF").stroke(LINE);
-      doc.rect(left, y, labelW, h).fill(SOFT);
-      doc.font("Noto-Bold").fontSize(7.7).fillColor(MUTED).text(label.toUpperCase(), left + 6, y + 6, { width: labelW - 10, lineBreak: false, ellipsis: true });
-      doc.font("Noto").fontSize(fontSize).fillColor("#182433").text(text, left + labelW + 8, y + 4, { width: valueW, lineGap: 0.4 });
-      y += h;
+    const gap = 16;
+    const columnW = (width - gap) / 2;
+    const valueW = columnW - 14;
+    for (const [x, rows] of [[left, primaryRows], [left + columnW + gap, otherRows]]) {
+      let rowY = y;
+      for (const [label, value] of rows) {
+        const text = String(value == null || value === "" ? "Not provided" : value);
+        const textHeight = doc.font("Noto").fontSize(8).heightOfString(text, { width: valueW, lineGap: -2 });
+        const height = Math.max(27, textHeight + 15);
+        doc.rect(x, rowY, columnW, height).fillAndStroke(SOFT, LINE);
+        doc.font("Noto-Bold").fontSize(7.7).fillColor(MUTED)
+          .text(label.toUpperCase(), x + 7, rowY + 4, { lineBreak: false });
+        doc.font("Noto").fontSize(8).fillColor("#182433")
+          .text(text, x + 7, rowY + 15, { width: valueW, lineGap: -2 });
+        rowY += height;
+      }
     }
     doc.font("Noto").fontSize(8.5).fillColor(MUTED).text("Private client information  ·  earthsar Real Estate Advisory", left, 808, { width, align: "center", lineBreak: false });
     doc.end();

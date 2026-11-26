@@ -45,9 +45,9 @@ function _profile_pdf_build($data, $photoJpeg = null, $photoSize = null) {
     $ops .= sprintf("q 112 0 0 %.2f 44 %.2f cm /Logo Do Q\n", 112 * 212 / 700, 842 - 27 - (112 * 212 / 700));
     $ops .= _profile_pdf_line(162, 27, 162, 64, $line, 0.8);
     $ops .= _profile_pdf_text(178, 27, 'CLIENT BRIEF', 7, true, $orange);
-    $ops .= _profile_pdf_text(551 - (strlen('Client Profile') * 10), 38, 'Client Profile', 19, true, $blue);
-    $ops .= _profile_pdf_rect(445, 45, 116, 19, $soft);
-    $ops .= _profile_pdf_text(551 - (strlen('REF  ' . $data['reference']) * 4.2), 51, 'REF  ' . $data['reference'], 7, true, $muted);
+    $ops .= _profile_pdf_text(551 - (strlen('Client Profile') * 10), 25, 'Client Profile', 19, true, $blue);
+    $ops .= _profile_pdf_rect(435, 48, 116, 16, $soft);
+    $ops .= _profile_pdf_text(545 - (strlen('REF  ' . $data['reference']) * 4.2), 52, 'REF  ' . $data['reference'], 7, true, $muted);
     $ops .= _profile_pdf_line(44, 70, 551, 70, $line, 0.8);
     if ($photoJpeg && $photoSize) {
         [$pw, $ph] = $photoSize; $scale = min(48 / max(1, $pw), 52 / max(1, $ph));
@@ -59,30 +59,52 @@ function _profile_pdf_build($data, $photoJpeg = null, $photoSize = null) {
     $sub = trim($data['company'] . '  ·  ' . $data['designation'], ' ·');
     if ($sub !== '') $ops .= _profile_pdf_text($nameX, 106, mb_substr($sub, 0, 88), 7, false, $muted);
     $ops .= _profile_pdf_line($nameX, 121, 551, 121, $orange, 0.7);
-    $rows = [
-        ['Offer date', $data['offerDate']], ['Name', $data['name']], ['Email', $data['email']], ['Phone', $data['phone']],
-        ['LinkedIn profile available', $data['hasLinkedIn']]
+    $spouseProfession = '';
+    if ($data['wifeWorks'] === 'Yes') {
+        $spouseProfession = implode(' / ', array_filter(
+            [$data['wifeDesignation'], $data['wifeCompany']],
+            fn($value) => $value !== ''
+        ));
+    } elseif ($data['wifeWorks'] === 'No') {
+        $spouseProfession = 'Not working';
+    }
+    $primaryRows = [
+        ['Name', $data['name']], ['Phone no.', $data['phone']], ['Email', $data['email']],
+        ['Company / profession', $data['company']], ['Spouse profession', $spouseProfession],
+        ['No. of family members', $data['familyCount']], ['Shifting from', $data['shiftingFrom']]
     ];
-    if ($data['hasLinkedIn'] === 'Yes' && $data['linkedinProfile'] !== '') $rows[] = ['LinkedIn profile', $data['linkedinProfile']];
-    $rows = array_merge($rows, [
-        ['No. of family members', $data['familyCount']], ['Family members residing', $data['familyDetails']],
-        ['Native place', $data['nativePlace']], ['Shifting from', $data['shiftingFrom']],
+    $otherRows = [
+        ['Offer date', $data['offerDate']], ['LinkedIn profile available', $data['hasLinkedIn']]
+    ];
+    if ($data['hasLinkedIn'] === 'Yes' && $data['linkedinProfile'] !== '') $otherRows[] = ['LinkedIn profile', $data['linkedinProfile']];
+    $otherRows = array_merge($otherRows, [
+        ['Family members residing', $data['familyDetails']], ['Native place', $data['nativePlace']],
         ['Expected shifting date', $data['shiftDate']], ['Educational background', $data['education']],
-        ['Company / profession', $data['company']], ['Designation', $data['designation']], ['Wife works', $data['wifeWorks']]
+        ['Designation', $data['designation']], ['Preferred flat size', $data['preferredFlat']],
+        ['Monthly rental budget', 'INR ' . $data['budget']], ['Has pets', $data['hasPets']]
     ]);
-    if ($data['wifeWorks'] === 'Yes') $rows = array_merge($rows, [['Wife company', $data['wifeCompany']], ['Wife designation', $data['wifeDesignation']]]);
-    $rows = array_merge($rows, [['Preferred flat size', $data['preferredFlat']], ['Monthly rental budget', 'INR ' . $data['budget']], ['Has pets', $data['hasPets']]]);
-    if ($data['hasPets'] === 'Yes' && $data['pets'] !== '') $rows[] = ['Pet details / housing needs', $data['pets']];
-    $top = 132; $labelW = 166;
-    foreach ($rows as [$label, $value]) {
-        $value = $value !== '' ? (string)$value : 'Not provided';
-        $lines = explode("\n", wordwrap($value, 88, "\n", true));
-        $height = max(16, count($lines) * 7 + 5);
-        $ops .= _profile_pdf_rect(44, $top, 507, $height, '#FFFFFF', $line);
-        $ops .= _profile_pdf_rect(44, $top, $labelW, $height, $soft);
-        $ops .= _profile_pdf_text(50, $top + 5, strtoupper($label), 7, true, $muted);
-        foreach ($lines as $index => $valueLine) $ops .= _profile_pdf_text(218, $top + 4 + ($index * 7), $valueLine, 8, false, '#182433');
-        $top += $height;
+    if ($data['hasPets'] === 'Yes' && $data['pets'] !== '') $otherRows[] = ['Pet details / housing needs', $data['pets']];
+
+    $gap = 16;
+    $columnW = (507 - $gap) / 2;
+    $ops .= _profile_pdf_text(44, 143, 'CLIENT DETAILS', 9, true, $orange);
+    $ops .= _profile_pdf_line(44, 156, 551, 156, $orange, 0.7);
+    foreach ([[44, $primaryRows], [44 + $columnW + $gap, $otherRows]] as [$x, $rows]) {
+        $top = 160;
+        foreach ($rows as [$label, $value]) {
+            $value = trim((string)$value);
+            $value = preg_replace('/\s+/u', ' ', $value) ?: ($value === '0' ? '0' : 'Not provided');
+            // Keep even wide Helvetica glyphs within the column and preserve UTF-8 characters.
+            preg_match_all('/.{1,29}(?: |$)|.{1,29}/u', $value, $matches);
+            $lines = $matches[0];
+            $height = max(27, 17 + count($lines) * 8);
+            $ops .= _profile_pdf_rect($x, $top, $columnW, $height, $soft, $line);
+            $ops .= _profile_pdf_text($x + 7, $top + 4, strtoupper($label), 7, true, $muted);
+            foreach ($lines as $index => $valueLine) {
+                $ops .= _profile_pdf_text($x + 7, $top + 15 + $index * 8, $valueLine, 8, false, '#182433');
+            }
+            $top += $height;
+        }
     }
     $ops .= _profile_pdf_text(44, 814, 'Private client information  ·  earthsar Real Estate Advisory', 7, false, $muted);
     $objects = [
