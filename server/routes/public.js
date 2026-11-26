@@ -435,7 +435,7 @@ router.post("/rent-property", rentPropertyLimiter, express.json({ limit: "20kb" 
       to: "info@earthsar.in",
       replyTo: data.email,
       subject: `Rental property submission · ${data.name} · ${data.reference}`,
-      text: `A property was submitted for rent through earthsar.in.\n\nOwner: ${data.name}\nPhone: ${data.phone}\nEmail: ${data.email}\nProperty: ${[data.propertyType, commercial ? "" : data.bhk].filter(Boolean).join(", ")}\nFloor: ${data.floor}\nArea: ${data.area} sq ft\n${commercial && data.houseNumber ? `${propertyNumberLabel(data.propertyType)}: ${data.houseNumber}\n` : ""}Address: ${data.address}\nCity: ${data.city}\nMonthly rent: INR ${data.rent}\nReference: ${data.reference}\n\nThe completed rental property details are attached as a PDF.`,
+      text: `A property was submitted for rent through earthsar.in.\n\nOwner: ${data.name}\nPhone: ${data.phone}\nEmail: ${data.email}\nProperty: ${data.propertyType}${commercial ? "" : `, ${data.bhk}`}\nFloor: ${data.floor}\nArea: ${data.area} sq ft\n${commercial && data.houseNumber ? `${propertyNumberLabel(data.propertyType)}: ${data.houseNumber}\n` : ""}Address: ${data.address}\nCity: ${data.city}\nMonthly rent: INR ${data.rent}\nReference: ${data.reference}\n\nThe completed rental property details are attached as a PDF.`,
       attachments: [{ filename: `earthsar-rental-property-${safeName}.pdf`, content: pdf, contentType: "application/pdf" }]
     });
     res.status(201).json({ ok: true, reference: data.reference });
@@ -516,7 +516,7 @@ router.post("/sale-property", salePropertyLimiter, express.json({ limit: "20kb" 
       to: "info@earthsar.in",
       replyTo: data.email,
       subject: `Sale property submission · ${data.name} · ${data.reference}`,
-      text: `A property was submitted for sale through earthsar.in.\n\nOwner: ${data.name}\nPhone: ${data.phone}\nEmail: ${data.email}\nProperty: ${[data.propertyType, commercial ? "" : data.bhk].filter(Boolean).join(", ")}\nAddress: ${data.houseNumber}, ${data.address}\nFloor: ${data.floor}\nArea: ${data.area} sq ft\nCity: ${data.city}\nSale amount: INR ${data.saleAmount}\nBank loan: ${data.bankLoan}${data.bankName ? ` (${data.bankName})` : ""}\nReference: ${data.reference}\n\nThe completed sale property details are attached as a PDF.`,
+      text: `A property was submitted for sale through earthsar.in.\n\nOwner: ${data.name}\nPhone: ${data.phone}\nEmail: ${data.email}\nProperty: ${data.propertyType}${commercial ? "" : `, ${data.bhk}`}\nAddress: ${data.houseNumber}, ${data.address}\nFloor: ${data.floor}\nArea: ${data.area} sq ft\nCity: ${data.city}\nSale amount: INR ${data.saleAmount}\nBank loan: ${data.bankLoan}${data.bankName ? ` (${data.bankName})` : ""}\nReference: ${data.reference}\n\nThe completed sale property details are attached as a PDF.`,
       attachments: [{ filename: `earthsar-sale-property-${safeName}.pdf`, content: pdf, contentType: "application/pdf" }]
     });
     res.status(201).json({ ok: true, reference: data.reference });

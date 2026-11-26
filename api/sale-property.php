@@ -10,9 +10,9 @@ function _sale_property_pdf_build($data) {
     $ops .= sprintf("q 112 0 0 %.2f 44 %.2f cm /Logo Do Q\n", 112 * 212 / 700, 842 - 27 - (112 * 212 / 700));
     $ops .= _profile_pdf_line(162, 27, 162, 64, $line, 0.8);
     $ops .= _profile_pdf_text(178, 27, 'PROPERTY SUBMISSION', 7, true, $orange);
-    $ops .= _profile_pdf_text(551 - (strlen('Sale Property') * 10), 25, 'Sale Property', 19, true, $blue);
-    $ops .= _profile_pdf_rect(435, 48, 116, 16, $soft);
-    $ops .= _profile_pdf_text(551 - (strlen('REF  ' . $data['reference']) * 4.2), 52, 'REF  ' . $data['reference'], 7, true, $muted);
+    $ops .= _profile_pdf_text(551 - (strlen('Sale Property') * 10), 38, 'Sale Property', 19, true, $blue);
+    $ops .= _profile_pdf_rect(445, 45, 116, 19, $soft);
+    $ops .= _profile_pdf_text(551 - (strlen('REF  ' . $data['reference']) * 4.2), 51, 'REF  ' . $data['reference'], 7, true, $muted);
     $ops .= _profile_pdf_line(44, 70, 551, 70, $line, 0.8);
     $ops .= _profile_pdf_text(44, 88, mb_substr($data['name'], 0, 50), 12, true, $blue);
     $ops .= _profile_pdf_text(44, 105, mb_substr($data['email'] . '  ·  ' . $data['phone'], 0, 115), 8, false, $muted);
@@ -109,7 +109,7 @@ function post_sale_property() {
         'From: earthsar <' . $from . '>', 'Reply-To: ' . $data['email'], 'MIME-Version: 1.0',
         'Content-Type: multipart/mixed; boundary="' . $boundary . '"'
     ];
-    $propertyDescription = $data['propertyType'] . (!$commercial && $data['bhk'] !== '' ? ', ' . $data['bhk'] : '');
+    $propertyDescription = $data['propertyType'] . ($commercial ? '' : ', ' . $data['bhk']);
     $message = "A property was submitted for sale through earthsar.in.\r\n\r\nOwner: {$data['name']}\r\nPhone: {$data['phone']}\r\nEmail: {$data['email']}\r\nProperty: {$propertyDescription}\r\nAddress: {$data['houseNumber']}, {$data['address']}\r\nFloor: {$data['floor']}\r\nArea: {$data['area']} sq ft\r\nCity: {$data['city']}\r\nSale amount: INR {$data['saleAmount']}\r\nBank loan: {$data['bankLoan']}\r\nReference: {$data['reference']}\r\n\r\nThe completed sale property details are attached as a PDF.";
     $mailBody = "--{$boundary}\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: 8bit\r\n\r\n{$message}";
     $mailBody .= "\r\n--{$boundary}\r\nContent-Type: application/pdf; name=\"{$filename}\"\r\nContent-Transfer-Encoding: base64\r\nContent-Disposition: attachment; filename=\"{$filename}\"\r\n\r\n" . chunk_split(base64_encode($pdf)) . "\r\n--{$boundary}--\r\n";

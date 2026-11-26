@@ -10,9 +10,9 @@ function _rent_property_pdf_build($data) {
     $ops .= sprintf("q 112 0 0 %.2f 44 %.2f cm /Logo Do Q\n", 112 * 212 / 700, 842 - 27 - (112 * 212 / 700));
     $ops .= _profile_pdf_line(162, 27, 162, 64, $line, 0.8);
     $ops .= _profile_pdf_text(178, 27, 'PROPERTY SUBMISSION', 7, true, $orange);
-    $ops .= _profile_pdf_text(551 - (strlen('Rental Property') * 10), 25, 'Rental Property', 19, true, $blue);
-    $ops .= _profile_pdf_rect(435, 48, 116, 16, $soft);
-    $ops .= _profile_pdf_text(551 - (strlen('REF  ' . $data['reference']) * 4.2), 52, 'REF  ' . $data['reference'], 7, true, $muted);
+    $ops .= _profile_pdf_text(551 - (strlen('Rental Property') * 10), 38, 'Rental Property', 19, true, $blue);
+    $ops .= _profile_pdf_rect(445, 45, 116, 19, $soft);
+    $ops .= _profile_pdf_text(551 - (strlen('REF  ' . $data['reference']) * 4.2), 51, 'REF  ' . $data['reference'], 7, true, $muted);
     $ops .= _profile_pdf_line(44, 70, 551, 70, $line, 0.8);
     $ops .= _profile_pdf_text(44, 88, mb_substr($data['name'], 0, 50), 12, true, $blue);
     $ops .= _profile_pdf_text(44, 105, mb_substr($data['email'] . '  ·  ' . $data['phone'], 0, 115), 8, false, $muted);
@@ -109,7 +109,7 @@ function post_rent_property() {
         'From: earthsar <' . $from . '>', 'Reply-To: ' . $data['email'], 'MIME-Version: 1.0',
         'Content-Type: multipart/mixed; boundary="' . $boundary . '"'
     ];
-    $propertyDescription = $data['propertyType'] . (!$commercial && $data['bhk'] !== '' ? ', ' . $data['bhk'] : '');
+    $propertyDescription = $data['propertyType'] . ($commercial ? '' : ', ' . $data['bhk']);
     $unitLine = $commercial && $data['houseNumber'] ? property_number_label($data['propertyType']) . ": {$data['houseNumber']}\r\n" : '';
     $message = "A property was submitted for rent through earthsar.in.\r\n\r\nOwner: {$data['name']}\r\nPhone: {$data['phone']}\r\nEmail: {$data['email']}\r\nProperty: {$propertyDescription}\r\nFloor: {$data['floor']}\r\nArea: {$data['area']} sq ft\r\n{$unitLine}Address: {$data['address']}\r\nCity: {$data['city']}\r\nMonthly rent: INR {$data['rent']}\r\nReference: {$data['reference']}\r\n\r\nThe completed rental property details are attached as a PDF.";
     $mailBody = "--{$boundary}\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: 8bit\r\n\r\n{$message}";
