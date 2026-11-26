@@ -1,5 +1,6 @@
 const PDFDocument = require("pdfkit");
 const path = require("path");
+const { isCommercialProperty, propertyNumberLabel } = require("./property-type");
 
 const BLUE = "#004BAF";
 const ORANGE = "#F1770A";
@@ -33,9 +34,10 @@ function createPropertyPdf(data, sale = false) {
     doc.font("Noto").fontSize(8.5).fillColor(MUTED).text(`${data.email}  ·  ${data.phone}`, left + width * 0.46, 87, { width: width * 0.54, height: 14, ellipsis: true, lineBreak: false });
     doc.moveTo(left, 99).lineTo(right, 105).lineWidth(0.5).strokeColor(LINE).stroke();
 
+    const commercial = isCommercialProperty(data.propertyType);
     const metrics = [
       ["PROPERTY TYPE", data.propertyType],
-      ["BHK", data.bhk],
+      ...(!commercial ? [["BHK", data.bhk]] : []),
       ["AREA", `${data.area} sq ft`],
       ["FLOOR", data.floor],
       [sale ? "SALE AMOUNT" : "MONTHLY RENT", `INR ${sale ? data.saleAmount : data.rent}`]
@@ -44,7 +46,7 @@ function createPropertyPdf(data, sale = false) {
     metrics.forEach(([label, value], i) => {
       const x = left + i * metricW;
       doc.font("Noto-Bold").fontSize(7.7).fillColor(MUTED).text(label, x, 113, { width: metricW - 7, lineBreak: false });
-      doc.font("Noto-Bold").fontSize(10).fillColor(i === 4 ? ORANGE : BLUE).text(String(value || "—"), x, 125, { width: metricW - 7, height: 13, ellipsis: true, lineBreak: false });
+      doc.font("Noto-Bold").fontSize(10).fillColor(i === metrics.length - 1 ? ORANGE : BLUE).text(String(value || "—"), x, 125, { width: metricW - 7, height: 13, ellipsis: true, lineBreak: false });
     });
     doc.moveTo(left, 139).lineTo(right, 145).lineWidth(0.5).strokeColor(LINE).stroke();
 
@@ -69,8 +71,8 @@ function createPropertyPdf(data, sale = false) {
 
     section("Property details");
     if (!sale) row("LinkedIn profile", data.linkedinProfile || "Not provided");
+    if (sale || (commercial && data.houseNumber)) row(propertyNumberLabel(data.propertyType), data.houseNumber);
     if (sale) {
-      row("House / flat number", data.houseNumber);
       row("Street / locality", data.address);
     } else {
       row("Property address", data.address);
@@ -83,7 +85,7 @@ function createPropertyPdf(data, sale = false) {
       row("Remarks", data.remarks || "Not provided");
     } else {
       row("Description", data.description || "Not provided");
-      row("Pet policy", data.pets || "Not provided");
+      if (!commercial) row("Pet policy", data.pets || "Not provided");
     }
     doc.font("Noto").fontSize(8.5).fillColor(MUTED).text(sale ? "Property owner submission  ·  earthsar Real Estate Advisory" : "Property owner submission  ·  earthsar Real Estate Advisory", left, 808, { width, align: "center", lineBreak: false });
     doc.end();

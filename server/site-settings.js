@@ -5,7 +5,7 @@ const DEFAULT_SITE_SETTINGS = {
       options: { preferredFlat: ['1 BHK','1.5 BHK','2 BHK','2.5 BHK','2 BHK + Study','3 BHK','3.5 BHK','4 BHK','4.5 BHK','5 BHK','Other'].map(value => ({value, visible:true})) }
     },
     rentProperty: {
-      fields: Object.fromEntries(['name','email','phone','linkedinProfile','propertyType','bhk','area','floor','address','city','state','rent','description','pets'].map(key => [key, true])),
+      fields: Object.fromEntries(['name','email','phone','linkedinProfile','propertyType','bhk','area','floor','houseNumber','address','city','state','rent','description','pets'].map(key => [key, true])),
       options: { propertyType: ['Apartment','House','Villa','Office Space','Retail'].map(value => ({value, visible:true})), bhk: ['2 BHK','2.5 BHK','3 BHK','3.5 BHK','4 BHK','4.5 BHK'].map(value => ({value, visible:true})) }
     },
     saleProperty: {

@@ -10,6 +10,7 @@ const { sanitizeSiteSettings } = require("../site-settings");
 const { makeUpload, allFiles, cleanup, check, UserError } = require("../uploads");
 const { createClientProfilePdf } = require("../client-profile-pdf");
 const { createRentPropertyPdf, createSalePropertyPdf } = require("../rent-property-pdf");
+const { isCommercialProperty, propertyNumberLabel } = require("../property-type");
 
 const router = express.Router();
 
@@ -393,6 +394,7 @@ router.post("/rent-property", rentPropertyLimiter, express.json({ limit: "20kb" 
     rent: str(b.rent, 12),
     description: str(b.description, 600),
     linkedinProfile: str(b.linkedinProfile, 250),
+    houseNumber: str(b.houseNumber, 60),
     pets: str(b.pets, 300)
   };
   const errors = {};
@@ -401,8 +403,10 @@ router.post("/rent-property", rentPropertyLimiter, express.json({ limit: "20kb" 
   if (enabled("linkedinProfile") && data.linkedinProfile && !validLinkedInProfile(data.linkedinProfile)) errors.linkedinProfile = "Enter a valid LinkedIn profile URL.";
   if (data.phone.replace(/\D/g, "").length < 7) errors.phone = "Enter a valid phone number.";
   if (enabled("propertyType") && !configuredChoices(formSettings, "propertyType").includes(data.propertyType)) errors.propertyType = "Choose a property type.";
-  if (enabled("bhk") && !configuredChoices(formSettings, "bhk").includes(data.bhk)) errors.bhk = "Choose the BHK configuration.";
+  const commercial = isCommercialProperty(data.propertyType);
+  if (!commercial && enabled("bhk") && !configuredChoices(formSettings, "bhk").includes(data.bhk)) errors.bhk = "Choose the BHK configuration.";
   if (enabled("floor") && !data.floor) errors.floor = "Enter the property floor.";
+  if (commercial && enabled("houseNumber") && !data.houseNumber) errors.houseNumber = `Enter the ${propertyNumberLabel(data.propertyType).toLowerCase()}`;
   if (enabled("address") && data.address.length < 5) errors.address = "Enter the property address.";
   if (enabled("city") && !data.city) errors.city = "Enter the city.";
   if (enabled("state") && !data.state) errors.state = "Enter the state.";
@@ -431,7 +435,7 @@ router.post("/rent-property", rentPropertyLimiter, express.json({ limit: "20kb" 
       to: "info@earthsar.in",
       replyTo: data.email,
       subject: `Rental property submission · ${data.name} · ${data.reference}`,
-      text: `A property was submitted for rent through earthsar.in.\n\nOwner: ${data.name}\nPhone: ${data.phone}\nEmail: ${data.email}\nProperty: ${data.propertyType}, ${data.bhk}\nFloor: ${data.floor}\nArea: ${data.area} sq ft\nAddress: ${data.address}\nCity: ${data.city}\nMonthly rent: INR ${data.rent}\nReference: ${data.reference}\n\nThe completed rental property details are attached as a PDF.`,
+      text: `A property was submitted for rent through earthsar.in.\n\nOwner: ${data.name}\nPhone: ${data.phone}\nEmail: ${data.email}\nProperty: ${[data.propertyType, commercial ? "" : data.bhk].filter(Boolean).join(", ")}\nFloor: ${data.floor}\nArea: ${data.area} sq ft\n${commercial && data.houseNumber ? `${propertyNumberLabel(data.propertyType)}: ${data.houseNumber}\n` : ""}Address: ${data.address}\nCity: ${data.city}\nMonthly rent: INR ${data.rent}\nReference: ${data.reference}\n\nThe completed rental property details are attached as a PDF.`,
       attachments: [{ filename: `earthsar-rental-property-${safeName}.pdf`, content: pdf, contentType: "application/pdf" }]
     });
     res.status(201).json({ ok: true, reference: data.reference });
@@ -478,9 +482,10 @@ router.post("/sale-property", salePropertyLimiter, express.json({ limit: "20kb" 
   if (!EMAIL_RE.test(data.email)) errors.email = "Enter a valid email address.";
   if (data.phone.replace(/\D/g, "").length < 7) errors.phone = "Enter a valid phone number.";
   if (enabled("propertyType") && !configuredChoices(formSettings, "propertyType").includes(data.propertyType)) errors.propertyType = "Choose a property type.";
-  if (enabled("bhk") && !configuredChoices(formSettings, "bhk").includes(data.bhk)) errors.bhk = "Choose the BHK configuration.";
+  const commercial = isCommercialProperty(data.propertyType);
+  if (!commercial && enabled("bhk") && !configuredChoices(formSettings, "bhk").includes(data.bhk)) errors.bhk = "Choose the BHK configuration.";
   if (enabled("floor") && !data.floor) errors.floor = "Enter the property floor.";
-  if (enabled("houseNumber") && !data.houseNumber) errors.houseNumber = "Enter the house or flat number.";
+  if (enabled("houseNumber") && !data.houseNumber) errors.houseNumber = commercial ? `Enter the ${propertyNumberLabel(data.propertyType).toLowerCase()}` : "Enter the house or flat number.";
   if (enabled("address") && data.address.length < 5) errors.address = "Enter the street or locality.";
   if (enabled("city") && !data.city) errors.city = "Enter the city.";
   if (enabled("state") && !data.state) errors.state = "Enter the state.";
@@ -511,7 +516,7 @@ router.post("/sale-property", salePropertyLimiter, express.json({ limit: "20kb" 
       to: "info@earthsar.in",
       replyTo: data.email,
       subject: `Sale property submission · ${data.name} · ${data.reference}`,
-      text: `A property was submitted for sale through earthsar.in.\n\nOwner: ${data.name}\nPhone: ${data.phone}\nEmail: ${data.email}\nProperty: ${data.propertyType}, ${data.bhk}\nAddress: ${data.houseNumber}, ${data.address}\nFloor: ${data.floor}\nArea: ${data.area} sq ft\nCity: ${data.city}\nSale amount: INR ${data.saleAmount}\nBank loan: ${data.bankLoan}${data.bankName ? ` (${data.bankName})` : ""}\nReference: ${data.reference}\n\nThe completed sale property details are attached as a PDF.`,
+      text: `A property was submitted for sale through earthsar.in.\n\nOwner: ${data.name}\nPhone: ${data.phone}\nEmail: ${data.email}\nProperty: ${[data.propertyType, commercial ? "" : data.bhk].filter(Boolean).join(", ")}\nAddress: ${data.houseNumber}, ${data.address}\nFloor: ${data.floor}\nArea: ${data.area} sq ft\nCity: ${data.city}\nSale amount: INR ${data.saleAmount}\nBank loan: ${data.bankLoan}${data.bankName ? ` (${data.bankName})` : ""}\nReference: ${data.reference}\n\nThe completed sale property details are attached as a PDF.`,
       attachments: [{ filename: `earthsar-sale-property-${safeName}.pdf`, content: pdf, contentType: "application/pdf" }]
     });
     res.status(201).json({ ok: true, reference: data.reference });

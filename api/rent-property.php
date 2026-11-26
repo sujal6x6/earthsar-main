@@ -1,25 +1,29 @@
 <?php
 /* Rental property submission for the PHP deployment. */
 
+require_once __DIR__ . '/property-type.php';
+
 function _rent_property_pdf_build($data) {
+    $commercial = is_commercial_property($data['propertyType']);
     $blue = '#004BAF'; $orange = '#F1770A'; $muted = '#687789'; $line = '#DCE5F0'; $soft = '#F4F8FF';
     $ops = _profile_pdf_rect(44, 20, 507, 2, $orange);
     $ops .= sprintf("q 112 0 0 %.2f 44 %.2f cm /Logo Do Q\n", 112 * 212 / 700, 842 - 27 - (112 * 212 / 700));
     $ops .= _profile_pdf_line(162, 27, 162, 64, $line, 0.8);
     $ops .= _profile_pdf_text(178, 27, 'PROPERTY SUBMISSION', 7, true, $orange);
-    $ops .= _profile_pdf_text(551 - (strlen('Rental Property') * 10), 38, 'Rental Property', 19, true, $blue);
-    $ops .= _profile_pdf_rect(445, 45, 116, 19, $soft);
-    $ops .= _profile_pdf_text(551 - (strlen('REF  ' . $data['reference']) * 4.2), 51, 'REF  ' . $data['reference'], 7, true, $muted);
+    $ops .= _profile_pdf_text(551 - (strlen('Rental Property') * 10), 25, 'Rental Property', 19, true, $blue);
+    $ops .= _profile_pdf_rect(435, 48, 116, 16, $soft);
+    $ops .= _profile_pdf_text(551 - (strlen('REF  ' . $data['reference']) * 4.2), 52, 'REF  ' . $data['reference'], 7, true, $muted);
     $ops .= _profile_pdf_line(44, 70, 551, 70, $line, 0.8);
     $ops .= _profile_pdf_text(44, 88, mb_substr($data['name'], 0, 50), 12, true, $blue);
     $ops .= _profile_pdf_text(44, 105, mb_substr($data['email'] . '  ·  ' . $data['phone'], 0, 115), 8, false, $muted);
     $ops .= _profile_pdf_line(44, 121, 551, 121, $orange, 0.7);
     $rows = [
         ['Owner', $data['name']], ['Contact', $data['email'] . '  ·  ' . $data['phone']],
-        ['Property type', $data['propertyType']], ['BHK', $data['bhk']], ['Area', $data['area'] . ' sq ft'], ['Floor', $data['floor']],
+        ['Property type', $data['propertyType']], ...($commercial ? [] : [['BHK', $data['bhk']]]), ['Area', $data['area'] . ' sq ft'], ['Floor', $data['floor']],
+        ...($commercial && !empty($data['houseNumber']) ? [[property_number_label($data['propertyType']), $data['houseNumber']]] : []),
         ['Property address', $data['address']], ['City / state', $data['city'] . ', ' . $data['state']],
         ['LinkedIn profile', $data['linkedinProfile'] ?: 'Not provided'], ['Monthly rent', 'INR ' . $data['rent']],
-        ['Description', $data['description'] ?: 'Not provided'], ['Pet policy', $data['pets'] ?: 'Not provided']
+        ['Description', $data['description'] ?: 'Not provided'], ...($commercial ? [] : [['Pet policy', $data['pets'] ?: 'Not provided']])
     ];
     $top = 132; $labelW = 148;
     foreach ($rows as [$label, $value]) {
@@ -68,6 +72,7 @@ function post_rent_property() {
         'pets' => _pub_str($body['pets'] ?? '', 300),
         'propertyType' => _pub_str($body['propertyType'] ?? '', 30),
         'bhk' => _pub_str($body['bhk'] ?? '', 20),
+        'houseNumber' => _pub_str($body['houseNumber'] ?? '', 60),
         'floor' => _pub_str($body['floor'] ?? '', 30),
         'address' => _pub_str($body['address'] ?? '', 300),
         'city' => _pub_str($body['city'] ?? '', 80),
@@ -82,8 +87,10 @@ function post_rent_property() {
     if ($enabled('linkedinProfile') && $data['linkedinProfile'] !== '' && !preg_match('~^https://(www\.)?linkedin\.com/(in|pub)/[A-Za-z0-9_%./?=&-]+$~i', $data['linkedinProfile'])) $errors['linkedinProfile'] = 'Enter a valid LinkedIn profile URL.';
     if (strlen(preg_replace('/\D/', '', $data['phone'])) < 7) $errors['phone'] = 'Enter a valid phone number.';
     if ($enabled('propertyType') && !in_array($data['propertyType'], $choices('propertyType'), true)) $errors['propertyType'] = 'Choose a property type.';
-    if ($enabled('bhk') && !in_array($data['bhk'], $choices('bhk'), true)) $errors['bhk'] = 'Choose the BHK configuration.';
+    $commercial = is_commercial_property($data['propertyType']);
+    if (!$commercial && $enabled('bhk') && !in_array($data['bhk'], $choices('bhk'), true)) $errors['bhk'] = 'Choose the BHK configuration.';
     if ($enabled('floor') && !$data['floor']) $errors['floor'] = 'Enter the property floor.';
+    if ($commercial && $enabled('houseNumber') && !$data['houseNumber']) $errors['houseNumber'] = 'Enter the ' . strtolower(property_number_label($data['propertyType']));
     if ($enabled('address') && mb_strlen($data['address']) < 5) $errors['address'] = 'Enter the property address.';
     if ($enabled('city') && !$data['city']) $errors['city'] = 'Enter the city.';
     if ($enabled('state') && !$data['state']) $errors['state'] = 'Enter the state.';
@@ -102,7 +109,9 @@ function post_rent_property() {
         'From: earthsar <' . $from . '>', 'Reply-To: ' . $data['email'], 'MIME-Version: 1.0',
         'Content-Type: multipart/mixed; boundary="' . $boundary . '"'
     ];
-    $message = "A property was submitted for rent through earthsar.in.\r\n\r\nOwner: {$data['name']}\r\nPhone: {$data['phone']}\r\nEmail: {$data['email']}\r\nProperty: {$data['propertyType']}, {$data['bhk']}\r\nFloor: {$data['floor']}\r\nArea: {$data['area']} sq ft\r\nAddress: {$data['address']}\r\nCity: {$data['city']}\r\nMonthly rent: INR {$data['rent']}\r\nReference: {$data['reference']}\r\n\r\nThe completed rental property details are attached as a PDF.";
+    $propertyDescription = $data['propertyType'] . (!$commercial && $data['bhk'] !== '' ? ', ' . $data['bhk'] : '');
+    $unitLine = $commercial && $data['houseNumber'] ? property_number_label($data['propertyType']) . ": {$data['houseNumber']}\r\n" : '';
+    $message = "A property was submitted for rent through earthsar.in.\r\n\r\nOwner: {$data['name']}\r\nPhone: {$data['phone']}\r\nEmail: {$data['email']}\r\nProperty: {$propertyDescription}\r\nFloor: {$data['floor']}\r\nArea: {$data['area']} sq ft\r\n{$unitLine}Address: {$data['address']}\r\nCity: {$data['city']}\r\nMonthly rent: INR {$data['rent']}\r\nReference: {$data['reference']}\r\n\r\nThe completed rental property details are attached as a PDF.";
     $mailBody = "--{$boundary}\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: 8bit\r\n\r\n{$message}";
     $mailBody .= "\r\n--{$boundary}\r\nContent-Type: application/pdf; name=\"{$filename}\"\r\nContent-Transfer-Encoding: base64\r\nContent-Disposition: attachment; filename=\"{$filename}\"\r\n\r\n" . chunk_split(base64_encode($pdf)) . "\r\n--{$boundary}--\r\n";
     if (!@mail('info@earthsar.in', $subject, $mailBody, implode("\r\n", $headers))) {

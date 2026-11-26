@@ -44,15 +44,16 @@
           <h3>Property details</h3>
           <div class="form-grid">
             <label class="field"><span>Property type <b>*</b></span><select name="propertyType" required><option value="">Select property type</option><option>Apartment</option><option>House</option><option>Villa</option><option>Office Space</option><option>Retail</option></select></label>
-            <label class="field"><span>BHK <b>*</b></span><select name="bhk" required><option value="">Select BHK</option><option>2 BHK</option><option>2.5 BHK</option><option>3 BHK</option><option>3.5 BHK</option><option>4 BHK</option><option>4.5 BHK</option></select></label>
+            <label class="field" data-depends-on="propertyType" data-excludes-values="Office Space|Retail"><span>BHK <b>*</b></span><select name="bhk" required><option value="">Select BHK</option><option>2 BHK</option><option>2.5 BHK</option><option>3 BHK</option><option>3.5 BHK</option><option>4 BHK</option><option>4.5 BHK</option></select></label>
             <label class="field"><span>Area (sq ft) <b>*</b></span><input name="area" type="number" min="100" max="9999999" inputmode="numeric" required></label>
             <label class="field"><span>Floor <b>*</b></span><input name="floor" maxlength="30" placeholder="e.g. 3rd floor or Ground floor" required></label>
+            <label class="field" data-depends-on="propertyType" data-depends-value="Office Space|Retail" hidden><span><span data-property-number-label>Office no.</span> <b>*</b></span><input name="houseNumber" maxlength="60" required></label>
             <label class="field field-wide"><span>Property address <b>*</b></span><input name="address" autocomplete="street-address" maxlength="300" required></label>
             <label class="field"><span>City <b>*</b></span><input name="city" autocomplete="address-level2" maxlength="80" required></label>
             <label class="field"><span>State <b>*</b></span><input name="state" autocomplete="address-level1" maxlength="80" required></label>
             <label class="field"><span>Rent amount (including maintenance) (INR) <b>*</b></span><div class="money-input"><span aria-hidden="true">₹</span><input name="rent" type="number" min="1" max="9999999999" inputmode="numeric" required></div></label>
             <label class="field field-wide"><span>Description <small>Optional</small></span><textarea name="description" rows="4" maxlength="600" placeholder="Share any useful details about the property."></textarea></label>
-            <label class="field field-wide"><span>Pet policy <small>Optional</small></span><textarea name="pets" rows="2" maxlength="300" placeholder="Are pets allowed? Share any restrictions or details."></textarea></label>
+            <label class="field field-wide" data-depends-on="propertyType" data-excludes-values="Office Space|Retail"><span>Pet policy <small>Optional</small></span><textarea name="pets" rows="2" maxlength="300" placeholder="Are pets allowed? Share any restrictions or details."></textarea></label>
           </div>
         </div>
         <label class="consent"><input name="consent" type="checkbox" required><span>I agree to share these details with earthsar so the team may contact me about this property. <b>*</b></span></label>
@@ -74,7 +75,7 @@
   </div>
 </footer>
 <script src="/seo-pages.js"></script>
-<script src="/form-settings.js?v=forms-v3"></script>
+<script src="/form-settings.js?v=forms-commercial-v1"></script>
 <script src="/rent-property.js?v=property-floor-v1"></script>
 </body>
 </html>

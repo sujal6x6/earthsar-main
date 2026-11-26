@@ -43,10 +43,10 @@
           <h3>Property details</h3>
           <div class="form-grid">
             <label class="field"><span>Property type <b>*</b></span><select name="propertyType" required><option value="">Select property type</option><option>Apartment</option><option>House</option><option>Villa</option><option>Office Space</option><option>Retail</option></select></label>
-            <label class="field"><span>BHK <b>*</b></span><select name="bhk" required><option value="">Select BHK</option><option>2 BHK</option><option>2.5 BHK</option><option>3 BHK</option><option>3.5 BHK</option><option>4 BHK</option><option>4.5 BHK</option></select></label>
+            <label class="field" data-depends-on="propertyType" data-excludes-values="Office Space|Retail"><span>BHK <b>*</b></span><select name="bhk" required><option value="">Select BHK</option><option>2 BHK</option><option>2.5 BHK</option><option>3 BHK</option><option>3.5 BHK</option><option>4 BHK</option><option>4.5 BHK</option></select></label>
             <label class="field"><span>Area (sq ft) <b>*</b></span><input name="area" type="number" min="100" max="9999999" inputmode="numeric" required></label>
             <label class="field"><span>Floor <b>*</b></span><input name="floor" maxlength="30" placeholder="e.g. 3rd floor or Ground floor" required></label>
-            <label class="field"><span>House / flat number <b>*</b></span><input name="houseNumber" autocomplete="address-line1" maxlength="60" required></label>
+            <label class="field"><span><span data-property-number-label>House / flat number</span> <b>*</b></span><input name="houseNumber" autocomplete="address-line1" maxlength="60" required></label>
             <label class="field field-wide"><span>Street / locality <b>*</b></span><input name="address" autocomplete="street-address" maxlength="300" required></label>
             <label class="field"><span>City <b>*</b></span><input name="city" autocomplete="address-level2" maxlength="80" required></label>
             <label class="field"><span>State <b>*</b></span><input name="state" autocomplete="address-level1" maxlength="80" required></label>
@@ -75,7 +75,7 @@
   </div>
 </footer>
 <script src="/seo-pages.js"></script>
-<script src="/form-settings.js?v=forms-v3"></script>
+<script src="/form-settings.js?v=forms-commercial-v1"></script>
 <script src="/sale-property.js?v=property-floor-v1"></script>
 </body>
 </html>

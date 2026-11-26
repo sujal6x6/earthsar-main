@@ -4,17 +4,26 @@
   if (!form) return;
   const formKey = form.id === "clientProfileForm" ? "clientProfile" : form.id === "rentPropertyForm" ? "rentProperty" : "saleProperty";
   const selectLabels = { propertyType: "Select property type", bhk: "Select BHK", preferredFlat: "Select a flat size" };
-  const syncConditionalFields = () => form.querySelectorAll("[data-depends-on]").forEach(field => {
-    const trigger = form.elements.namedItem(field.dataset.dependsOn);
-    const input = field.querySelector("input,select,textarea");
-    const matches = trigger?.value === field.dataset.dependsValue;
-    const adminHidden = input?.dataset.adminDisabled === "true";
-    field.hidden = !(matches && !adminHidden);
-    if (input) {
-      input.disabled = !matches || adminHidden;
-      input.required = !input.disabled && input.dataset.wasRequired === "true";
+  const propertyNumberLabel = form.querySelector("[data-property-number-label]");
+  const syncConditionalFields = () => {
+    if (propertyNumberLabel) {
+      const type = form.elements.namedItem("propertyType").value;
+      propertyNumberLabel.textContent = type === "Retail" ? "Shop no." : type === "Office Space" ? "Office no." : "House / flat number";
     }
-  });
+    form.querySelectorAll("[data-depends-on]").forEach(field => {
+      const trigger = form.elements.namedItem(field.dataset.dependsOn);
+      const input = field.querySelector("input,select,textarea");
+      const matches = field.dataset.excludesValues
+        ? !field.dataset.excludesValues.split("|").includes(trigger?.value)
+        : field.dataset.dependsValue.split("|").includes(trigger?.value);
+      const adminHidden = input?.dataset.adminDisabled === "true";
+      field.hidden = !matches || adminHidden;
+      if (input) {
+        input.disabled = field.hidden;
+        input.required = !input.disabled && input.dataset.wasRequired === "true";
+      }
+    });
+  };
   form.querySelectorAll("[data-depends-on]").forEach(field => {
     const input = field.querySelector("input,select,textarea");
     if (input) input.dataset.wasRequired = String(input.required);
