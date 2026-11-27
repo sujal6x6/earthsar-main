@@ -3,7 +3,7 @@
   const form = document.querySelector("#clientProfileForm, #rentPropertyForm, #salePropertyForm");
   if (!form) return;
   const formKey = form.id === "clientProfileForm" ? "clientProfile" : form.id === "rentPropertyForm" ? "rentProperty" : "saleProperty";
-  const selectLabels = { propertyType: "Select property type", bhk: "Select BHK", preferredFlat: "Select a flat size" };
+  const selectLabels = { propertyType: "Select property type", bhk: "Select BHK", preferredFlat: "Select a flat type" };
   const propertyNumberLabel = form.querySelector("[data-property-number-label]");
   const syncConditionalFields = () => {
     if (propertyNumberLabel) {

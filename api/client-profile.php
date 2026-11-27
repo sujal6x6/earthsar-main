@@ -179,7 +179,7 @@ function post_client_profile() {
     if (!in_array($data['wifeWorks'], ['Yes','No'], true)) $errors['wifeWorks'] = 'Please choose Yes or No.';
     if ($data['wifeWorks'] === 'Yes' && $enabled('wifeCompany') && !$data['wifeCompany']) $errors['wifeCompany'] = 'Enter your spouse’s company name.';
     if ($data['wifeWorks'] === 'Yes' && $enabled('wifeDesignation') && !$data['wifeDesignation']) $errors['wifeDesignation'] = 'Enter your spouse’s designation.';
-    if ($enabled('preferredFlat') && !in_array($data['preferredFlat'], $flat_choices, true)) $errors['preferredFlat'] = 'Choose the preferred flat size.';
+    if ($enabled('preferredFlat') && !in_array($data['preferredFlat'], $flat_choices, true)) $errors['preferredFlat'] = 'Choose the preferred flat type.';
     if ($enabled('budget') && (!preg_match('/^\d{1,10}$/', $data['budget']) || (int)$data['budget'] < 1)) $errors['budget'] = 'Enter the monthly rental budget in rupees.';
     if (!in_array($data['hasPets'], ['Yes','No'], true)) $errors['hasPets'] = 'Please choose Yes or No for pets.';
     if (($_POST['consent'] ?? '') !== 'on') $errors['consent'] = 'Consent is required to send this profile to earthsar.';
