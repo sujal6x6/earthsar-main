@@ -315,8 +315,8 @@ router.post("/client-profile", profileLimiter, profileUpload, async (req, res, n
     if (enabled("company") && !data.company) errors.company = "Enter the working company or profession.";
     if (enabled("designation") && !data.designation) errors.designation = "Enter the designation.";
     if (!["Yes", "No"].includes(data.wifeWorks)) errors.wifeWorks = "Please choose Yes or No.";
-    if (data.wifeWorks === "Yes" && enabled("wifeCompany") && !data.wifeCompany) errors.wifeCompany = "Enter your wife’s company name.";
-    if (data.wifeWorks === "Yes" && enabled("wifeDesignation") && !data.wifeDesignation) errors.wifeDesignation = "Enter your wife’s designation.";
+    if (data.wifeWorks === "Yes" && enabled("wifeCompany") && !data.wifeCompany) errors.wifeCompany = "Enter your spouse’s company name.";
+    if (data.wifeWorks === "Yes" && enabled("wifeDesignation") && !data.wifeDesignation) errors.wifeDesignation = "Enter your spouse’s designation.";
     if (enabled("preferredFlat") && !configuredChoices(formSettings, "preferredFlat").includes(data.preferredFlat)) errors.preferredFlat = "Choose the preferred flat size.";
     if (enabled("budget") && (!/^\d{1,10}$/.test(data.budget) || +data.budget < 1)) errors.budget = "Enter the monthly rental budget in rupees.";
     if (!["Yes", "No"].includes(data.hasPets)) errors.hasPets = "Please choose Yes or No for pets.";

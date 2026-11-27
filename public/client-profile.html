@@ -49,9 +49,9 @@
             <label class="field"><span>Offer date <b>*</b></span><input name="offerDate" type="date" required></label>
             <label class="field"><span>Company / profession <b>*</b></span><input name="company" maxlength="120" required></label>
             <label class="field"><span>Designation <b>*</b></span><input name="designation" maxlength="120" required></label>
-            <label class="field"><span>Does your wife work? <b>*</b></span><select name="wifeWorks" required><option value="">Choose yes or no</option><option>Yes</option><option>No</option></select></label>
-            <label class="field conditional-field" data-depends-on="wifeWorks" data-depends-value="Yes" hidden><span>Wife’s company name <b>*</b></span><input name="wifeCompany" maxlength="120" required disabled></label>
-            <label class="field conditional-field" data-depends-on="wifeWorks" data-depends-value="Yes" hidden><span>Wife’s designation <b>*</b></span><input name="wifeDesignation" maxlength="120" required disabled></label>
+            <label class="field"><span>Does your spouse work? <b>*</b></span><select name="wifeWorks" required><option value="">Choose yes or no</option><option>Yes</option><option>No</option></select></label>
+            <label class="field conditional-field" data-depends-on="wifeWorks" data-depends-value="Yes" hidden><span>Spouse’s company name <b>*</b></span><input name="wifeCompany" maxlength="120" required disabled></label>
+            <label class="field conditional-field" data-depends-on="wifeWorks" data-depends-value="Yes" hidden><span>Spouse’s designation <b>*</b></span><input name="wifeDesignation" maxlength="120" required disabled></label>
           </div>
           <label class="field photo-field"><span>Client photo <small>Optional · JPG or PNG up to 3 MB</small></span><input name="photo" type="file" accept="image/jpeg,image/png"><span class="photo-name" id="photoName">No photo selected</span></label>
         </div>
